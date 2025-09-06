@@ -1,0 +1,93 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+
+import '../../../../core/usecases/usecase.dart';
+import '../../domain/entities/auth_session.dart';
+
+import '../../domain/usecases/get_current_session.dart';
+import '../../domain/usecases/send_otp.dart';
+import '../../domain/usecases/sign_out.dart';
+import '../../domain/usecases/verify_otp.dart';
+
+part 'auth_event.dart';
+part 'auth_state.dart';
+
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final SendOtp sendOtp;
+  final VerifyOtp verifyOtp;
+  final GetCurrentSession getCurrentSession;
+  final SignOut signOut;
+
+  AuthBloc({
+    required this.sendOtp,
+    required this.verifyOtp,
+    required this.getCurrentSession,
+    required this.signOut,
+  }) : super(AuthInitial()) {
+    on<AuthCheckRequested>(_onAuthCheckRequested);
+    on<AuthSendOtpRequested>(_onAuthSendOtpRequested);
+    on<AuthVerifyOtpRequested>(_onAuthVerifyOtpRequested);
+    on<AuthSignOutRequested>(_onAuthSignOutRequested);
+  }
+
+  Future<void> _onAuthCheckRequested(
+    AuthCheckRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await getCurrentSession(NoParams());
+
+    result.fold((failure) => emit(AuthUnauthenticated()), (session) {
+      if (session != null && !session.isExpired) {
+        emit(AuthAuthenticated(session: session));
+      } else {
+        emit(AuthUnauthenticated());
+      }
+    });
+  }
+
+  Future<void> _onAuthSendOtpRequested(
+    AuthSendOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await sendOtp(SendOtpParams(phoneNumber: event.phoneNumber));
+
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (_) => emit(AuthOtpSent(phoneNumber: event.phoneNumber)),
+    );
+  }
+
+  Future<void> _onAuthVerifyOtpRequested(
+    AuthVerifyOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await verifyOtp(
+      VerifyOtpParams(phoneNumber: event.phoneNumber, otp: event.otp),
+    );
+
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (session) => emit(AuthAuthenticated(session: session)),
+    );
+  }
+
+  Future<void> _onAuthSignOutRequested(
+    AuthSignOutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await signOut(NoParams());
+
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (_) => emit(AuthUnauthenticated()),
+    );
+  }
+}
