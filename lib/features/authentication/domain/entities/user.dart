@@ -6,6 +6,8 @@ class User extends Equatable {
   final String? email;
   final String? name;
   final String? profilePicture;
+  final String? governorate;
+  final String? district;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final bool isVerified;
@@ -16,6 +18,8 @@ class User extends Equatable {
     this.email,
     this.name,
     this.profilePicture,
+    this.governorate,
+    this.district,
     required this.createdAt,
     this.updatedAt,
     required this.isVerified,
@@ -27,6 +31,8 @@ class User extends Equatable {
     String? email,
     String? name,
     String? profilePicture,
+    String? governorate,
+    String? district,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isVerified,
@@ -37,6 +43,8 @@ class User extends Equatable {
       email: email ?? this.email,
       name: name ?? this.name,
       profilePicture: profilePicture ?? this.profilePicture,
+      governorate: governorate ?? this.governorate,
+      district: district ?? this.district,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isVerified: isVerified ?? this.isVerified,
@@ -45,13 +53,15 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        phoneNumber,
-        email,
-        name,
-        profilePicture,
-        createdAt,
-        updatedAt,
-        isVerified,
-      ];
+    id,
+    phoneNumber,
+    email,
+    name,
+    profilePicture,
+    governorate,
+    district,
+    createdAt,
+    updatedAt,
+    isVerified,
+  ];
 }

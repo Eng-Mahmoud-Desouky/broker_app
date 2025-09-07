@@ -15,6 +15,8 @@ abstract class AuthRemoteDataSource {
     String? name,
     String? email,
     String? profilePicture,
+    String? governorate,
+    String? district,
   });
 }
 
@@ -47,7 +49,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.session == null) {
-        throw const AuthenticationException(message: 'Invalid OTP or session expired');
+        throw const AuthenticationException(
+          message: 'Invalid OTP or session expired',
+        );
       }
 
       return AuthSessionModel(
@@ -72,7 +76,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthSessionModel?> getCurrentSession() async {
     try {
       final session = supabaseClient.auth.currentSession;
-      
+
       if (session == null) {
         return null;
       }
@@ -91,7 +95,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         user: UserModel.fromJson(user.toJson()),
       );
     } catch (e) {
-      throw CacheException(message: 'Failed to get current session: ${e.toString()}');
+      throw CacheException(
+        message: 'Failed to get current session: ${e.toString()}',
+      );
     }
   }
 
@@ -110,7 +116,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthSessionModel> refreshToken(String refreshToken) async {
     try {
       final response = await supabaseClient.auth.refreshSession();
-      
+
       if (response.session == null) {
         throw const AuthenticationException(message: 'Failed to refresh token');
       }
@@ -126,7 +132,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on AuthException catch (e) {
       throw AuthenticationException(message: e.message);
     } catch (e) {
-      throw ServerException(message: 'Failed to refresh token: ${e.toString()}');
+      throw ServerException(
+        message: 'Failed to refresh token: ${e.toString()}',
+      );
     }
   }
 
@@ -134,14 +142,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel?> getCurrentUser() async {
     try {
       final user = supabaseClient.auth.currentUser;
-      
+
       if (user == null) {
         return null;
       }
 
       return UserModel.fromJson(user.toJson());
     } catch (e) {
-      throw CacheException(message: 'Failed to get current user: ${e.toString()}');
+      throw CacheException(
+        message: 'Failed to get current user: ${e.toString()}',
+      );
     }
   }
 
@@ -150,14 +160,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? name,
     String? email,
     String? profilePicture,
+    String? governorate,
+    String? district,
   }) async {
     try {
       final updates = <String, dynamic>{};
-      
+
       if (email != null) {
         updates['email'] = email;
       }
-      
+
       final userMetadata = <String, dynamic>{};
       if (name != null) {
         userMetadata['name'] = name;
@@ -165,7 +177,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (profilePicture != null) {
         userMetadata['profile_picture'] = profilePicture;
       }
-      
+      if (governorate != null) {
+        userMetadata['governorate'] = governorate;
+      }
+      if (district != null) {
+        userMetadata['district'] = district;
+      }
+
       if (userMetadata.isNotEmpty) {
         updates['data'] = userMetadata;
       }
@@ -178,14 +196,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.user == null) {
-        throw const AuthenticationException(message: 'Failed to update profile');
+        throw const AuthenticationException(
+          message: 'Failed to update profile',
+        );
       }
 
       return UserModel.fromJson(response.user!.toJson());
     } on AuthException catch (e) {
       throw AuthenticationException(message: e.message);
     } catch (e) {
-      throw ServerException(message: 'Failed to update profile: ${e.toString()}');
+      throw ServerException(
+        message: 'Failed to update profile: ${e.toString()}',
+      );
     }
   }
 }

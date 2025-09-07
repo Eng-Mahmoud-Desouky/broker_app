@@ -69,7 +69,15 @@ class _SplashScreenState extends State<SplashScreen>
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          AppRouter.goToHome(context);
+          // Check if user profile is complete
+          final user = state.session.user;
+          if (user.name == null ||
+              user.governorate == null ||
+              user.district == null) {
+            AppRouter.goToRegistration(context);
+          } else {
+            AppRouter.goToHome(context);
+          }
         } else if (state is AuthUnauthenticated) {
           AppRouter.goToPhoneInput(context);
         }

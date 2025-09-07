@@ -9,7 +9,10 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> sendOtp(String phoneNumber);
 
   /// Verify OTP and return authentication session
-  Future<Either<Failure, AuthSession>> verifyOtp(String phoneNumber, String otp);
+  Future<Either<Failure, AuthSession>> verifyOtp(
+    String phoneNumber,
+    String otp,
+  );
 
   /// Get current authentication session
   Future<Either<Failure, AuthSession?>> getCurrentSession();
@@ -27,9 +30,11 @@ abstract class AuthRepository {
   Future<Either<Failure, User?>> getCurrentUser();
 
   /// Update user profile
-  Future<Either<Failure, User>> updateProfile({
+  Future<Either<Failure, void>> updateProfile({
     String? name,
     String? email,
     String? profilePicture,
+    String? governorate,
+    String? district,
   });
 }

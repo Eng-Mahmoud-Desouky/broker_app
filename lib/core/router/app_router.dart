@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/authentication/presentation/pages/phone_input_page.dart';
 import '../../features/authentication/presentation/pages/otp_verification_page.dart';
+import '../../features/authentication/presentation/pages/registration_page.dart';
 import '../../presentation/pages/main_wrapper.dart';
 import '../../presentation/pages/home_page.dart';
 import '../../presentation/pages/favorites_page.dart';
@@ -14,6 +15,7 @@ class AppRouter {
   static const String splash = '/';
   static const String phoneInput = '/phone-input';
   static const String otpVerification = '/otp-verification';
+  static const String registration = '/registration';
   static const String main = '/main';
   static const String home = '/main/home';
   static const String favorites = '/main/favorites';
@@ -44,6 +46,11 @@ class AppRouter {
           return OtpVerificationPage(phoneNumber: phoneNumber ?? '');
         },
       ),
+      GoRoute(
+        path: registration,
+        name: 'registration',
+        builder: (context, state) => const RegistrationPage(),
+      ),
 
       // Main app routes with shell
       ShellRoute(
@@ -72,36 +79,33 @@ class AppRouter {
         ],
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
+    errorBuilder:
+        (context, state) => Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  'Page not found',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  state.error.toString(),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => context.go(home),
+                  child: const Text('Go Home'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Page not found',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              state.error.toString(),
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.go(home),
-              child: const Text('Go Home'),
-            ),
-          ],
+          ),
         ),
-      ),
-    ),
   );
 
   // Navigation helpers
@@ -111,6 +115,10 @@ class AppRouter {
 
   static void goToOtpVerification(BuildContext context, String phoneNumber) {
     context.go(otpVerification, extra: phoneNumber);
+  }
+
+  static void goToRegistration(BuildContext context) {
+    context.go(registration);
   }
 
   static void goToHome(BuildContext context) {

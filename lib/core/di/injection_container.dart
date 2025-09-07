@@ -9,11 +9,13 @@ import '../../features/authentication/data/datasources/auth_local_data_source.da
 import '../../features/authentication/data/datasources/auth_remote_data_source.dart';
 import '../../features/authentication/data/repositories/auth_repository_impl.dart';
 import '../../features/authentication/domain/repositories/auth_repository.dart';
+import '../../features/authentication/domain/usecases/complete_registration.dart';
 import '../../features/authentication/domain/usecases/get_current_session.dart';
 import '../../features/authentication/domain/usecases/send_otp.dart';
 import '../../features/authentication/domain/usecases/sign_out.dart';
 import '../../features/authentication/domain/usecases/verify_otp.dart';
 import '../../features/authentication/presentation/bloc/auth_bloc.dart';
+import '../../features/authentication/presentation/bloc/registration_bloc.dart';
 import '../network/network_info.dart';
 import '../utils/constants.dart';
 
@@ -41,11 +43,14 @@ Future<void> _initAuth() async {
     ),
   );
 
+  sl.registerFactory(() => RegistrationBloc(completeRegistration: sl()));
+
   // Use cases
   sl.registerLazySingleton(() => SendOtp(sl()));
   sl.registerLazySingleton(() => VerifyOtp(sl()));
   sl.registerLazySingleton(() => GetCurrentSession(sl()));
   sl.registerLazySingleton(() => SignOut(sl()));
+  sl.registerLazySingleton(() => CompleteRegistration(sl()));
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(

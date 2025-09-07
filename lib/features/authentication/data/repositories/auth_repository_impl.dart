@@ -173,10 +173,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> updateProfile({
+  Future<Either<Failure, void>> updateProfile({
     String? name,
     String? email,
     String? profilePicture,
+    String? governorate,
+    String? district,
   }) async {
     if (await networkInfo.isConnected) {
       try {
@@ -184,12 +186,14 @@ class AuthRepositoryImpl implements AuthRepository {
           name: name,
           email: email,
           profilePicture: profilePicture,
+          governorate: governorate,
+          district: district,
         );
 
         // Update local cache
         await localDataSource.cacheUser(user);
 
-        return Right(user);
+        return const Right(null);
       } on AuthenticationException catch (e) {
         return Left(AuthenticationFailure(message: e.message));
       } on ServerException catch (e) {
