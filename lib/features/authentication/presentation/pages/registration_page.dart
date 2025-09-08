@@ -29,8 +29,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => sl<RegistrationBloc>()
-        ..add(const RegistrationGovernoatesLoaded()),
+      create:
+          (context) =>
+              sl<RegistrationBloc>()
+                ..add(const RegistrationGovernoatesLoaded()),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: BlocConsumer<RegistrationBloc, RegistrationState>(
@@ -68,19 +70,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           subtitle: 'يرجى إدخال بياناتك الشخصية لإكمال التسجيل',
                         ),
                         const SizedBox(height: 40),
-                        
+
                         // Full Name Field
                         _buildNameField(context, state),
                         const SizedBox(height: 24),
-                        
+
                         // Governorate Dropdown
                         _buildGovernorateDropdown(context, state),
                         const SizedBox(height: 24),
-                        
+
                         // District Dropdown
                         _buildDistrictDropdown(context, state),
                         const SizedBox(height: 40),
-                        
+
                         // Submit Button
                         _buildSubmitButton(context, state),
                       ],
@@ -140,7 +142,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ),
           style: AppTextStyles.bodyMedium,
           onChanged: (value) {
-            context.read<RegistrationBloc>().add(RegistrationNameChanged(value));
+            context.read<RegistrationBloc>().add(
+              RegistrationNameChanged(value),
+            );
           },
           validator: (value) => state.nameError,
         ),
@@ -148,16 +152,17 @@ class _RegistrationPageState extends State<RegistrationPage> {
           const SizedBox(height: 4),
           Text(
             state.nameError!,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.error,
-            ),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
           ),
         ],
       ],
     );
   }
 
-  Widget _buildGovernorateDropdown(BuildContext context, RegistrationState state) {
+  Widget _buildGovernorateDropdown(
+    BuildContext context,
+    RegistrationState state,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -197,15 +202,16 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ),
           style: AppTextStyles.bodyMedium,
           isExpanded: true,
-          items: state.governorates.map((governorate) {
-            return DropdownMenuItem<String>(
-              value: governorate.governorate,
-              child: Text(
-                governorate.governorate,
-                textDirection: TextDirection.rtl,
-              ),
-            );
-          }).toList(),
+          items:
+              state.governorates.map((governorate) {
+                return DropdownMenuItem<String>(
+                  value: governorate.governorate,
+                  child: Text(
+                    governorate.governorate,
+                    textDirection: TextDirection.rtl,
+                  ),
+                );
+              }).toList(),
           onChanged: (value) {
             if (value != null) {
               context.read<RegistrationBloc>().add(
@@ -219,9 +225,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           const SizedBox(height: 4),
           Text(
             state.governorateError!,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.error,
-            ),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
           ),
         ],
       ],
@@ -268,31 +272,30 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ),
           style: AppTextStyles.bodyMedium,
           isExpanded: true,
-          items: state.availableDistricts.map((district) {
-            return DropdownMenuItem<String>(
-              value: district,
-              child: Text(
-                district,
-                textDirection: TextDirection.rtl,
-              ),
-            );
-          }).toList(),
-          onChanged: state.governorate.isEmpty ? null : (value) {
-            if (value != null) {
-              context.read<RegistrationBloc>().add(
-                RegistrationDistrictSelected(value),
-              );
-            }
-          },
+          items:
+              state.availableDistricts.map((district) {
+                return DropdownMenuItem<String>(
+                  value: district,
+                  child: Text(district, textDirection: TextDirection.rtl),
+                );
+              }).toList(),
+          onChanged:
+              state.governorate.isEmpty
+                  ? null
+                  : (value) {
+                    if (value != null) {
+                      context.read<RegistrationBloc>().add(
+                        RegistrationDistrictSelected(value),
+                      );
+                    }
+                  },
           validator: (value) => state.districtError,
         ),
         if (state.districtError != null) ...[
           const SizedBox(height: 4),
           Text(
             state.districtError!,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.error,
-            ),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
           ),
         ],
       ],
@@ -301,27 +304,28 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   Widget _buildSubmitButton(BuildContext context, RegistrationState state) {
     final isEnabled = state.formStatus == RegistrationFormStatus.valid;
-    
+
     return ElevatedButton(
-      onPressed: isEnabled ? () {
-        context.read<RegistrationBloc>().add(const RegistrationSubmitted());
-      } : null,
+      onPressed:
+          isEnabled
+              ? () {
+                context.read<RegistrationBloc>().add(
+                  const RegistrationSubmitted(),
+                );
+              }
+              : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
         disabledBackgroundColor: AppColors.onSurfaceVariant.withOpacity(0.12),
         disabledForegroundColor: AppColors.onSurfaceVariant.withOpacity(0.38),
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 0,
       ),
       child: Text(
         'إكمال التسجيل',
-        style: AppTextStyles.labelLarge.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+        style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }

@@ -79,6 +79,7 @@ class _SplashScreenState extends State<SplashScreen>
             AppRouter.goToHome(context);
           }
         } else if (state is AuthUnauthenticated) {
+          // Route to phone input page for authentication
           AppRouter.goToPhoneInput(context);
         }
       },

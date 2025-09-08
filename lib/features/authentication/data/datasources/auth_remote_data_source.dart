@@ -18,6 +18,9 @@ abstract class AuthRemoteDataSource {
     String? governorate,
     String? district,
   });
+
+  /// Bypass OTP verification for development/testing purposes
+  Future<AuthSessionModel> bypassOtpVerification(String phoneNumber);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -207,6 +210,44 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       throw ServerException(
         message: 'Failed to update profile: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<AuthSessionModel> bypassOtpVerification(String phoneNumber) async {
+    try {
+      // Create a mock user for development/testing purposes
+      // This bypasses the actual Supabase OTP verification
+
+      // Generate a mock session with the phone number
+      final mockUser = UserModel(
+        id: 'dev_user_${phoneNumber.replaceAll('+', '').replaceAll(' ', '')}',
+        phoneNumber: phoneNumber,
+        email: null,
+        name: null,
+        profilePicture: null,
+        governorate: null,
+        district: null,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        isVerified: true, // Mark as verified for development mode
+      );
+
+      // Create a mock session
+      final mockSession = AuthSessionModel(
+        accessToken:
+            'dev_access_token_${DateTime.now().millisecondsSinceEpoch}',
+        refreshToken:
+            'dev_refresh_token_${DateTime.now().millisecondsSinceEpoch}',
+        expiresAt: DateTime.now().add(const Duration(hours: 24)),
+        user: mockUser,
+      );
+
+      return mockSession;
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to bypass OTP verification: ${e.toString()}',
       );
     }
   }

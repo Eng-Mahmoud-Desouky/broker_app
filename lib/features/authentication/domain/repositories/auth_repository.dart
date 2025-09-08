@@ -37,4 +37,10 @@ abstract class AuthRepository {
     String? governorate,
     String? district,
   });
+
+  /// Bypass OTP verification for development/testing purposes
+  /// Creates a mock session without actual OTP verification
+  Future<Either<Failure, AuthSession>> bypassOtpVerification(
+    String phoneNumber,
+  );
 }

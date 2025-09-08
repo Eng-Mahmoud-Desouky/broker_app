@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/router/app_router.dart';
@@ -30,12 +31,14 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   int _remainingSeconds = AppConstants.otpTimeoutSeconds;
   bool _canResend = false;
 
+  // Start timer when page is loaded
   @override
   void initState() {
     super.initState();
     _startTimer();
   }
 
+  // Dispose timer when page is closed
   @override
   void dispose() {
     _otpController.dispose();
@@ -43,6 +46,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     super.dispose();
   }
 
+  // Start timer
   void _startTimer() {
     _canResend = false;
     _remainingSeconds = AppConstants.otpTimeoutSeconds;
@@ -177,6 +181,24 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
                       const SizedBox(height: AppConstants.largePadding),
 
+                      // Development bypass button
+                      if (AppConfig.isDevelopment &&
+                          AppConfig.bypassOtpInDevelopment)
+                        Column(
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: () => _bypassOtp(),
+                              icon: const Icon(Icons.developer_mode),
+                              label: const Text('تجاوز التحقق (وضع التطوير)'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.warning,
+                                side: BorderSide(color: AppColors.warning),
+                              ),
+                            ),
+                            const SizedBox(height: AppConstants.defaultPadding),
+                          ],
+                        ),
+
                       // Verify button
                       ElevatedButton(
                         onPressed:
@@ -209,6 +231,12 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   void _resendOtp() {
     context.read<AuthBloc>().add(
       AuthSendOtpRequested(phoneNumber: widget.phoneNumber),
+    );
+  }
+
+  void _bypassOtp() {
+    context.read<AuthBloc>().add(
+      AuthBypassOtpRequested(phoneNumber: widget.phoneNumber),
     );
   }
 }

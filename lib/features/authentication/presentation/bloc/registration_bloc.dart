@@ -13,9 +13,8 @@ part 'registration_state.dart';
 class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   final CompleteRegistration completeRegistration;
 
-  RegistrationBloc({
-    required this.completeRegistration,
-  }) : super(const RegistrationState()) {
+  RegistrationBloc({required this.completeRegistration})
+    : super(const RegistrationState()) {
     on<RegistrationNameChanged>(_onNameChanged);
     on<RegistrationGovernorateSelected>(_onGovernorateSelected);
     on<RegistrationDistrictSelected>(_onDistrictSelected);
@@ -29,36 +28,40 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   ) {
     final name = event.name.trim();
     final isValidName = name.isNotEmpty && Validators.isValidName(name);
-    
-    emit(state.copyWith(
-      fullName: name,
-      isValidName: isValidName,
-      nameError: isValidName ? null : _getNameError(name),
-      formStatus: _getFormStatus(
-        name: name,
-        governorate: state.governorate,
-        district: state.district,
+
+    emit(
+      state.copyWith(
+        fullName: name,
+        isValidName: isValidName,
+        nameError: isValidName ? null : _getNameError(name),
+        formStatus: _getFormStatus(
+          name: name,
+          governorate: state.governorate,
+          district: state.district,
+        ),
       ),
-    ));
+    );
   }
 
   void _onGovernorateSelected(
     RegistrationGovernorateSelected event,
     Emitter<RegistrationState> emit,
   ) {
-    emit(state.copyWith(
-      governorate: event.governorate,
-      district: '', // Reset district when governorate changes
-      isValidGovernorate: event.governorate.isNotEmpty,
-      isValidDistrict: false,
-      governorateError: null,
-      districtError: null,
-      formStatus: _getFormStatus(
-        name: state.fullName,
+    emit(
+      state.copyWith(
         governorate: event.governorate,
-        district: '',
+        district: '', // Reset district when governorate changes
+        isValidGovernorate: event.governorate.isNotEmpty,
+        isValidDistrict: false,
+        governorateError: null,
+        districtError: null,
+        formStatus: _getFormStatus(
+          name: state.fullName,
+          governorate: event.governorate,
+          district: '',
+        ),
       ),
-    ));
+    );
   }
 
   void _onDistrictSelected(
@@ -66,17 +69,19 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     Emitter<RegistrationState> emit,
   ) {
     final isValidDistrict = event.district.isNotEmpty;
-    
-    emit(state.copyWith(
-      district: event.district,
-      isValidDistrict: isValidDistrict,
-      districtError: isValidDistrict ? null : 'القضاء مطلوب',
-      formStatus: _getFormStatus(
-        name: state.fullName,
-        governorate: state.governorate,
+
+    emit(
+      state.copyWith(
         district: event.district,
+        isValidDistrict: isValidDistrict,
+        districtError: isValidDistrict ? null : 'القضاء مطلوب',
+        formStatus: _getFormStatus(
+          name: state.fullName,
+          governorate: state.governorate,
+          district: event.district,
+        ),
       ),
-    ));
+    );
   }
 
   Future<void> _onSubmitted(
@@ -98,13 +103,13 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     );
 
     result.fold(
-      (failure) => emit(state.copyWith(
-        formStatus: RegistrationFormStatus.failure,
-        errorMessage: failure.message,
-      )),
-      (_) => emit(state.copyWith(
-        formStatus: RegistrationFormStatus.success,
-      )),
+      (failure) => emit(
+        state.copyWith(
+          formStatus: RegistrationFormStatus.failure,
+          errorMessage: failure.message,
+        ),
+      ),
+      (_) => emit(state.copyWith(formStatus: RegistrationFormStatus.success)),
     );
   }
 
@@ -113,20 +118,27 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     Emitter<RegistrationState> emit,
   ) async {
     try {
-      final String response = await rootBundle.loadString('assets/data/governorates.json');
+      final String response = await rootBundle.loadString(
+        'assets/data/governorates.json',
+      );
       final List<dynamic> data = json.decode(response);
-      
-      final governorates = data.map((item) => GovernorateData.fromJson(item)).toList();
-      
-      emit(state.copyWith(
-        governorates: governorates,
-        isLoadingGovernorates: false,
-      ));
+
+      final governorates =
+          data.map((item) => GovernorateData.fromJson(item)).toList();
+
+      emit(
+        state.copyWith(
+          governorates: governorates,
+          isLoadingGovernorates: false,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        isLoadingGovernorates: false,
-        errorMessage: 'فشل في تحميل بيانات المحافظات',
-      ));
+      emit(
+        state.copyWith(
+          isLoadingGovernorates: false,
+          errorMessage: 'فشل في تحميل بيانات المحافظات',
+        ),
+      );
     }
   }
 
@@ -160,10 +172,7 @@ class GovernorateData extends Equatable {
   final String governorate;
   final List<String> districts;
 
-  const GovernorateData({
-    required this.governorate,
-    required this.districts,
-  });
+  const GovernorateData({required this.governorate, required this.districts});
 
   factory GovernorateData.fromJson(Map<String, dynamic> json) {
     return GovernorateData(

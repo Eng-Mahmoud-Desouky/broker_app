@@ -9,6 +9,7 @@ import '../../features/authentication/data/datasources/auth_local_data_source.da
 import '../../features/authentication/data/datasources/auth_remote_data_source.dart';
 import '../../features/authentication/data/repositories/auth_repository_impl.dart';
 import '../../features/authentication/domain/repositories/auth_repository.dart';
+import '../../features/authentication/domain/usecases/bypass_otp_verification.dart';
 import '../../features/authentication/domain/usecases/complete_registration.dart';
 import '../../features/authentication/domain/usecases/get_current_session.dart';
 import '../../features/authentication/domain/usecases/send_otp.dart';
@@ -38,6 +39,7 @@ Future<void> _initAuth() async {
     () => AuthBloc(
       sendOtp: sl(),
       verifyOtp: sl(),
+      bypassOtpVerification: sl(),
       getCurrentSession: sl(),
       signOut: sl(),
     ),
@@ -48,6 +50,7 @@ Future<void> _initAuth() async {
   // Use cases
   sl.registerLazySingleton(() => SendOtp(sl()));
   sl.registerLazySingleton(() => VerifyOtp(sl()));
+  sl.registerLazySingleton(() => BypassOtpVerification(sl()));
   sl.registerLazySingleton(() => GetCurrentSession(sl()));
   sl.registerLazySingleton(() => SignOut(sl()));
   sl.registerLazySingleton(() => CompleteRegistration(sl()));

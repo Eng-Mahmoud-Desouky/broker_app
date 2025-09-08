@@ -203,4 +203,27 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Left(NetworkFailure(message: 'لا يوجد اتصال بالإنترنت'));
     }
   }
+
+  @override
+  Future<Either<Failure, AuthSession>> bypassOtpVerification(
+    String phoneNumber,
+  ) async {
+    try {
+      // Create a mock session for development/testing purposes
+      final mockSession = await remoteDataSource.bypassOtpVerification(
+        phoneNumber,
+      );
+
+      // Cache the session and user locally
+      await localDataSource.cacheSession(mockSession);
+      await localDataSource.cacheUser(mockSession.user as UserModel);
+      await localDataSource.setFirstTime(false);
+
+      return Right(mockSession);
+    } on AuthenticationException catch (e) {
+      return Left(AuthenticationFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
+  }
 }

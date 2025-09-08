@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/router/app_router.dart';
@@ -49,6 +50,16 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
               );
             } else if (state is AuthOtpSent) {
               AppRouter.goToOtpVerification(context, state.phoneNumber);
+            } else if (state is AuthAuthenticated) {
+              // Handle bypass authentication success
+              final user = state.session.user;
+              if (user.name == null ||
+                  user.governorate == null ||
+                  user.district == null) {
+                AppRouter.goToRegistration(context);
+              } else {
+                AppRouter.goToHome(context);
+              }
             }
           },
           builder: (context, state) {
@@ -63,6 +74,48 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Spacer(),
+
+                        // Development mode indicator
+                        if (AppConfig.isDevelopment &&
+                            AppConfig.bypassOtpInDevelopment)
+                          Container(
+                            margin: const EdgeInsets.only(
+                              bottom: AppConstants.defaultPadding,
+                            ),
+                            padding: const EdgeInsets.all(
+                              AppConstants.smallPadding,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(
+                                AppConstants.defaultBorderRadius,
+                              ),
+                              border: Border.all(color: AppColors.warning),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.developer_mode,
+                                  color: AppColors.warning,
+                                  size: 20,
+                                ),
+                                const SizedBox(
+                                  width: AppConstants.smallPadding,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'وضع التطوير: تم تعطيل التحقق من OTP',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.warning,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
 
                         // Header
                         AuthHeader(
@@ -140,9 +193,18 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
 
   void _sendOtp() {
     if (_formKey.currentState!.validate()) {
-      context.read<AuthBloc>().add(
-        AuthSendOtpRequested(phoneNumber: _completePhoneNumber),
-      );
+      // Check if we should bypass OTP in development mode
+      if (AppConfig.shouldBypassOtp(_completePhoneNumber)) {
+        // Bypass OTP verification for development
+        context.read<AuthBloc>().add(
+          AuthBypassOtpRequested(phoneNumber: _completePhoneNumber),
+        );
+      } else {
+        // Normal OTP flow
+        context.read<AuthBloc>().add(
+          AuthSendOtpRequested(phoneNumber: _completePhoneNumber),
+        );
+      }
     }
   }
 }

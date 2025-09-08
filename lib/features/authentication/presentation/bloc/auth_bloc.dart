@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/auth_session.dart';
 
+import '../../domain/usecases/bypass_otp_verification.dart';
 import '../../domain/usecases/get_current_session.dart';
 import '../../domain/usecases/send_otp.dart';
 import '../../domain/usecases/sign_out.dart';
@@ -15,18 +16,21 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SendOtp sendOtp;
   final VerifyOtp verifyOtp;
+  final BypassOtpVerification bypassOtpVerification;
   final GetCurrentSession getCurrentSession;
   final SignOut signOut;
 
   AuthBloc({
     required this.sendOtp,
     required this.verifyOtp,
+    required this.bypassOtpVerification,
     required this.getCurrentSession,
     required this.signOut,
   }) : super(AuthInitial()) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<AuthSendOtpRequested>(_onAuthSendOtpRequested);
     on<AuthVerifyOtpRequested>(_onAuthVerifyOtpRequested);
+    on<AuthBypassOtpRequested>(_onAuthBypassOtpRequested);
     on<AuthSignOutRequested>(_onAuthSignOutRequested);
   }
 
@@ -69,6 +73,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     final result = await verifyOtp(
       VerifyOtpParams(phoneNumber: event.phoneNumber, otp: event.otp),
+    );
+
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (session) => emit(AuthAuthenticated(session: session)),
+    );
+  }
+
+  Future<void> _onAuthBypassOtpRequested(
+    AuthBypassOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await bypassOtpVerification(
+      BypassOtpParams(phoneNumber: event.phoneNumber),
     );
 
     result.fold(
