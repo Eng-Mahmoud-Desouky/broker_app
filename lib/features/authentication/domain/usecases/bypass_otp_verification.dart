@@ -16,15 +16,23 @@ class BypassOtpVerification implements UseCase<AuthSession, BypassOtpParams> {
 
   @override
   Future<Either<Failure, AuthSession>> call(BypassOtpParams params) async {
-    // Validate phone number
-    if (!Validators.isValidIraqiPhoneNumber(params.phoneNumber)) {
-      return const Left(InvalidPhoneNumberFailure(
-        message: 'رقم الهاتف غير صحيح. يجب أن يكون رقم عراقي صحيح.',
-      ));
+    // Extract just the number part if it's in international format
+    String phoneToValidate = params.phoneNumber;
+    if (phoneToValidate.startsWith('+964')) {
+      phoneToValidate = phoneToValidate.substring(4); // Remove +964
     }
 
-    // Format phone number to international format
-    final formattedPhoneNumber = Validators.getInternationalFormat(params.phoneNumber);
+    // Validate phone number
+    if (!Validators.isValidIraqiPhoneNumber(phoneToValidate)) {
+      return const Left(
+        InvalidPhoneNumberFailure(
+          message: 'رقم الهاتف غير صحيح. يجب أن يكون رقم عراقي صحيح.',
+        ),
+      );
+    }
+
+    // Use the original phone number (already in international format from IntlPhoneField)
+    final formattedPhoneNumber = params.phoneNumber;
 
     // Call repository method to create a bypass session
     return await repository.bypassOtpVerification(formattedPhoneNumber);
