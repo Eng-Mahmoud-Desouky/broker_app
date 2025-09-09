@@ -146,8 +146,14 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     if (name.isEmpty) {
       return 'الاسم الكامل مطلوب';
     }
+
+    final trimmedName = name.trim();
+    if (trimmedName.length < 2) {
+      return 'الاسم يجب أن يحتوي على حرفين على الأقل';
+    }
+
     if (!Validators.isValidName(name)) {
-      return 'الاسم غير صحيح. يجب أن يحتوي على حروف فقط ولا يقل عن حرفين';
+      return 'الاسم يجب أن يحتوي على حروف عربية أو إنجليزية فقط';
     }
     return null;
   }
