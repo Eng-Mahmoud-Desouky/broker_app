@@ -75,105 +75,235 @@ class SuggestedProductsList extends StatelessWidget {
     return GestureDetector(
       onTap: () => onProductTap?.call(product),
       child: Container(
-        width: 180,
-        margin: const EdgeInsets.only(left: 12),
+        width: 190,
+        margin: const EdgeInsets.only(left: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.white, AppColors.primary.withValues(alpha: 0.02)],
+          ),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.08),
+              color: AppColors.primary.withValues(alpha: 0.15),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.8),
               blurRadius: 8,
-              offset: const Offset(0, 2),
+              offset: const Offset(-3, -3),
+              spreadRadius: 0,
             ),
           ],
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            width: 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              child: Container(
-                height: 140,
-                width: double.infinity,
-                color: AppColors.grey100,
-                child: Image.network(
-                  product.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppColors.grey200,
-                      child: const Icon(
-                        Icons.image_not_supported_rounded,
-                        color: AppColors.grey600,
-                        size: 48,
+            // Product Image with modern styling
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  child: Container(
+                    height: 150,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.grey100, AppColors.grey200],
                       ),
-                    );
-                  },
+                    ),
+                    child: Image.network(
+                      product.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [AppColors.grey100, AppColors.grey200],
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.shopping_bag_rounded,
+                              color: AppColors.grey400,
+                              size: 48,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              ),
+                // Discount badge
+                if (product.hasDiscount)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.secondary,
+                            AppColors.secondaryDark,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.secondary.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        '${product.discountPercentage!.toStringAsFixed(0)}%',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                // Favorite button
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        // TODO: Add to favorites
+                      },
+                      icon: Icon(
+                        Icons.favorite_border_rounded,
+                        color: AppColors.grey600,
+                        size: 18,
+                      ),
+                      padding: const EdgeInsets.all(6),
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            // Product Details
+            // Product Details with modern layout
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Product Name
+                    // Product Name with better typography
                     Text(
                       product.name,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
+                        height: 1.2,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    // Platform Name
-                    Text(
-                      product.platformName,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.grey600,
+                    const SizedBox(height: 8),
+                    // Platform with modern badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        product.platformName,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                     const Spacer(),
-                    // Rating
+                    // Rating with modern design
                     if (product.rating != null) ...[
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.star_rounded,
-                            color: Colors.amber[600],
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            product.rating!.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star_rounded,
+                              color: Colors.amber[600],
+                              size: 14,
                             ),
-                          ),
-                          if (product.reviewCount != null) ...[
                             const SizedBox(width: 4),
                             Text(
-                              '(${product.reviewCount})',
+                              product.rating!.toStringAsFixed(1),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.grey600,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.amber[800],
                               ),
                             ),
+                            if (product.reviewCount != null) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                '(${product.reviewCount})',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.amber[700],
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                       const SizedBox(height: 8),
                     ],
-                    // Price
+                    // Price with modern styling
                     Row(
                       children: [
                         Text(
@@ -192,33 +322,12 @@ class SuggestedProductsList extends StatelessWidget {
                               fontSize: 12,
                               color: AppColors.grey600,
                               decoration: TextDecoration.lineThrough,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ],
                     ),
-                    // Discount Badge
-                    if (product.hasDiscount) ...[
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.secondary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${product.discountPercentage!.toStringAsFixed(0)}% خصم',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),

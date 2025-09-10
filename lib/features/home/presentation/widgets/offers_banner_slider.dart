@@ -8,11 +8,7 @@ class OffersBannerSlider extends StatefulWidget {
   final List<Offer> offers;
   final Function(Offer)? onOfferTap;
 
-  const OffersBannerSlider({
-    super.key,
-    required this.offers,
-    this.onOfferTap,
-  });
+  const OffersBannerSlider({super.key, required this.offers, this.onOfferTap});
 
   @override
   State<OffersBannerSlider> createState() => _OffersBannerSliderState();
@@ -20,7 +16,8 @@ class OffersBannerSlider extends StatefulWidget {
 
 class _OffersBannerSliderState extends State<OffersBannerSlider> {
   int _currentIndex = 0;
-  final CarouselSliderController _carouselController = CarouselSliderController();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
 
   @override
   Widget build(BuildContext context) {
@@ -63,22 +60,29 @@ class _OffersBannerSliderState extends State<OffersBannerSlider> {
     return GestureDetector(
       onTap: () => widget.onOfferTap?.call(offer),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: AppColors.primary.withValues(alpha: 0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.8),
+              blurRadius: 8,
+              offset: const Offset(-4, -4),
+              spreadRadius: 0,
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           child: Stack(
             children: [
-              // Background Image
+              // Background Image with modern gradient
               Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -89,6 +93,7 @@ class _OffersBannerSliderState extends State<OffersBannerSlider> {
                     colors: [
                       AppColors.primary,
                       AppColors.primaryDark,
+                      AppColors.secondary.withValues(alpha: 0.8),
                     ],
                   ),
                 ),
@@ -97,17 +102,25 @@ class _OffersBannerSliderState extends State<OffersBannerSlider> {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: AppColors.primary,
-                      child: const Icon(
-                        Icons.image_not_supported_rounded,
-                        color: Colors.white,
-                        size: 48,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.primary, AppColors.primaryDark],
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.local_offer_rounded,
+                          color: Colors.white,
+                          size: 64,
+                        ),
                       ),
                     );
                   },
                 ),
               ),
-              // Gradient Overlay
+              // Modern gradient overlay
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -115,35 +128,53 @@ class _OffersBannerSliderState extends State<OffersBannerSlider> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.8),
                     ],
+                    stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
               ),
-              // Content
+              // Content with modern layout
               Positioned(
-                bottom: 16,
-                left: 16,
-                right: 16,
+                bottom: 20,
+                left: 20,
+                right: 20,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      offer.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        offer.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Text(
                       offer.description,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -151,30 +182,65 @@ class _OffersBannerSliderState extends State<OffersBannerSlider> {
                   ],
                 ),
               ),
-              // Discount Badge
+              // Modern discount badge
               if (offer.discountPercentage != null)
                 Positioned(
-                  top: 12,
-                  right: 12,
+                  top: 16,
+                  right: 16,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.secondary,
-                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.secondary, AppColors.secondaryDark],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.secondary.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Text(
                       offer.discountPercentage!,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
                 ),
+              // Modern corner decoration
+              Positioned(
+                top: 0,
+                left: 0,
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.2),
+                        Colors.transparent,
+                      ],
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      bottomRight: Radius.circular(24),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -185,24 +251,25 @@ class _OffersBannerSliderState extends State<OffersBannerSlider> {
   Widget _buildIndicators() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: widget.offers.asMap().entries.map((entry) {
-        final index = entry.key;
-        final isActive = index == _currentIndex;
-        
-        return GestureDetector(
-          onTap: () => _carouselController.animateToPage(index),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: isActive ? 24 : 8,
-            height: 8,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: isActive ? AppColors.primary : AppColors.grey400,
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-        );
-      }).toList(),
+      children:
+          widget.offers.asMap().entries.map((entry) {
+            final index = entry.key;
+            final isActive = index == _currentIndex;
+
+            return GestureDetector(
+              onTap: () => _carouselController.animateToPage(index),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: isActive ? 24 : 8,
+                height: 8,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: isActive ? AppColors.primary : AppColors.grey400,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            );
+          }).toList(),
     );
   }
 }

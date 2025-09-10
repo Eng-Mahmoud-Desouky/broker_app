@@ -20,12 +20,5 @@ class Platform extends Equatable {
   });
 
   @override
-  List<Object> get props => [
-        id,
-        name,
-        logoUrl,
-        type,
-        description,
-        isActive,
-      ];
+  List<Object> get props => [id, name, logoUrl, type, description, isActive];
 }

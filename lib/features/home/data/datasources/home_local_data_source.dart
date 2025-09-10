@@ -18,7 +18,8 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       id: '1',
       title: 'خصم 50% على جميع المنتجات',
       description: 'عرض محدود لفترة قصيرة',
-      imageUrl: 'https://via.placeholder.com/400x200/213c86/ffffff?text=Offer+1',
+      imageUrl:
+          'https://via.placeholder.com/400x200/213c86/ffffff?text=Offer+1',
       discountPercentage: '50%',
       validUntil: DateTime.now().add(const Duration(days: 7)),
       actionUrl: '/offers/1',
@@ -27,7 +28,8 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       id: '2',
       title: 'شحن مجاني للطلبات فوق 100 دولار',
       description: 'استمتع بالشحن المجاني',
-      imageUrl: 'https://via.placeholder.com/400x200/8e2600/ffffff?text=Offer+2',
+      imageUrl:
+          'https://via.placeholder.com/400x200/8e2600/ffffff?text=Offer+2',
       discountPercentage: null,
       validUntil: DateTime.now().add(const Duration(days: 14)),
       actionUrl: '/offers/2',
@@ -36,7 +38,8 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       id: '3',
       title: 'منتجات جديدة من أمازون',
       description: 'اكتشف أحدث المنتجات',
-      imageUrl: 'https://via.placeholder.com/400x200/213c86/ffffff?text=Offer+3',
+      imageUrl:
+          'https://via.placeholder.com/400x200/213c86/ffffff?text=Offer+3',
       discountPercentage: '30%',
       validUntil: DateTime.now().add(const Duration(days: 10)),
       actionUrl: '/offers/3',
@@ -49,21 +52,21 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
     PlatformModel(
       id: 'shein',
       name: 'SHEIN',
-      logoUrl: 'https://via.placeholder.com/100x100/213c86/ffffff?text=SHEIN',
+      logoUrl: 'assets/images/Shein-Logo.png',
       type: PlatformType.retail,
       description: 'أزياء عصرية بأسعار مناسبة',
     ),
     PlatformModel(
       id: 'taobao',
       name: 'Taobao',
-      logoUrl: 'https://via.placeholder.com/100x100/213c86/ffffff?text=Taobao',
+      logoUrl: 'assets/images/Taobao-Logo.png',
       type: PlatformType.retail,
       description: 'منصة التسوق الصينية الرائدة',
     ),
     PlatformModel(
       id: 'amazon',
       name: 'Amazon',
-      logoUrl: 'https://via.placeholder.com/100x100/213c86/ffffff?text=Amazon',
+      logoUrl: 'assets/images/Amazon-Logo.png',
       type: PlatformType.retail,
       description: 'أكبر متجر إلكتروني في العالم',
     ),
@@ -71,14 +74,14 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
     PlatformModel(
       id: 'alibaba',
       name: 'Alibaba',
-      logoUrl: 'https://via.placeholder.com/100x100/8e2600/ffffff?text=Alibaba',
+      logoUrl: 'assets/images/Alibaba-Logo.jpg',
       type: PlatformType.wholesale,
       description: 'منصة التجارة الإلكترونية للجملة',
     ),
     PlatformModel(
       id: 'aliexpress',
       name: 'AliExpress',
-      logoUrl: 'https://via.placeholder.com/100x100/8e2600/ffffff?text=AliExpress',
+      logoUrl: 'assets/images/Aliexpress-Logo.jpg',
       type: PlatformType.wholesale,
       description: 'تسوق بالجملة من الصين',
     ),
@@ -100,8 +103,11 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
   @override
   Future<List<PlatformModel>> getPlatformsByType(String type) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    final platformType = type == 'retail' ? PlatformType.retail : PlatformType.wholesale;
-    return _dummyPlatforms.where((platform) => platform.type == platformType).toList();
+    final platformType =
+        type == 'retail' ? PlatformType.retail : PlatformType.wholesale;
+    return _dummyPlatforms
+        .where((platform) => platform.type == platformType)
+        .toList();
   }
 
   @override
@@ -116,20 +122,25 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
     // Simple search simulation
     final products = _getDummyProducts();
     if (query.isEmpty) return products;
-    
-    return products.where((product) => 
-      product.name.toLowerCase().contains(query.toLowerCase()) ||
-      product.description.toLowerCase().contains(query.toLowerCase())
-    ).toList();
+
+    return products
+        .where(
+          (product) =>
+              product.name.toLowerCase().contains(query.toLowerCase()) ||
+              product.description.toLowerCase().contains(query.toLowerCase()),
+        )
+        .toList();
   }
 
+  // Dummy data for products
   List<ProductModel> _getDummyProducts() {
     return [
       ProductModel(
         id: '1',
         name: 'هاتف ذكي أندرويد',
         description: 'هاتف ذكي بمواصفات عالية',
-        imageUrl: 'https://via.placeholder.com/200x200/213c86/ffffff?text=Phone',
+        imageUrl:
+            'https://via.placeholder.com/200x200/213c86/ffffff?text=Phone',
         price: 299.99,
         currency: 'USD',
         originalPrice: 399.99,
@@ -142,7 +153,8 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         id: '2',
         name: 'فستان صيفي أنيق',
         description: 'فستان مناسب للصيف',
-        imageUrl: 'https://via.placeholder.com/200x200/8e2600/ffffff?text=Dress',
+        imageUrl:
+            'https://via.placeholder.com/200x200/8e2600/ffffff?text=Dress',
         price: 29.99,
         currency: 'USD',
         originalPrice: 49.99,
@@ -155,7 +167,8 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         id: '3',
         name: 'ساعة ذكية رياضية',
         description: 'ساعة ذكية لتتبع اللياقة',
-        imageUrl: 'https://via.placeholder.com/200x200/213c86/ffffff?text=Watch',
+        imageUrl:
+            'https://via.placeholder.com/200x200/213c86/ffffff?text=Watch',
         price: 149.99,
         currency: 'USD',
         rating: 4.7,
@@ -180,7 +193,8 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         id: '5',
         name: 'سماعات لاسلكية',
         description: 'سماعات بلوتوث عالية الجودة',
-        imageUrl: 'https://via.placeholder.com/200x200/213c86/ffffff?text=Headphones',
+        imageUrl:
+            'https://via.placeholder.com/200x200/213c86/ffffff?text=Headphones',
         price: 89.99,
         currency: 'USD',
         rating: 4.6,
