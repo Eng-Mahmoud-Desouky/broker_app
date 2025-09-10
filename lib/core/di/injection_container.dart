@@ -17,6 +17,17 @@ import '../../features/authentication/domain/usecases/sign_out.dart';
 import '../../features/authentication/domain/usecases/verify_otp.dart';
 import '../../features/authentication/presentation/bloc/auth_bloc.dart';
 import '../../features/authentication/presentation/bloc/registration_bloc.dart';
+
+// Home feature imports
+import '../../features/home/data/datasources/home_local_data_source.dart';
+import '../../features/home/data/repositories/home_repository_impl.dart';
+import '../../features/home/domain/repositories/home_repository.dart';
+import '../../features/home/domain/usecases/get_featured_offers.dart';
+import '../../features/home/domain/usecases/get_platforms.dart';
+import '../../features/home/domain/usecases/get_suggested_products.dart';
+import '../../features/home/domain/usecases/search_products.dart';
+import '../../features/home/presentation/bloc/home_bloc.dart';
+
 import '../network/network_info.dart';
 import '../utils/constants.dart';
 
@@ -25,6 +36,9 @@ final sl = GetIt.instance;
 Future<void> init() async {
   //! Features - Authentication
   await _initAuth();
+
+  //! Features - Home
+  await _initHome();
 
   //! Core
   await _initCore();
@@ -71,6 +85,34 @@ Future<void> _initAuth() async {
 
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(secureStorage: sl(), sharedPreferences: sl()),
+  );
+}
+
+Future<void> _initHome() async {
+  // Bloc
+  sl.registerFactory(
+    () => HomeBloc(
+      getFeaturedOffers: sl(),
+      getPlatforms: sl(),
+      getSuggestedProducts: sl(),
+      searchProducts: sl(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetFeaturedOffers(sl()));
+  sl.registerLazySingleton(() => GetPlatforms(sl()));
+  sl.registerLazySingleton(() => GetSuggestedProducts(sl()));
+  sl.registerLazySingleton(() => SearchProducts(sl()));
+
+  // Repository
+  sl.registerLazySingleton<HomeRepository>(
+    () => HomeRepositoryImpl(localDataSource: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<HomeLocalDataSource>(
+    () => HomeLocalDataSourceImpl(),
   );
 }
 

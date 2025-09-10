@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../../features/authentication/presentation/pages/phone_input_page.dart';
 import '../../features/authentication/presentation/pages/otp_verification_page.dart';
 import '../../features/authentication/presentation/pages/registration_page.dart';
+import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/home/presentation/pages/offers_page.dart';
+import '../../features/home/presentation/pages/platform_products_page.dart';
 import '../../presentation/pages/main_wrapper.dart';
-import '../../presentation/pages/home_page.dart';
 import '../../presentation/pages/favorites_page.dart';
 import '../../presentation/pages/profile_page.dart';
 import '../../presentation/pages/settings_page.dart';
@@ -21,6 +23,8 @@ class AppRouter {
   static const String favorites = '/main/favorites';
   static const String profile = '/main/profile';
   static const String settings = '/main/settings';
+  static const String offers = '/offers';
+  static const String platformProducts = '/platform';
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
@@ -50,6 +54,21 @@ class AppRouter {
         path: registration,
         name: 'registration',
         builder: (context, state) => const RegistrationPage(),
+      ),
+
+      // Standalone routes (outside main wrapper)
+      GoRoute(
+        path: offers,
+        name: 'offers',
+        builder: (context, state) => const OffersPage(),
+      ),
+      GoRoute(
+        path: '$platformProducts/:platformId',
+        name: 'platform-products',
+        builder: (context, state) {
+          final platformId = state.pathParameters['platformId'] ?? '';
+          return PlatformProductsPage(platformId: platformId);
+        },
       ),
 
       // Main app routes with shell
