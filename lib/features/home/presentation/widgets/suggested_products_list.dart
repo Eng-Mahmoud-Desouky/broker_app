@@ -25,7 +25,7 @@ class SuggestedProductsList extends StatelessWidget {
         _buildSectionHeader(),
         const SizedBox(height: 16),
         SizedBox(
-          height: 280,
+          height: 300,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
