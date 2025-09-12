@@ -5,6 +5,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/utils/constants.dart';
 import 'features/authentication/presentation/bloc/auth_bloc.dart';
+import 'features/temp_auth/temp_auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -49,13 +50,31 @@ class _SplashScreenState extends State<SplashScreen>
     _animationController.forward();
   }
 
-  void _checkAuthStatus() {
+  void _checkAuthStatus() async {
     // Delay to show splash screen animation
-    Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        context.read<AuthBloc>().add(AuthCheckRequested());
-      }
-    });
+    await Future.delayed(const Duration(milliseconds: 2500));
+
+    if (!mounted) return;
+
+    // First check for temporary authentication
+    final isSignedIn = TempAuthService.isSignedIn();
+    if (isSignedIn) {
+      // User is signed in with temporary auth, go to home
+      AppRouter.goToHome(context);
+      return;
+    }
+
+    // Check for session in local storage
+    final hasLocalSession = await TempAuthService.initializeSession();
+    if (hasLocalSession && mounted) {
+      AppRouter.goToHome(context);
+      return;
+    }
+
+    // Fallback to original auth system
+    if (mounted) {
+      context.read<AuthBloc>().add(AuthCheckRequested());
+    }
   }
 
   @override

@@ -203,6 +203,55 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                                   textAlign: TextAlign.center,
                                 ),
                               ),
+
+                              // Temporary authentication option
+                              const Divider(),
+                              const SizedBox(
+                                height: AppConstants.defaultPadding,
+                              ),
+
+                              Text(
+                                'أو يمكنك استخدام التسجيل المؤقت',
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: AppColors.grey600),
+                                textAlign: TextAlign.center,
+                              ),
+
+                              const SizedBox(height: AppConstants.smallPadding),
+
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        AppRouter.goToTempLogin(context);
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      child: const Text('تسجيل الدخول'),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: AppConstants.smallPadding,
+                                  ),
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        AppRouter.goToTempSignup(context);
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(
+                                          color: AppColors.secondary,
+                                        ),
+                                      ),
+                                      child: const Text('إنشاء حساب'),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),

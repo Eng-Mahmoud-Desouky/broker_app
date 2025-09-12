@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/authentication/presentation/pages/phone_input_page.dart';
 import '../../features/authentication/presentation/pages/otp_verification_page.dart';
 import '../../features/authentication/presentation/pages/registration_page.dart';
+import '../../features/temp_auth/presentation/pages/temp_login_page.dart';
+import '../../features/temp_auth/presentation/pages/temp_signup_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/offers_page.dart';
 import '../../features/home/presentation/pages/platform_products_page.dart';
@@ -18,6 +20,8 @@ class AppRouter {
   static const String phoneInput = '/phone-input';
   static const String otpVerification = '/otp-verification';
   static const String registration = '/registration';
+  static const String tempLogin = '/temp-login';
+  static const String tempSignup = '/temp-signup';
   static const String main = '/main';
   static const String home = '/main/home';
   static const String favorites = '/main/favorites';
@@ -54,6 +58,18 @@ class AppRouter {
         path: registration,
         name: 'registration',
         builder: (context, state) => const RegistrationPage(),
+      ),
+
+      // Temporary authentication routes
+      GoRoute(
+        path: tempLogin,
+        name: 'temp-login',
+        builder: (context, state) => const TempLoginPage(),
+      ),
+      GoRoute(
+        path: tempSignup,
+        name: 'temp-signup',
+        builder: (context, state) => const TempSignupPage(),
       ),
 
       // Standalone routes (outside main wrapper)
@@ -154,6 +170,14 @@ class AppRouter {
 
   static void goToSettings(BuildContext context) {
     context.go(settings);
+  }
+
+  static void goToTempLogin(BuildContext context) {
+    context.go(tempLogin);
+  }
+
+  static void goToTempSignup(BuildContext context) {
+    context.go(tempSignup);
   }
 
   // Check if current route is in main app

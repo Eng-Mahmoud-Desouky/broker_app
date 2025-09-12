@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../core/localization/app_localizations.dart';
+import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/constants.dart';
+import '../../features/temp_auth/temp_auth_service.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -37,7 +39,9 @@ class ProfilePage extends StatelessWidget {
               padding: const EdgeInsets.all(AppConstants.largePadding),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+                borderRadius: BorderRadius.circular(
+                  AppConstants.defaultBorderRadius,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.shadow,
@@ -55,10 +59,7 @@ class ProfilePage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(50),
-                      border: Border.all(
-                        color: AppColors.primary,
-                        width: 3,
-                      ),
+                      border: Border.all(color: AppColors.primary, width: 3),
                     ),
                     child: const Icon(
                       Icons.person,
@@ -66,9 +67,9 @@ class ProfilePage extends StatelessWidget {
                       color: AppColors.primary,
                     ),
                   ),
-                  
+
                   const SizedBox(height: AppConstants.defaultPadding),
-                  
+
                   // User name
                   Text(
                     'مستخدم جديد',
@@ -76,22 +77,22 @@ class ProfilePage extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  
+
                   const SizedBox(height: AppConstants.smallPadding),
-                  
+
                   // Phone number
                   Text(
                     '+964 7XX XXX XXXX',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.grey600,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(color: AppColors.grey600),
                   ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: AppConstants.largePadding),
-            
+
             // Profile options
             _buildProfileOption(
               context,
@@ -104,7 +105,7 @@ class ProfilePage extends StatelessWidget {
                 );
               },
             ),
-            
+
             _buildProfileOption(
               context,
               icon: Icons.location_on_outlined,
@@ -116,7 +117,7 @@ class ProfilePage extends StatelessWidget {
                 );
               },
             ),
-            
+
             _buildProfileOption(
               context,
               icon: Icons.payment_outlined,
@@ -128,7 +129,7 @@ class ProfilePage extends StatelessWidget {
                 );
               },
             ),
-            
+
             _buildProfileOption(
               context,
               icon: Icons.notifications_outlined,
@@ -140,7 +141,7 @@ class ProfilePage extends StatelessWidget {
                 );
               },
             ),
-            
+
             _buildProfileOption(
               context,
               icon: Icons.help_outline,
@@ -152,9 +153,9 @@ class ProfilePage extends StatelessWidget {
                 );
               },
             ),
-            
+
             const SizedBox(height: AppConstants.largePadding),
-            
+
             // Logout button
             SizedBox(
               width: double.infinity,
@@ -194,22 +195,19 @@ class ProfilePage extends StatelessWidget {
             color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius),
           ),
-          child: Icon(
-            icon,
-            color: AppColors.primary,
-          ),
+          child: Icon(icon, color: AppColors.primary),
         ),
         title: Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.grey600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.grey600),
         ),
         trailing: const Icon(
           Icons.arrow_forward_ios,
@@ -228,29 +226,54 @@ class ProfilePage extends StatelessWidget {
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('تسجيل الخروج'),
-        content: const Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('إلغاء'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('تسجيل الخروج'),
+            content: const Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('إلغاء'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+
+                  try {
+                    // Sign out from temporary auth
+                    await TempAuthService.signOut();
+
+                    if (context.mounted) {
+                      // Navigate to phone input page
+                      AppRouter.goToPhoneInput(context);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('تم تسجيل الخروج بنجاح'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'حدث خطأ أثناء تسجيل الخروج: ${e.toString()}',
+                          ),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: const Text(
+                  'تسجيل الخروج',
+                  style: TextStyle(color: AppColors.error),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // TODO: Implement logout
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('تسجيل الخروج - قريباً')),
-              );
-            },
-            child: const Text(
-              'تسجيل الخروج',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
