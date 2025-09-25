@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
             } else if (state is HomeLoaded) {
               return _buildLoadedState(state);
             }
-            
+
             return _buildInitialState();
           },
         ),
@@ -69,16 +69,11 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: AppColors.primary,
-          ),
+          CircularProgressIndicator(color: AppColors.primary),
           SizedBox(height: 16),
           Text(
             'جاري تحميل البيانات...',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.primary,
-            ),
+            style: TextStyle(fontSize: 16, color: AppColors.primary),
           ),
         ],
       ),
@@ -90,18 +85,11 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline_rounded,
-            size: 64,
-            color: AppColors.error,
-          ),
+          Icon(Icons.error_outline_rounded, size: 64, color: AppColors.error),
           const SizedBox(height: 16),
           Text(
             message,
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.error,
-            ),
+            style: TextStyle(fontSize: 16, color: AppColors.error),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -131,7 +119,9 @@ class _HomePageState extends State<HomePage> {
             context.read<HomeBloc>().add(HomeSearchProducts(query: query));
           },
           onImageSelected: (imagePath) {
-            context.read<HomeBloc>().add(HomeSearchProductsByImage(imagePath: imagePath));
+            context.read<HomeBloc>().add(
+              HomeSearchProductsByImage(imagePath: imagePath),
+            );
           },
         ),
         const Expanded(
@@ -139,16 +129,11 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
+                CircularProgressIndicator(color: AppColors.primary),
                 SizedBox(height: 16),
                 Text(
                   'جاري البحث...',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.primary,
-                  ),
+                  style: TextStyle(fontSize: 16, color: AppColors.primary),
                 ),
               ],
             ),
@@ -169,7 +154,9 @@ class _HomePageState extends State<HomePage> {
             context.read<HomeBloc>().add(HomeSearchProducts(query: query));
           },
           onImageSelected: (imagePath) {
-            context.read<HomeBloc>().add(HomeSearchProductsByImage(imagePath: imagePath));
+            context.read<HomeBloc>().add(
+              HomeSearchProductsByImage(imagePath: imagePath),
+            );
           },
         ),
         Expanded(
@@ -191,7 +178,9 @@ class _HomePageState extends State<HomePage> {
                     const Spacer(),
                     TextButton(
                       onPressed: () {
-                        context.read<HomeBloc>().add(const HomeLoadInitialData());
+                        context.read<HomeBloc>().add(
+                          const HomeLoadInitialData(),
+                        );
                       },
                       child: const Text('العودة للرئيسية'),
                     ),
@@ -199,120 +188,126 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Expanded(
-                child: state.results.isEmpty
-                    ? const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off_rounded,
-                              size: 64,
-                              color: AppColors.grey400,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'لم يتم العثور على نتائج',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppColors.grey600,
+                child:
+                    state.results.isEmpty
+                        ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off_rounded,
+                                size: 64,
+                                color: AppColors.grey400,
                               ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.7,
-                        ),
-                        itemCount: state.results.length,
-                        itemBuilder: (context, index) {
-                          final product = state.results[index];
-                          return GestureDetector(
-                            onTap: () {
-                              // TODO: Navigate to product details
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('تم اختيار: ${product.name}'),
-                                  backgroundColor: AppColors.primary,
+                              SizedBox(height: 16),
+                              Text(
+                                'لم يتم العثور على نتائج',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.grey600,
                                 ),
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.primary.withValues(alpha: 0.08),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    flex: 3,
-                                    child: ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(12),
+                            ],
+                          ),
+                        )
+                        : GridView.builder(
+                          padding: const EdgeInsets.all(16),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: 0.7,
+                              ),
+                          itemCount: state.results.length,
+                          itemBuilder: (context, index) {
+                            final product = state.results[index];
+                            return GestureDetector(
+                              onTap: () {
+                                // Navigate to product details
+                                context.push('/product-details/${product.id}');
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.08,
                                       ),
-                                      child: Image.network(
-                                        product.imageUrl,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Container(
-                                            color: AppColors.grey200,
-                                            child: const Icon(
-                                              Icons.image_not_supported_rounded,
-                                              color: AppColors.grey600,
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: ClipRRect(
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                              top: Radius.circular(12),
                                             ),
-                                          );
-                                        },
+                                        child: Image.network(
+                                          product.imageUrl,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (
+                                            context,
+                                            error,
+                                            stackTrace,
+                                          ) {
+                                            return Container(
+                                              color: AppColors.grey200,
+                                              child: const Icon(
+                                                Icons
+                                                    .image_not_supported_rounded,
+                                                color: AppColors.grey600,
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Expanded(
-                                    flex: 2,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            product.name,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
+                                    Expanded(
+                                      flex: 2,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product.name,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const Spacer(),
-                                          Text(
-                                            '\$${product.price.toStringAsFixed(2)}',
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.secondary,
+                                            const Spacer(),
+                                            Text(
+                                              '\$${product.price.toStringAsFixed(2)}',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.secondary,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                            );
+                          },
+                        ),
               ),
             ],
           ),
@@ -337,10 +332,12 @@ class _HomePageState extends State<HomePage> {
               context.read<HomeBloc>().add(HomeSearchProducts(query: query));
             },
             onImageSelected: (imagePath) {
-              context.read<HomeBloc>().add(HomeSearchProductsByImage(imagePath: imagePath));
+              context.read<HomeBloc>().add(
+                HomeSearchProductsByImage(imagePath: imagePath),
+              );
             },
           ),
-          
+
           // Offers Banner
           if (state.offers.isNotEmpty) ...[
             OffersBannerSlider(
@@ -364,6 +361,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
+                height: 50,
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () {
@@ -388,7 +386,9 @@ class _HomePageState extends State<HomePage> {
             PlatformsGrid(
               platforms: state.platforms,
               onPlatformTap: (platform) {
-                context.read<HomeBloc>().add(HomePlatformSelected(platform: platform));
+                context.read<HomeBloc>().add(
+                  HomePlatformSelected(platform: platform),
+                );
                 // TODO: Navigate to platform products page
                 context.push('/platform/${platform.id}');
               },
@@ -401,14 +401,31 @@ class _HomePageState extends State<HomePage> {
             SuggestedProductsList(
               products: state.suggestedProducts,
               onProductTap: (product) {
-                // TODO: Navigate to product details
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('تم اختيار: ${product.name}'),
-                    backgroundColor: AppColors.primary,
-                  ),
-                );
+                // Navigate to product details
+                context.push('/product-details/${product.id}');
               },
+            ),
+            const SizedBox(height: 16),
+
+            // View All Products Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    context.push('/products');
+                  },
+                  icon: const Icon(Icons.inventory_2_rounded),
+                  label: const Text('عرض جميع المنتجات'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 24),
           ],
@@ -421,10 +438,7 @@ class _HomePageState extends State<HomePage> {
     return const Center(
       child: Text(
         'مرحباً بك في Broker App',
-        style: TextStyle(
-          fontSize: 18,
-          color: AppColors.primary,
-        ),
+        style: TextStyle(fontSize: 18, color: AppColors.primary),
       ),
     );
   }

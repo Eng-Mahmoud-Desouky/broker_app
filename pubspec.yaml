@@ -41,7 +41,7 @@ dependencies:
   supabase_flutter: ^2.10.0
 
   # State Management
-  flutter_bloc: ^8.1.6
+  flutter_bloc: ^9.1.1
   equatable: ^2.0.5
 
   # Routing
@@ -82,7 +82,7 @@ dev_dependencies:
 
   # Testing dependencies
   mockito: ^5.4.4
-  bloc_test: ^9.1.7
+  bloc_test: ^10.0.0
   build_runner: ^2.4.12
 
   # The "flutter_lints" package below contains a set of recommended lints to

@@ -20,13 +20,22 @@ import '../../features/authentication/presentation/bloc/registration_bloc.dart';
 
 // Home feature imports
 import '../../features/home/data/datasources/home_local_data_source.dart';
+import '../../features/home/data/datasources/home_remote_data_source.dart';
+import '../../features/home/data/datasources/home_remote_data_source_impl.dart';
 import '../../features/home/data/repositories/home_repository_impl.dart';
 import '../../features/home/domain/repositories/home_repository.dart';
 import '../../features/home/domain/usecases/get_featured_offers.dart';
 import '../../features/home/domain/usecases/get_platforms.dart';
 import '../../features/home/domain/usecases/get_suggested_products.dart';
 import '../../features/home/domain/usecases/search_products.dart';
+import '../../features/home/domain/usecases/get_products.dart';
+import '../../features/home/domain/usecases/get_product_details.dart';
+import '../../features/home/domain/usecases/get_categories.dart';
+import '../../features/home/domain/usecases/get_products_by_category.dart';
+import '../../features/home/domain/usecases/get_similar_products.dart';
 import '../../features/home/presentation/bloc/home_bloc.dart';
+import '../../features/home/presentation/bloc/product_list_bloc.dart';
+import '../../features/home/presentation/bloc/product_details_bloc.dart';
 
 import '../network/network_info.dart';
 import '../utils/constants.dart';
@@ -99,18 +108,43 @@ Future<void> _initHome() async {
     ),
   );
 
+  sl.registerFactory(
+    () => ProductListBloc(
+      getProducts: sl(),
+      getCategories: sl(),
+      getProductsByCategory: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => ProductDetailsBloc(getProductDetails: sl(), getSimilarProducts: sl()),
+  );
+
   // Use cases
   sl.registerLazySingleton(() => GetFeaturedOffers(sl()));
   sl.registerLazySingleton(() => GetPlatforms(sl()));
   sl.registerLazySingleton(() => GetSuggestedProducts(sl()));
   sl.registerLazySingleton(() => SearchProducts(sl()));
+  sl.registerLazySingleton(() => GetProducts(sl()));
+  sl.registerLazySingleton(() => GetProductDetails(sl()));
+  sl.registerLazySingleton(() => GetCategories(sl()));
+  sl.registerLazySingleton(() => GetProductsByCategory(sl()));
+  sl.registerLazySingleton(() => GetSimilarProducts(sl()));
 
   // Repository
   sl.registerLazySingleton<HomeRepository>(
-    () => HomeRepositoryImpl(localDataSource: sl()),
+    () => HomeRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
+      networkInfo: sl(),
+    ),
   );
 
   // Data sources
+  sl.registerLazySingleton<HomeRemoteDataSource>(
+    () => HomeRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+
   sl.registerLazySingleton<HomeLocalDataSource>(
     () => HomeLocalDataSourceImpl(),
   );

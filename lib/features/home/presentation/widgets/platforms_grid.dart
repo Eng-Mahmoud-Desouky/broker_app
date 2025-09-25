@@ -73,10 +73,10 @@ class PlatformsGrid extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.2,
+          crossAxisCount: 4, // Four columns for better circular layout
+          crossAxisSpacing: 16, // Spacing between columns
+          mainAxisSpacing: 16, // Spacing between rows
+          childAspectRatio: 1.0, // Square aspect ratio for circular design
         ),
         itemCount: platforms.length,
         itemBuilder: (context, index) {
@@ -90,12 +90,68 @@ class PlatformsGrid extends StatelessWidget {
   Widget _buildPlatformCard(Platform platform) {
     return GestureDetector(
       onTap: () => onPlatformTap?.call(platform),
-      child: Image.asset(
-        platform.logoUrl,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.store_rounded, color: Colors.grey, size: 48);
-        },
+      child: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              flex: 3,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    width: 1,
+                  ),
+                ),
+                child: ClipOval(
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Image.asset(
+                      platform.logoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.store_rounded,
+                          color: AppColors.primary.withValues(alpha: 0.6),
+                          size: 28,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Flexible(
+              flex: 1,
+              child: Text(
+                platform.name,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primary.withValues(alpha: 0.8),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

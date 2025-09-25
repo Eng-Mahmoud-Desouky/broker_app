@@ -1,6 +1,9 @@
 import '../models/offer_model.dart';
 import '../models/platform_model.dart';
 import '../models/product_model.dart';
+import '../models/category_model.dart';
+import '../models/product_image_model.dart';
+import '../models/product_color_model.dart';
 import '../../domain/entities/platform.dart';
 
 abstract class HomeLocalDataSource {
@@ -8,7 +11,12 @@ abstract class HomeLocalDataSource {
   Future<List<PlatformModel>> getPlatforms();
   Future<List<PlatformModel>> getPlatformsByType(String type);
   Future<List<ProductModel>> getSuggestedProducts();
+  Future<List<ProductModel>> getProducts();
+  Future<ProductModel> getProductById(String id);
   Future<List<ProductModel>> searchProducts(String query);
+  Future<List<CategoryModel>> getCategories();
+  Future<List<ProductModel>> getProductsByCategory(String categoryId);
+  Future<List<ProductModel>> getSimilarProducts(String productId);
 }
 
 class HomeLocalDataSourceImpl implements HomeLocalDataSource {
@@ -18,8 +26,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       id: '1',
       title: 'خصم 50% على جميع المنتجات',
       description: 'عرض محدود لفترة قصيرة',
-      imageUrl:
-          'https://via.placeholder.com/400x200/213c86/ffffff?text=Offer+1',
+      imageUrl: 'https://picsum.photos/400/200?random=10',
       discountPercentage: '50%',
       validUntil: DateTime.now().add(const Duration(days: 7)),
       actionUrl: '/offers/1',
@@ -28,8 +35,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       id: '2',
       title: 'شحن مجاني للطلبات فوق 100 دولار',
       description: 'استمتع بالشحن المجاني',
-      imageUrl:
-          'https://via.placeholder.com/400x200/8e2600/ffffff?text=Offer+2',
+      imageUrl: 'https://picsum.photos/400/200?random=11',
       discountPercentage: null,
       validUntil: DateTime.now().add(const Duration(days: 14)),
       actionUrl: '/offers/2',
@@ -38,8 +44,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       id: '3',
       title: 'منتجات جديدة من أمازون',
       description: 'اكتشف أحدث المنتجات',
-      imageUrl:
-          'https://via.placeholder.com/400x200/213c86/ffffff?text=Offer+3',
+      imageUrl: 'https://picsum.photos/400/200?random=12',
       discountPercentage: '30%',
       validUntil: DateTime.now().add(const Duration(days: 10)),
       actionUrl: '/offers/3',
@@ -87,12 +92,12 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
     ),
   ];
 
-  @override
-  Future<List<OfferModel>> getFeaturedOffers() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
-    return _dummyOffers;
-  }
+  // @override
+  // Future<List<OfferModel>> getFeaturedOffers() async {
+  //   // Simulate network delay
+  //   await Future.delayed(const Duration(milliseconds: 500));
+  //   return _dummyOffers;
+  // }
 
   @override
   Future<List<PlatformModel>> getPlatforms() async {
@@ -136,11 +141,10 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
   List<ProductModel> _getDummyProducts() {
     return [
       ProductModel(
-        id: '1',
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         name: 'هاتف ذكي أندرويد',
         description: 'هاتف ذكي بمواصفات عالية',
-        imageUrl:
-            'https://via.placeholder.com/200x200/213c86/ffffff?text=Phone',
+        mainImageUrl: 'https://picsum.photos/200/200?random=1',
         price: 299.99,
         currency: 'USD',
         originalPrice: 399.99,
@@ -148,13 +152,62 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         reviewCount: 1250,
         platformId: 'amazon',
         platformName: 'Amazon',
+        categoryId: 'electronics',
+        categoryName: 'إلكترونيات',
+        specifications: {
+          'الشاشة': '6.1 بوصة',
+          'المعالج': 'Snapdragon 888',
+          'الذاكرة': '8 جيجابايت',
+          'التخزين': '128 جيجابايت',
+          'الكاميرا': '48 ميجابكسل',
+          'البطارية': '4000 مللي أمبير',
+        },
+        images: [
+          ProductImageModel(
+            id: 'img1',
+            productId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            imageUrl: 'https://picsum.photos/400/400?random=1',
+            position: 0,
+          ),
+          ProductImageModel(
+            id: 'img2',
+            productId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            imageUrl: 'https://picsum.photos/400/400?random=11',
+            position: 1,
+          ),
+          ProductImageModel(
+            id: 'img3',
+            productId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            imageUrl: 'https://picsum.photos/400/400?random=12',
+            position: 2,
+          ),
+        ],
+        colors: [
+          ProductColorModel(
+            id: 'color1',
+            productId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            colorHex: '#000000',
+            label: 'أسود',
+          ),
+          ProductColorModel(
+            id: 'color2',
+            productId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            colorHex: '#FFFFFF',
+            label: 'أبيض',
+          ),
+          ProductColorModel(
+            id: 'color3',
+            productId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            colorHex: '#FF0000',
+            label: 'أحمر',
+          ),
+        ],
       ),
       ProductModel(
-        id: '2',
+        id: 'b2c3d4e5-f6g7-8901-bcde-f23456789012',
         name: 'فستان صيفي أنيق',
         description: 'فستان مناسب للصيف',
-        imageUrl:
-            'https://via.placeholder.com/200x200/8e2600/ffffff?text=Dress',
+        mainImageUrl: 'https://picsum.photos/200/200?random=2',
         price: 29.99,
         currency: 'USD',
         originalPrice: 49.99,
@@ -162,25 +215,28 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         reviewCount: 890,
         platformId: 'shein',
         platformName: 'SHEIN',
+        categoryId: 'clothing',
+        categoryName: 'ملابس',
       ),
       ProductModel(
-        id: '3',
+        id: 'c3d4e5f6-g7h8-9012-cdef-345678901234',
         name: 'ساعة ذكية رياضية',
         description: 'ساعة ذكية لتتبع اللياقة',
-        imageUrl:
-            'https://via.placeholder.com/200x200/213c86/ffffff?text=Watch',
+        mainImageUrl: 'https://picsum.photos/200/200?random=3',
         price: 149.99,
         currency: 'USD',
         rating: 4.7,
         reviewCount: 2100,
         platformId: 'aliexpress',
         platformName: 'AliExpress',
+        categoryId: 'electronics',
+        categoryName: 'إلكترونيات',
       ),
       ProductModel(
-        id: '4',
+        id: 'd4e5f6g7-h8i9-0123-defg-456789012345',
         name: 'حقيبة يد نسائية',
         description: 'حقيبة أنيقة للاستخدام اليومي',
-        imageUrl: 'https://via.placeholder.com/200x200/8e2600/ffffff?text=Bag',
+        mainImageUrl: 'https://picsum.photos/200/200?random=4',
         price: 79.99,
         currency: 'USD',
         originalPrice: 120.00,
@@ -188,20 +244,104 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
         reviewCount: 567,
         platformId: 'taobao',
         platformName: 'Taobao',
+        categoryId: 'accessories',
+        categoryName: 'إكسسوارات',
       ),
       ProductModel(
-        id: '5',
+        id: 'e5f6g7h8-i9j0-1234-efgh-567890123456',
         name: 'سماعات لاسلكية',
         description: 'سماعات بلوتوث عالية الجودة',
-        imageUrl:
-            'https://via.placeholder.com/200x200/213c86/ffffff?text=Headphones',
+        mainImageUrl: 'https://picsum.photos/200/200?random=5',
         price: 89.99,
         currency: 'USD',
         rating: 4.6,
         reviewCount: 1890,
         platformId: 'alibaba',
         platformName: 'Alibaba',
+        categoryId: 'electronics',
+        categoryName: 'إلكترونيات',
       ),
     ];
+  }
+
+  @override
+  Future<List<OfferModel>> getFeaturedOffers() async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 500));
+    return _dummyOffers;
+  }
+
+  @override
+  Future<List<ProductModel>> getProducts() async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    return _getDummyProducts();
+  }
+
+  @override
+  Future<ProductModel> getProductById(String id) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    final products = _getDummyProducts();
+    try {
+      return products.firstWhere((product) => product.id == id);
+    } catch (e) {
+      throw Exception('Product not found');
+    }
+  }
+
+  @override
+  Future<List<CategoryModel>> getCategories() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return [
+      const CategoryModel(id: '1', name: 'إلكترونيات'),
+      const CategoryModel(id: '2', name: 'ملابس'),
+      const CategoryModel(id: '3', name: 'منزل وحديقة'),
+      const CategoryModel(id: '4', name: 'رياضة'),
+      const CategoryModel(id: '5', name: 'جمال وعناية'),
+    ];
+  }
+
+  @override
+  Future<List<ProductModel>> getProductsByCategory(String categoryId) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    // For demo purposes, return filtered products based on category
+    final products = _getDummyProducts();
+    // Simple filtering logic for demo
+    switch (categoryId) {
+      case '1': // Electronics
+        return products
+            .where(
+              (p) =>
+                  p.name.contains('هاتف') ||
+                  p.name.contains('ساعة') ||
+                  p.name.contains('سماعات'),
+            )
+            .toList();
+      case '2': // Clothing
+        return products.where((p) => p.name.contains('فستان')).toList();
+      case '4': // Sports
+        return products.where((p) => p.name.contains('رياضية')).toList();
+      default:
+        return products.take(2).toList();
+    }
+  }
+
+  @override
+  Future<List<ProductModel>> getSimilarProducts(String productId) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    final products = _getDummyProducts();
+
+    // Find the current product to get its category
+    final currentProduct = products.firstWhere(
+      (p) => p.id == productId,
+      orElse: () => products.first,
+    );
+
+    // Return products from the same category, excluding the current one
+    return products
+        .where(
+          (p) => p.id != productId && p.categoryId == currentProduct.categoryId,
+        )
+        .take(4)
+        .toList();
   }
 }

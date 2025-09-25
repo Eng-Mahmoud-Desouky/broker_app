@@ -25,7 +25,7 @@ class SuggestedProductsList extends StatelessWidget {
         _buildSectionHeader(),
         const SizedBox(height: 16),
         SizedBox(
-          height: 300,
+          height: 320,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -123,28 +123,7 @@ class SuggestedProductsList extends StatelessWidget {
                         colors: [AppColors.grey100, AppColors.grey200],
                       ),
                     ),
-                    child: Image.network(
-                      product.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [AppColors.grey100, AppColors.grey200],
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.shopping_bag_rounded,
-                              color: AppColors.grey400,
-                              size: 48,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    child: _buildProductImage(product.imageUrl),
                   ),
                 ),
                 // Discount badge
@@ -333,6 +312,60 @@ class SuggestedProductsList extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductImage(String imageUrl) {
+    // Check if it's a local asset or network image
+    if (imageUrl.startsWith('assets/')) {
+      return Image.asset(
+        imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImagePlaceholder();
+        },
+      );
+    } else {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value:
+                  loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+              color: AppColors.primary,
+              strokeWidth: 2,
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImagePlaceholder();
+        },
+      );
+    }
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.grey100, AppColors.grey200],
+        ),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.shopping_bag_rounded,
+          color: AppColors.grey400,
+          size: 48,
         ),
       ),
     );

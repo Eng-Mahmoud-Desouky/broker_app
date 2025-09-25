@@ -1,0 +1,6 @@
+# Placeholder Product Image
+
+This file represents a placeholder for product images.
+In a real implementation, this would be a PNG or JPG image file.
+
+For now, the app will fall back to showing an icon when this asset is not found.

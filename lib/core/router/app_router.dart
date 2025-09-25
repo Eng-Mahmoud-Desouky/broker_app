@@ -9,6 +9,8 @@ import '../../features/temp_auth/presentation/pages/temp_signup_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/offers_page.dart';
 import '../../features/home/presentation/pages/platform_products_page.dart';
+import '../../features/home/presentation/pages/product_list_page.dart';
+import '../../features/home/presentation/pages/product_details_page.dart';
 import '../../presentation/pages/main_wrapper.dart';
 import '../../presentation/pages/favorites_page.dart';
 import '../../presentation/pages/profile_page.dart';
@@ -29,6 +31,8 @@ class AppRouter {
   static const String settings = '/main/settings';
   static const String offers = '/offers';
   static const String platformProducts = '/platform';
+  static const String products = '/products';
+  static const String productDetails = '/product-details';
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
@@ -84,6 +88,19 @@ class AppRouter {
         builder: (context, state) {
           final platformId = state.pathParameters['platformId'] ?? '';
           return PlatformProductsPage(platformId: platformId);
+        },
+      ),
+      GoRoute(
+        path: products,
+        name: 'products',
+        builder: (context, state) => const ProductListPage(),
+      ),
+      GoRoute(
+        path: '$productDetails/:productId',
+        name: 'product-details',
+        builder: (context, state) {
+          final productId = state.pathParameters['productId'] ?? '';
+          return ProductDetailsPage(productId: productId);
         },
       ),
 
