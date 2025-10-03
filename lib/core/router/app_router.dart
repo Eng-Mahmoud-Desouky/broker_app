@@ -11,6 +11,7 @@ import '../../features/home/presentation/pages/offers_page.dart';
 import '../../features/home/presentation/pages/platform_products_page.dart';
 import '../../features/home/presentation/pages/product_list_page.dart';
 import '../../features/home/presentation/pages/product_details_page.dart';
+import '../../features/webview/presentation/pages/webview_screen.dart';
 import '../../presentation/pages/main_wrapper.dart';
 import '../../presentation/pages/favorites_page.dart';
 import '../../presentation/pages/profile_page.dart';
@@ -33,6 +34,7 @@ class AppRouter {
   static const String platformProducts = '/platform';
   static const String products = '/products';
   static const String productDetails = '/product-details';
+  static const String webview = '/webview';
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
@@ -101,6 +103,15 @@ class AppRouter {
         builder: (context, state) {
           final productId = state.pathParameters['productId'] ?? '';
           return ProductDetailsPage(productId: productId);
+        },
+      ),
+      GoRoute(
+        path: webview,
+        name: 'webview',
+        builder: (context, state) {
+          final url = state.uri.queryParameters['url'] ?? '';
+          final title = state.uri.queryParameters['title'] ?? 'متصفح';
+          return WebViewScreen(initialUrl: url, title: title);
         },
       ),
 

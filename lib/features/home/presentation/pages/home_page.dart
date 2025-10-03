@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../webview/domain/entities/platform_url.dart';
 import '../bloc/home_bloc.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_search_bar.dart';
@@ -389,8 +390,19 @@ class _HomePageState extends State<HomePage> {
                 context.read<HomeBloc>().add(
                   HomePlatformSelected(platform: platform),
                 );
-                // TODO: Navigate to platform products page
-                context.push('/platform/${platform.id}');
+
+                // Get platform URL and navigate to WebView
+                final platformUrl = PlatformUrls.getPlatformUrl(platform.id);
+                if (platformUrl != null) {
+                  final encodedUrl = Uri.encodeComponent(platformUrl.url);
+                  final encodedTitle = Uri.encodeComponent(
+                    platformUrl.displayName,
+                  );
+                  context.push('/webview?url=$encodedUrl&title=$encodedTitle');
+                } else {
+                  // Fallback to platform products page if URL not found
+                  context.push('/platform/${platform.id}');
+                }
               },
             ),
             const SizedBox(height: 32),

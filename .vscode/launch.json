@@ -4,7 +4,25 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
+            "name": "broker_app",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "broker_app (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "broker_app (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+               {
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",

@@ -75,6 +75,7 @@ dependencies:
   # Phone number handling
   intl_phone_field: ^3.2.0
   country_code_picker: ^3.0.0
+  flutter_inappwebview: ^6.1.5
 
 dev_dependencies:
   flutter_test:
