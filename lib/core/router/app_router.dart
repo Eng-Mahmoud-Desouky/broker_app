@@ -4,8 +4,15 @@ import 'package:go_router/go_router.dart';
 import '../../features/authentication/presentation/pages/phone_input_page.dart';
 import '../../features/authentication/presentation/pages/otp_verification_page.dart';
 import '../../features/authentication/presentation/pages/registration_page.dart';
+import '../../features/temp_auth/presentation/pages/temp_login_page.dart';
+import '../../features/temp_auth/presentation/pages/temp_signup_page.dart';
+import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/home/presentation/pages/offers_page.dart';
+import '../../features/home/presentation/pages/platform_products_page.dart';
+import '../../features/home/presentation/pages/product_list_page.dart';
+import '../../features/home/presentation/pages/product_details_page.dart';
+import '../../features/webview/presentation/pages/webview_screen.dart';
 import '../../presentation/pages/main_wrapper.dart';
-import '../../presentation/pages/home_page.dart';
 import '../../presentation/pages/favorites_page.dart';
 import '../../presentation/pages/profile_page.dart';
 import '../../presentation/pages/settings_page.dart';
@@ -16,11 +23,18 @@ class AppRouter {
   static const String phoneInput = '/phone-input';
   static const String otpVerification = '/otp-verification';
   static const String registration = '/registration';
+  static const String tempLogin = '/temp-login';
+  static const String tempSignup = '/temp-signup';
   static const String main = '/main';
   static const String home = '/main/home';
   static const String favorites = '/main/favorites';
   static const String profile = '/main/profile';
   static const String settings = '/main/settings';
+  static const String offers = '/offers';
+  static const String platformProducts = '/platform';
+  static const String products = '/products';
+  static const String productDetails = '/product-details';
+  static const String webview = '/webview';
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
@@ -50,6 +64,55 @@ class AppRouter {
         path: registration,
         name: 'registration',
         builder: (context, state) => const RegistrationPage(),
+      ),
+
+      // Temporary authentication routes
+      GoRoute(
+        path: tempLogin,
+        name: 'temp-login',
+        builder: (context, state) => const TempLoginPage(),
+      ),
+      GoRoute(
+        path: tempSignup,
+        name: 'temp-signup',
+        builder: (context, state) => const TempSignupPage(),
+      ),
+
+      // Standalone routes (outside main wrapper)
+      GoRoute(
+        path: offers,
+        name: 'offers',
+        builder: (context, state) => const OffersPage(),
+      ),
+      GoRoute(
+        path: '$platformProducts/:platformId',
+        name: 'platform-products',
+        builder: (context, state) {
+          final platformId = state.pathParameters['platformId'] ?? '';
+          return PlatformProductsPage(platformId: platformId);
+        },
+      ),
+      GoRoute(
+        path: products,
+        name: 'products',
+        builder: (context, state) => const ProductListPage(),
+      ),
+      GoRoute(
+        path: '$productDetails/:productId',
+        name: 'product-details',
+        builder: (context, state) {
+          final productId = state.pathParameters['productId'] ?? '';
+          return ProductDetailsPage(productId: productId);
+        },
+      ),
+      GoRoute(
+        path: webview,
+        name: 'webview',
+        builder: (context, state) {
+          final url = state.uri.queryParameters['url'] ?? '';
+          final title = state.uri.queryParameters['title'] ?? 'متصفح';
+          return WebViewScreen(initialUrl: url, title: title);
+        },
       ),
 
       // Main app routes with shell
@@ -135,6 +198,14 @@ class AppRouter {
 
   static void goToSettings(BuildContext context) {
     context.go(settings);
+  }
+
+  static void goToTempLogin(BuildContext context) {
+    context.go(tempLogin);
+  }
+
+  static void goToTempSignup(BuildContext context) {
+    context.go(tempSignup);
   }
 
   // Check if current route is in main app
