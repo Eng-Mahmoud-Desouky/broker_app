@@ -1,3 +1,4 @@
+import 'package:broker_app/features/cart/presentation/pages/cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,6 +31,7 @@ class AppRouter {
   static const String favorites = '/main/favorites';
   static const String profile = '/main/profile';
   static const String settings = '/main/settings';
+  static const String cart = '/main/cart';
   static const String offers = '/offers';
   static const String platformProducts = '/platform';
   static const String products = '/products';
@@ -139,6 +141,11 @@ class AppRouter {
             name: 'settings',
             builder: (context, state) => const SettingsPage(),
           ),
+          GoRoute(
+            path: AppRouter.cart,
+            name: 'cart',
+            builder: (context, state) => const CartScreen(),
+          ),
         ],
       ),
     ],
@@ -224,6 +231,8 @@ class AppRouter {
         return 2;
       case settings:
         return 3;
+      case cart:
+        return 4;
       default:
         return 0;
     }

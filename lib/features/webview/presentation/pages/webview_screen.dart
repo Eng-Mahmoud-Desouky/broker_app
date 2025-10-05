@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +7,8 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../core/theme/app_colors.dart';
+import '../../../cart/data/platform_selectors.dart';
+import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../bloc/webview_bloc.dart';
 import '../bloc/webview_event.dart';
 import '../bloc/webview_state.dart';
@@ -30,6 +34,7 @@ class WebViewScreen extends StatefulWidget {
 class _WebViewScreenState extends State<WebViewScreen> {
   InAppWebViewController? _webViewController;
   late WebViewBloc _webViewBloc;
+  late CartBloc _cartBloc;
 
   // Track navigation to prevent infinite loops
   final Set<String> _visitedUrls = <String>{};
@@ -40,14 +45,86 @@ class _WebViewScreenState extends State<WebViewScreen> {
   void initState() {
     super.initState();
     _webViewBloc = di.sl<WebViewBloc>();
-    // Load the initial URL
-    _webViewBloc.add(WebViewLoadUrl(url: widget.initialUrl));
+    _cartBloc = di.sl<CartBloc>();
+    // Clean and load the initial URL (handles deep links)
+    final cleanedUrl = _cleanUrl(widget.initialUrl);
+    _webViewBloc.add(WebViewLoadUrl(url: cleanedUrl));
   }
 
   @override
   void dispose() {
     _webViewBloc.close();
+    _cartBloc.close();
     super.dispose();
+  }
+
+  /// Clean and extract real URL from deep links
+  String _cleanUrl(String url) {
+    // Check if it's a deep link
+    if (url.startsWith('aliexpress://') ||
+        url.startsWith('shein://') ||
+        url.startsWith('amazon://') ||
+        url.startsWith('taobao://') ||
+        url.startsWith('alibaba://') ||
+        url.startsWith('temu://')) {
+      return _extractRealUrl(url);
+    }
+
+    return url;
+  }
+
+  /// Extract real HTTPS URL from deep link
+  String _extractRealUrl(String deepLink) {
+    try {
+      final uri = Uri.parse(deepLink);
+
+      // Try to extract 'url' parameter
+      final encodedUrl = uri.queryParameters['url'];
+
+      if (encodedUrl != null) {
+        final decodedUrl = Uri.decodeComponent(encodedUrl);
+        if (kDebugMode) {
+          print('✅ Extracted URL from deep link: $decodedUrl');
+        }
+        return decodedUrl;
+      }
+
+      // Fallback: Try to find any https URL in the string
+      final httpsMatch = RegExp(r'https?://[^\s&]+').firstMatch(deepLink);
+      if (httpsMatch != null) {
+        final extractedUrl = Uri.decodeComponent(httpsMatch.group(0)!);
+        if (kDebugMode) {
+          print('✅ Extracted URL via regex: $extractedUrl');
+        }
+        return extractedUrl;
+      }
+
+      // Last resort: Return platform homepage
+      return _getPlatformHomepage(deepLink);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error extracting URL: $e');
+      }
+      return _getPlatformHomepage(deepLink);
+    }
+  }
+
+  /// Get platform homepage as fallback
+  String _getPlatformHomepage(String deepLink) {
+    if (deepLink.contains('aliexpress')) {
+      return 'https://www.aliexpress.com';
+    } else if (deepLink.contains('shein')) {
+      return 'https://www.shein.com';
+    } else if (deepLink.contains('amazon')) {
+      return 'https://www.amazon.com';
+    } else if (deepLink.contains('taobao')) {
+      return 'https://www.taobao.com';
+    } else if (deepLink.contains('alibaba')) {
+      return 'https://www.alibaba.com';
+    } else if (deepLink.contains('temu')) {
+      return 'https://www.temu.com';
+    }
+    return 'https://www.google.com';
   }
 
   @override
@@ -97,8 +174,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   Widget _buildWebView() {
+    // Clean the URL before loading (handles deep links)
+    final cleanedUrl = _cleanUrl(widget.initialUrl);
+
     return InAppWebView(
-      initialUrlRequest: URLRequest(url: WebUri(widget.initialUrl)),
+      initialUrlRequest: URLRequest(url: WebUri(cleanedUrl)),
       initialSettings: InAppWebViewSettings(
         // Enhanced JavaScript settings for modern e-commerce sites
         javaScriptEnabled: true,
@@ -208,6 +288,16 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ),
       onWebViewCreated: (controller) async {
         _webViewController = controller;
+
+        // Add JavaScript channel for cart communication
+        controller.addJavaScriptHandler(
+          handlerName: 'FlutterCartChannel',
+          callback: (args) {
+            if (args.isNotEmpty) {
+              _handleCartData(args[0]);
+            }
+          },
+        );
 
         // Configure enhanced cookie manager for better session handling
         await _configureEnhancedCookies();
@@ -385,6 +475,25 @@ class _WebViewScreenState extends State<WebViewScreen> {
           );
         }
 
+        // Handle deep links from e-commerce apps
+        if (url.startsWith('aliexpress://') ||
+            url.startsWith('shein://') ||
+            url.startsWith('amazon://') ||
+            url.startsWith('taobao://') ||
+            url.startsWith('alibaba://') ||
+            url.startsWith('temu://')) {
+          final cleanedUrl = _cleanUrl(url);
+          if (kDebugMode) {
+            debugPrint('🔄 Deep link detected, redirecting to: $cleanedUrl');
+          }
+
+          // Load the cleaned URL
+          await controller.loadUrl(
+            urlRequest: URLRequest(url: WebUri(cleanedUrl)),
+          );
+          return NavigationActionPolicy.CANCEL;
+        }
+
         // Enhanced navigation handling for e-commerce platforms
         final allowedDomains = [
           'shein.com',
@@ -392,6 +501,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
           'alibaba.com',
           'aliexpress.com',
           'amazon.com',
+          'temu.com',
           'amazonaws.com', // For Amazon CDN
           'alicdn.com', // For Alibaba CDN
           'tbcdn.cn', // For Taobao CDN
@@ -603,30 +713,13 @@ class _WebViewScreenState extends State<WebViewScreen> {
     String url,
   ) async {
     try {
+      // Inject cart button for all e-commerce platforms
+      await _injectCartButton(controller, url);
+
       // Site-specific post-load scripts for better compatibility
       String postLoadScript = '';
 
-      if (url.contains('shein.com')) {
-        postLoadScript = '''
-          (function() {
-            // SHEIN-specific enhancements
-            if (window.location.href.includes('shein.com')) {
-              // Enhance mobile touch events
-              document.addEventListener('touchstart', function() {}, {passive: true});
-              document.addEventListener('touchmove', function() {}, {passive: true});
-
-              // Override some SHEIN bot detection
-              if (window.navigator && window.navigator.userAgent) {
-                Object.defineProperty(navigator, 'platform', {
-                  get: () => 'iPhone',
-                });
-              }
-
-              console.log('🛍️ SHEIN compatibility enhanced');
-            }
-          })();
-        ''';
-      } else if (url.contains('taobao.com') || url.contains('alibaba.com')) {
+      if (url.contains('taobao.com') || url.contains('alibaba.com')) {
         postLoadScript = '''
           (function() {
             // Taobao/Alibaba-specific enhancements
@@ -692,6 +785,197 @@ class _WebViewScreenState extends State<WebViewScreen> {
       await CookieManager.instance().deleteAllCookies();
       // Note: WebViewDataCleared is not a WebViewEvent, we need to handle this differently
       // For now, we'll just clear the data without emitting an event
+    }
+  }
+
+  /// Inject cart button into the page
+  Future<void> _injectCartButton(
+    InAppWebViewController controller,
+    String url,
+  ) async {
+    try {
+      // Determine platform from URL
+      String platform = 'generic';
+      if (url.contains('amazon.com')) {
+        platform = 'amazon';
+      } else if (url.contains('shein.com')) {
+        platform = 'shein';
+      } else if (url.contains('aliexpress.com')) {
+        platform = 'aliexpress';
+      } else if (url.contains('taobao.com')) {
+        platform = 'taobao';
+      } else if (url.contains('alibaba.com')) {
+        platform = 'alibaba';
+      }
+
+      // Get platform-specific selectors
+      final selectors = PlatformSelectors.getSelectors(platform);
+      final buttonColor = selectors['buttonColor'] ?? '#213c86';
+
+      // Generate extraction script
+      final extractionScript = PlatformSelectors.generateExtractionScript(
+        platform,
+      );
+
+      // Complete cart button script
+      final cartButtonScript = '''
+        (function() {
+          // Remove existing button if any
+          const existingButton = document.getElementById('flutter-cart-btn');
+          if (existingButton) {
+            existingButton.remove();
+          }
+
+          $extractionScript
+
+          // Create floating cart button
+          const button = document.createElement('div');
+          button.id = 'flutter-cart-btn';
+          button.innerHTML = '🛒 إضافة للسلة';
+          button.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: $buttonColor;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 999999;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+          `;
+
+          // Add hover effect
+          button.addEventListener('mouseenter', function() {
+            button.style.transform = 'scale(1.05)';
+            button.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+          });
+
+          button.addEventListener('mouseleave', function() {
+            button.style.transform = 'scale(1)';
+            button.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+          });
+
+          document.body.appendChild(button);
+
+          // Handle button click
+          button.addEventListener('click', function() {
+            try {
+              button.innerHTML = '⏳ جاري الإضافة...';
+              button.style.pointerEvents = 'none';
+
+              const productData = extractProductData();
+
+              // Send to Flutter via JavaScript handler
+              window.flutter_inappwebview.callHandler('FlutterCartChannel', productData)
+                .then(function(result) {
+                  button.innerHTML = '✅ تمت الإضافة';
+                  setTimeout(function() {
+                    button.innerHTML = '🛒 إضافة للسلة';
+                    button.style.pointerEvents = 'auto';
+                  }, 2000);
+                })
+                .catch(function(error) {
+                  console.error('Error sending to Flutter:', error);
+                  button.innerHTML = '❌ فشل';
+                  setTimeout(function() {
+                    button.innerHTML = '🛒 إضافة للسلة';
+                    button.style.pointerEvents = 'auto';
+                  }, 2000);
+                });
+            } catch (error) {
+              console.error('Error extracting product data:', error);
+              button.innerHTML = '❌ خطأ';
+              setTimeout(function() {
+                button.innerHTML = '🛒 إضافة للسلة';
+                button.style.pointerEvents = 'auto';
+              }, 2000);
+            }
+          });
+
+          console.log('🛒 Cart button injected successfully for platform: $platform');
+        })();
+      ''';
+
+      await controller.evaluateJavascript(source: cartButtonScript);
+
+      if (kDebugMode) {
+        debugPrint('🛒 Cart button injected for platform: $platform');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error injecting cart button: $e');
+      }
+    }
+  }
+
+  /// Handle cart data received from JavaScript
+  void _handleCartData(dynamic data) {
+    try {
+      if (kDebugMode) {
+        debugPrint('📦 Received cart data: $data');
+      }
+
+      Map<String, dynamic> productData;
+
+      if (data is String) {
+        productData = jsonDecode(data);
+      } else if (data is Map) {
+        productData = Map<String, dynamic>.from(data);
+      } else {
+        if (kDebugMode) {
+          debugPrint('⚠️ Invalid cart data type: ${data.runtimeType}');
+        }
+        return;
+      }
+
+      // Validate required fields
+      if (productData['title'] == null ||
+          productData['title'].toString().isEmpty ||
+          productData['title'] == 'No title found') {
+        _showSnackBar('لم نتمكن من استخراج بيانات المنتج', isError: true);
+        return;
+      }
+
+      // Add to cart via BLoC
+      _cartBloc.add(
+        CartAddItem(
+          productName: productData['title'] ?? 'Unknown Product',
+          price: productData['price'] ?? 'Price not available',
+          imageUrl: productData['image'],
+          images:
+              productData['images'] != null
+                  ? List<String>.from(productData['images'])
+                  : null,
+          productUrl: productData['url'] ?? '',
+          platform: productData['platform'] ?? 'unknown',
+          rating: productData['rating'],
+          metadata: productData,
+        ),
+      );
+
+      _showSnackBar('تمت إضافة المنتج للسلة بنجاح');
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error handling cart data: $e');
+      }
+      _showSnackBar('حدث خطأ أثناء إضافة المنتج', isError: true);
+    }
+  }
+
+  /// Show snackbar message
+  void _showSnackBar(String message, {bool isError = false}) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: isError ? AppColors.error : AppColors.success,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 }

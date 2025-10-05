@@ -8,10 +8,7 @@ import '../../core/theme/app_colors.dart';
 class MainWrapper extends StatelessWidget {
   final Widget child;
 
-  const MainWrapper({
-    super.key,
-    required this.child,
-  });
+  const MainWrapper({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +65,12 @@ class MainWrapper extends StatelessWidget {
               activeIcon: const Icon(Icons.settings),
               label: localizations.settings,
             ),
+
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart),
+              activeIcon: Icon(Icons.shopping_cart),
+              label: 'السلة',
+            ),
           ],
         ),
       ),
@@ -87,6 +90,9 @@ class MainWrapper extends StatelessWidget {
         break;
       case 3:
         context.go(AppRouter.settings);
+        break;
+      case 4:
+        context.go(AppRouter.cart);
         break;
     }
   }

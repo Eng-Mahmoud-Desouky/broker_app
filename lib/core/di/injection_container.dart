@@ -46,6 +46,17 @@ import '../../features/webview/domain/usecases/save_webview_state.dart';
 import '../../features/webview/domain/usecases/get_platform_url.dart';
 import '../../features/webview/presentation/bloc/webview_bloc.dart';
 
+// Cart feature imports
+import '../../features/cart/data/datasources/cart_remote_data_source.dart';
+import '../../features/cart/data/repositories/cart_repository_impl.dart';
+import '../../features/cart/domain/repositories/cart_repository.dart';
+import '../../features/cart/domain/usecases/add_to_cart.dart';
+import '../../features/cart/domain/usecases/get_cart_items.dart';
+import '../../features/cart/domain/usecases/update_cart_quantity.dart';
+import '../../features/cart/domain/usecases/remove_from_cart.dart';
+import '../../features/cart/domain/usecases/clear_cart.dart';
+import '../../features/cart/presentation/bloc/cart_bloc.dart';
+
 import '../network/network_info.dart';
 import '../utils/constants.dart';
 
@@ -60,6 +71,9 @@ Future<void> init() async {
 
   //! Features - WebView
   await _initWebView();
+
+  //! Features - Cart
+  await _initCart();
 
   //! Core
   await _initCore();
@@ -185,6 +199,36 @@ Future<void> _initWebView() async {
   // Data sources
   sl.registerLazySingleton<WebViewLocalDataSource>(
     () => WebViewLocalDataSourceImpl(sharedPreferences: sl()),
+  );
+}
+
+Future<void> _initCart() async {
+  // Bloc
+  sl.registerFactory(
+    () => CartBloc(
+      getCartItems: sl(),
+      addToCart: sl(),
+      updateCartQuantity: sl(),
+      removeFromCart: sl(),
+      clearCart: sl(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetCartItems(sl()));
+  sl.registerLazySingleton(() => AddToCart(sl()));
+  sl.registerLazySingleton(() => UpdateCartQuantity(sl()));
+  sl.registerLazySingleton(() => RemoveFromCart(sl()));
+  sl.registerLazySingleton(() => ClearCart(sl()));
+
+  // Repository
+  sl.registerLazySingleton<CartRepository>(
+    () => CartRepositoryImpl(remoteDataSource: sl(), supabaseClient: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<CartRemoteDataSource>(
+    () => CartRemoteDataSourceImpl(supabaseClient: sl()),
   );
 }
 
