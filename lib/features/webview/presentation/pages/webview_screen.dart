@@ -555,6 +555,26 @@ class _WebViewScreenState extends State<WebViewScreen> {
         }
         return NavigationActionPolicy.CANCEL;
       },
+      onCreateWindow: (controller, createWindowAction) async {
+        // Handle popup windows (critical for AliExpress and other platforms)
+        final url = createWindowAction.request.url?.toString();
+
+        if (kDebugMode) {
+          debugPrint('🪟 onCreateWindow called for URL: $url');
+        }
+
+        if (url != null && url.isNotEmpty) {
+          // Load the URL in the same WebView instead of creating a new window
+          await controller.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
+
+          if (kDebugMode) {
+            debugPrint('✅ Loaded popup URL in same WebView: $url');
+          }
+        }
+
+        // Return true to indicate we handled the window creation
+        return true;
+      },
     );
   }
 
@@ -692,6 +712,21 @@ class _WebViewScreenState extends State<WebViewScreen> {
           delete window._phantom;
           delete window.__nightmare;
 
+          // Override window.open to prevent popup issues (critical for AliExpress)
+          const originalWindowOpen = window.open;
+          window.open = function(url, target, features) {
+            console.log('🪟 window.open intercepted:', url);
+
+            // If URL is provided, navigate to it in the same window
+            if (url) {
+              window.location.href = url;
+              return window;
+            }
+
+            // Otherwise, try the original function
+            return originalWindowOpen.call(this, url, target, features);
+          };
+
           console.log('🚀 Compatibility scripts injected successfully');
         })();
       ''';
@@ -713,6 +748,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
     String url,
   ) async {
     try {
+      // Small delay to ensure page is fully rendered
+      await Future.delayed(const Duration(milliseconds: 1000));
+
       // Inject cart button for all e-commerce platforms
       await _injectCartButton(controller, url);
 
@@ -820,9 +858,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
       // Complete cart button script
       final cartButtonScript = '''
         (function() {
+          console.log('🚀 Starting cart button injection for platform: $platform');
+
           // Remove existing button if any
           const existingButton = document.getElementById('flutter-cart-btn');
           if (existingButton) {
+            console.log('🗑️ Removing existing cart button');
             existingButton.remove();
           }
 
@@ -858,15 +899,18 @@ class _WebViewScreenState extends State<WebViewScreen> {
             button.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
           });
 
+          // Append button to body
           document.body.appendChild(button);
+          console.log('✅ Cart button added to DOM');
 
-          // Handle button click
-          button.addEventListener('click', function() {
+          // Handle button click (async to support waiting for elements)
+          button.addEventListener('click', async function() {
             try {
               button.innerHTML = '⏳ جاري الإضافة...';
               button.style.pointerEvents = 'none';
 
-              const productData = extractProductData();
+              // Extract product data (now async)
+              const productData = await extractProductData();
 
               // Send to Flutter via JavaScript handler
               window.flutter_inappwebview.callHandler('FlutterCartChannel', productData)

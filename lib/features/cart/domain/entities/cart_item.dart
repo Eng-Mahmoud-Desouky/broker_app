@@ -33,7 +33,8 @@ class CartItem extends Equatable {
   });
 
   /// Get the primary image URL
-  String get primaryImage => imageUrl ?? (images?.isNotEmpty == true ? images!.first : '');
+  String get primaryImage =>
+      imageUrl ?? (images?.isNotEmpty == true ? images!.first : '');
 
   /// Check if item has images
   bool get hasImages => primaryImage.isNotEmpty;
@@ -85,19 +86,18 @@ class CartItem extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        productName,
-        price,
-        imageUrl,
-        images,
-        productUrl,
-        platform,
-        quantity,
-        rating,
-        metadata,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    userId,
+    productName,
+    price,
+    imageUrl,
+    images,
+    productUrl,
+    platform,
+    quantity,
+    rating,
+    metadata,
+    createdAt,
+    updatedAt,
+  ];
 }
-
