@@ -107,11 +107,41 @@ class PlatformSelectors {
       'buttonColor': '#FF6A00',
     },
     'alibaba': {
-      'title': ['.product-title', 'h1[class*="title"]'],
-      'price': ['.price', 'span[class*="price"]'],
-      'image': ['.main-image img', 'img[class*="main"]'],
-      'images': ['.thumb-image img'],
-      'rating': [],
+      'title': [
+        '.product-title-container h1',
+        'div[data-module-name="module_title"] h1',
+        '.product-title',
+        'h1[class*="title"]',
+        'h1[title]',
+      ],
+      'price': [
+        'div[data-testid="fixed-price"] strong',
+        'strong[class*="id-font-bold"]',
+        '.price',
+        'span[class*="price"]',
+        'div[class*="price"] strong',
+      ],
+      'image': [
+        '.current-main-image img',
+        'div[class*="current-main-image"] img',
+        '.main-image img',
+        'img[class*="main"]',
+      ],
+      'images': [
+        '.thumb-image img',
+        'img[class*="thumb"]',
+        '.image-gallery img',
+      ],
+      'rating': [
+        '.detail-review-item.detail-star',
+        'span[class*="detail-star"]',
+        '.star-rating',
+        '[class*="rating"]',
+      ],
+      'reviewCount': [
+        '.detail-review-item.detail-review',
+        'span[class*="detail-review"]',
+      ],
       'buttonColor': '#FF6A00',
     },
     'generic': {
