@@ -188,7 +188,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
         // Enhanced User-Agent for better compatibility
         userAgent: _getEnhancedUserAgent(),
-
+        applicationNameForUserAgent:
+            '', // Don't add "wv" suffix to avoid WebView detection
         // Security settings - Allow mixed content for shopping sites
         mixedContentMode: MixedContentMode.MIXED_CONTENT_COMPATIBILITY_MODE,
         allowsInlineMediaPlayback: true,
@@ -243,6 +244,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
         // Enhanced rendering settings
         forceDark: ForceDark.OFF,
 
+        // Error handling
+        disableDefaultErrorPage: true,
+
         // Enhanced text settings
         textZoom: 100,
 
@@ -282,9 +286,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
         // Enhanced default text encoding
         defaultTextEncodingName: "utf-8",
-
-        // Enhanced settings for better compatibility
-        disableDefaultErrorPage: false,
       ),
       onWebViewCreated: (controller) async {
         _webViewController = controller;
@@ -343,6 +344,19 @@ class _WebViewScreenState extends State<WebViewScreen> {
           }
           _webViewBloc.add(WebViewFinishedLoading(url: url.toString()));
 
+          // Inject anti-detection scripts for SHEIN
+          if (url.toString().toLowerCase().contains('shein.com')) {
+            await _injectAntiDetectionScripts(controller);
+          }
+
+          // Wait longer for SHEIN dynamic content to load
+          if (url.toString().toLowerCase().contains('shein.com')) {
+            if (kDebugMode) {
+              debugPrint('⏳ Waiting 3 seconds for SHEIN dynamic content...');
+            }
+            await Future.delayed(const Duration(seconds: 3));
+          }
+
           // Inject additional compatibility scripts after page load
           await _injectPostLoadScripts(controller, url.toString());
 
@@ -365,6 +379,22 @@ class _WebViewScreenState extends State<WebViewScreen> {
       },
       onProgressChanged: (controller, progress) {
         _webViewBloc.add(WebViewProgressChanged(progress: progress / 100.0));
+
+        // Force stop loading for SHEIN after timeout when progress > 80%
+        if (widget.initialUrl.toLowerCase().contains('shein.com') &&
+            progress > 80) {
+          Future.delayed(const Duration(seconds: 5), () async {
+            final currentProgress = await controller.getProgress();
+            if (currentProgress != null && currentProgress < 100) {
+              if (kDebugMode) {
+                debugPrint(
+                  '⚠️ Forced loading stop for SHEIN (progress: $currentProgress%)',
+                );
+              }
+              await controller.stopLoading();
+            }
+          });
+        }
       },
       onUpdateVisitedHistory: (controller, url, androidIsReload) {
         if (url != null) {
@@ -390,6 +420,23 @@ class _WebViewScreenState extends State<WebViewScreen> {
         }
       },
       onReceivedHttpError: (controller, request, errorResponse) {
+        final url = request.url.toString();
+
+        // Ignore tracking/analytics failures (especially for SHEIN)
+        if (url.contains('srmdata') ||
+            url.contains('cinfo') ||
+            url.contains('analytics') ||
+            url.contains('tracking') ||
+            url.contains('beacon') ||
+            url.contains('metric')) {
+          if (kDebugMode) {
+            debugPrint(
+              '⚠️ Ignored tracking error: $url (${errorResponse.statusCode})',
+            );
+          }
+          return; // Don't show error or block page
+        }
+
         // Only handle main frame HTTP errors, ignore sub-frame/resource errors
         if (request.isForMainFrame == true) {
           if (kDebugMode) {
@@ -555,6 +602,26 @@ class _WebViewScreenState extends State<WebViewScreen> {
         }
         return NavigationActionPolicy.CANCEL;
       },
+      onConsoleMessage: (controller, consoleMessage) {
+        // Enhanced console logging for debugging
+        if (kDebugMode) {
+          final level = consoleMessage.messageLevel;
+          final message = consoleMessage.message;
+
+          if (level == ConsoleMessageLevel.ERROR) {
+            debugPrint('❌ JS Error: $message');
+
+            // Special logging for SHEIN errors
+            if (widget.initialUrl.toLowerCase().contains('shein.com')) {
+              debugPrint('❌ SHEIN JS Error: $message');
+            }
+          } else if (level == ConsoleMessageLevel.WARNING) {
+            debugPrint('⚠️ JS Warning: $message');
+          } else if (level == ConsoleMessageLevel.LOG) {
+            debugPrint('📝 JS Log: $message');
+          }
+        }
+      },
       onCreateWindow: (controller, createWindowAction) async {
         // Handle popup windows (critical for AliExpress and other platforms)
         final url = createWindowAction.request.url?.toString();
@@ -583,8 +650,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
     final url = widget.initialUrl.toLowerCase();
 
     if (url.contains('shein.com')) {
-      // SHEIN: Use latest iPhone Safari with realistic device info
-      return 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1';
+      // SHEIN: Use Android Chrome to avoid user-agent mismatch detection
+      return 'Mozilla/5.0 (Linux; Android 14; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36';
     } else if (url.contains('taobao.com')) {
       // Taobao: Use Chrome Mobile with Chinese locale hints
       return 'Mozilla/5.0 (Linux; Android 14; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36';
@@ -739,6 +806,67 @@ class _WebViewScreenState extends State<WebViewScreen> {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('⚠️ Error injecting compatibility scripts: $e');
+      }
+    }
+  }
+
+  Future<void> _injectAntiDetectionScripts(
+    InAppWebViewController controller,
+  ) async {
+    try {
+      // Anti-detection JavaScript specifically for SHEIN
+      const antiDetectionScript = '''
+        (function() {
+          console.log('🛡️ Injecting anti-detection scripts for SHEIN');
+
+          // Remove webdriver property
+          Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined
+          });
+
+          // Remove WebView indicators
+          delete navigator.__proto__.webdriver;
+
+          // Override chrome property to appear like real Chrome
+          if (!window.chrome) {
+            window.chrome = {
+              runtime: {},
+              loadTimes: function() {},
+              csi: function() {},
+              app: {}
+            };
+          }
+
+          // Override permissions
+          const originalQuery = window.navigator.permissions.query;
+          window.navigator.permissions.query = (parameters) => (
+            parameters.name === 'notifications' ?
+              Promise.resolve({ state: Notification.permission }) :
+              originalQuery(parameters)
+          );
+
+          // Override plugins to appear like real browser
+          Object.defineProperty(navigator, 'plugins', {
+            get: () => [1, 2, 3, 4, 5]
+          });
+
+          // Override languages
+          Object.defineProperty(navigator, 'languages', {
+            get: () => ['en-US', 'en']
+          });
+
+          console.log('✅ Anti-detection scripts injected successfully');
+        })();
+      ''';
+
+      await controller.evaluateJavascript(source: antiDetectionScript);
+
+      if (kDebugMode) {
+        debugPrint('🛡️ Anti-detection scripts injected for SHEIN');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error injecting anti-detection scripts: $e');
       }
     }
   }
