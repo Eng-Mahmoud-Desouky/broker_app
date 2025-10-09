@@ -1,3 +1,4 @@
+import 'package:broker_app/features/support_chat/domain/repositories/support_chat_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -44,6 +45,37 @@ class SupportThreadsPage extends StatelessWidget {
           ],
         ),
         body: const _ThreadListView(),
+
+        floatingActionButton: Builder(
+          builder: (ctx) => FloatingActionButton.extended(
+            icon: const Icon(Icons.add_comment_rounded),
+            label: const Text('Start New Chat'),
+            onPressed: () async {
+              // Ask for an optional subject first
+              final subject = await showDialog<String>(
+                context: ctx,
+                builder: (_) => _NewThreadSubjectDialog(),
+              );
+
+              if (subject == null) return;
+
+              try {
+                final repo = sl<SupportChatRepository>();
+                final thread = await repo.createOrGetMyThread(subject: subject);
+
+                if (ctx.mounted) {
+                  context.push('/support/thread/${thread.id}');
+                }
+              } catch (e) {
+                if (ctx.mounted) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(content: Text('Failed to create chat: $e')),
+                  );
+                }
+              }
+            },
+          ),
+        ),
       ),
     );
   }
@@ -163,3 +195,45 @@ class _ThreadTile extends StatelessWidget {
     );
   }
 }
+
+class _NewThreadSubjectDialog extends StatefulWidget {
+  @override
+  State<_NewThreadSubjectDialog> createState() => _NewThreadSubjectDialogState();
+}
+
+class _NewThreadSubjectDialogState extends State<_NewThreadSubjectDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Thread Subject (optional)'),
+      content: TextField(
+        controller: _controller,
+        decoration: const InputDecoration(
+          hintText: 'Example: Payment issue',
+          border: OutlineInputBorder(),
+        ),
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => Navigator.of(context).pop(_controller.text.trim()),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, _controller.text.trim()),
+          child: const Text('Start'),
+        ),
+      ],
+    );
+  }
+}
+
