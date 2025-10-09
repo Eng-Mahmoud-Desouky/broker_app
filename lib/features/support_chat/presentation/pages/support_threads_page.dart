@@ -3,19 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../domain/entities/support_thread.dart';
 import '../bloc/list/chat_list_bloc.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/loading_indicator.dart';
-import 'support_chat_page.dart';
 
 /// Page that displays a list of support threads.
 ///
 /// - Agents can see all user threads (future expansion).
 /// - Users can see their own conversation history.
-/// - Each list item navigates to [SupportChatPage].
+/// - Each list item navigates to the chat route: `/support/thread/:id`.
 class SupportThreadsPage extends StatelessWidget {
   final bool forAgent;
 
@@ -44,36 +45,85 @@ class SupportThreadsPage extends StatelessWidget {
             ),
           ],
         ),
+
         body: const _ThreadListView(),
 
-        floatingActionButton: Builder(
-          builder: (ctx) => FloatingActionButton.extended(
-            icon: const Icon(Icons.add_comment_rounded),
-            label: const Text('Start New Chat'),
-            onPressed: () async {
-              // Ask for an optional subject first
-              final subject = await showDialog<String>(
-                context: ctx,
-                builder: (_) => _NewThreadSubjectDialog(),
-              );
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Row(
+              children: [
+                // Start New Chat (outlined)
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final subject = await showDialog<String>(
+                        context: context,
+                        builder: (_) => _NewThreadSubjectDialog(),
+                      );
+                      if (subject == null) return;
 
-              if (subject == null) return;
+                      try {
+                        final repo = sl<SupportChatRepository>();
+                        final thread =
+                        await repo.createOrGetMyThread(subject: subject);
+                        if (context.mounted) {
+                          context.push('/support/thread/${thread.id}');
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to create chat: $e'),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.add_comment_rounded),
+                    label: const Text('Start New Chat'),
+                  ),
+                ),
+                const SizedBox(width: 12),
 
-              try {
-                final repo = sl<SupportChatRepository>();
-                final thread = await repo.createOrGetMyThread(subject: subject);
+                // Contact via WhatsApp (elevated green)
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      final phone = '+201270927868'; // your support number
+                      final message = Uri.encodeComponent(
+                        'Hello, I need help with the Broker app.',
+                      );
+                      final url =
+                      Uri.parse('https://wa.me/$phone?text=$message');
 
-                if (ctx.mounted) {
-                  context.push('/support/thread/${thread.id}');
-                }
-              } catch (e) {
-                if (ctx.mounted) {
-                  ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(content: Text('Failed to create chat: $e')),
-                  );
-                }
-              }
-            },
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url,
+                            mode: LaunchMode.externalApplication);
+                      } else {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Could not open WhatsApp'),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    icon: const FaIcon(
+                      FontAwesomeIcons.whatsapp,
+                      color: Colors.white,
+                    ),
+                    label: const Text('Contact via WhatsApp'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -140,8 +190,7 @@ class _ThreadListView extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
                     itemCount: threads.length,
                     separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (_, i) =>
-                        _ThreadTile(thread: threads[i]),
+                    itemBuilder: (_, i) => _ThreadTile(thread: threads[i]),
                   ),
                 );
               }
@@ -169,9 +218,8 @@ class _ThreadTile extends StatelessWidget {
     return ListTile(
       leading: Icon(
         isClosed ? Icons.check_circle_outline : Icons.forum_outlined,
-        color: isClosed
-            ? Colors.green
-            : Theme.of(context).colorScheme.primary,
+        color:
+        isClosed ? Colors.green : Theme.of(context).colorScheme.primary,
       ),
       title: Text(
         (thread.subject?.trim().isNotEmpty ?? false)
@@ -189,7 +237,6 @@ class _ThreadTile extends StatelessWidget {
       ),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
-        // Navigate to chat page for this thread
         context.push('/support/thread/${thread.id}');
       },
     );
@@ -198,7 +245,8 @@ class _ThreadTile extends StatelessWidget {
 
 class _NewThreadSubjectDialog extends StatefulWidget {
   @override
-  State<_NewThreadSubjectDialog> createState() => _NewThreadSubjectDialogState();
+  State<_NewThreadSubjectDialog> createState() =>
+      _NewThreadSubjectDialogState();
 }
 
 class _NewThreadSubjectDialogState extends State<_NewThreadSubjectDialog> {
@@ -221,7 +269,8 @@ class _NewThreadSubjectDialogState extends State<_NewThreadSubjectDialog> {
           border: OutlineInputBorder(),
         ),
         textInputAction: TextInputAction.done,
-        onSubmitted: (_) => Navigator.of(context).pop(_controller.text.trim()),
+        onSubmitted: (_) =>
+            Navigator.of(context).pop(_controller.text.trim()),
       ),
       actions: [
         TextButton(
@@ -236,4 +285,3 @@ class _NewThreadSubjectDialogState extends State<_NewThreadSubjectDialog> {
     );
   }
 }
-
