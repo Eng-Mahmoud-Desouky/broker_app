@@ -118,7 +118,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     } else if (deepLink.contains('amazon')) {
       return 'https://www.amazon.com';
     } else if (deepLink.contains('taobao')) {
-      return 'https://www.taobao.com';
+      return 'https://world.taobao.com'; // Use international version
     } else if (deepLink.contains('alibaba')) {
       return 'https://www.alibaba.com';
     } else if (deepLink.contains('temu')) {
@@ -312,10 +312,42 @@ class _WebViewScreenState extends State<WebViewScreen> {
           );
         }
       },
-      onLoadStart: (controller, url) {
+      onLoadStart: (controller, url) async {
         if (url != null) {
           final urlString = url.toString();
           _navigationCount++;
+
+          // CRITICAL: Intercept Taobao login/redirect URLs BEFORE they load
+          if (widget.initialUrl.toLowerCase().contains('taobao.com')) {
+            final isLoginUrl =
+                urlString.contains('login.taobao.com') ||
+                urlString.contains('login.m.taobao.com') ||
+                urlString.contains('login.tmall.com') ||
+                urlString.contains('m.intl.taobao.com') ||
+                urlString.contains('passport.taobao.com') ||
+                urlString.contains('oauth.taobao.com');
+
+            if (isLoginUrl) {
+              if (kDebugMode) {
+                debugPrint(
+                  '🚫 INTERCEPTED Taobao redirect URL in onLoadStart: $urlString',
+                );
+                debugPrint(
+                  '🔄 Stopping load and redirecting to world.taobao.com',
+                );
+              }
+
+              // Stop the current load immediately
+              await controller.stopLoading();
+
+              // Redirect to world.taobao.com
+              await controller.loadUrl(
+                urlRequest: URLRequest(url: WebUri('https://world.taobao.com')),
+              );
+
+              return; // Don't continue with normal load logic
+            }
+          }
 
           // Check for infinite loop prevention
           if (_lastLoadedUrl == urlString && _navigationCount > 5) {
@@ -355,6 +387,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
               debugPrint('⏳ Waiting 3 seconds for SHEIN dynamic content...');
             }
             await Future.delayed(const Duration(seconds: 3));
+          }
+
+          // Inject language-switching scripts for Taobao
+          if (url.toString().toLowerCase().contains('taobao.com')) {
+            await _injectTaobaoLanguageScripts(controller);
           }
 
           // Inject additional compatibility scripts after page load
@@ -521,6 +558,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
             '🔗 Is for main frame: ${navigationAction.isForMainFrame}',
           );
         }
+
+        // NOTE: Taobao redirect interception is now handled in onLoadStart
+        // for earlier interception before page load begins
 
         // Handle deep links from e-commerce apps
         if (url.startsWith('aliexpress://') ||
@@ -727,6 +767,47 @@ class _WebViewScreenState extends State<WebViewScreen> {
         );
       }
 
+      // Set language cookies specifically for Taobao (English)
+      if (widget.initialUrl.toLowerCase().contains('taobao.com')) {
+        // Set language to English
+        await cookieManager.setCookie(
+          url: WebUri('https://world.taobao.com'),
+          name: 'thw',
+          value: 'en',
+          domain: '.taobao.com',
+          isSecure: true,
+          isHttpOnly: false,
+          sameSite: HTTPCookieSameSitePolicy.LAX,
+          maxAge: 31536000, // 1 year
+        );
+
+        await cookieManager.setCookie(
+          url: WebUri('https://world.taobao.com'),
+          name: 't',
+          value: 'en',
+          domain: '.taobao.com',
+          isSecure: true,
+          isHttpOnly: false,
+          sameSite: HTTPCookieSameSitePolicy.LAX,
+          maxAge: 31536000, // 1 year
+        );
+
+        await cookieManager.setCookie(
+          url: WebUri('https://world.taobao.com'),
+          name: '_lang',
+          value: 'en_US',
+          domain: '.taobao.com',
+          isSecure: true,
+          isHttpOnly: false,
+          sameSite: HTTPCookieSameSitePolicy.LAX,
+          maxAge: 31536000, // 1 year
+        );
+
+        if (kDebugMode) {
+          debugPrint('🌐 Taobao language cookies set to English');
+        }
+      }
+
       if (kDebugMode) {
         debugPrint('🍪 Enhanced cookies configured for e-commerce platforms');
       }
@@ -867,6 +948,91 @@ class _WebViewScreenState extends State<WebViewScreen> {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('⚠️ Error injecting anti-detection scripts: $e');
+      }
+    }
+  }
+
+  Future<void> _injectTaobaoLanguageScripts(
+    InAppWebViewController controller,
+  ) async {
+    try {
+      // Get current URL to verify we're on world.taobao.com
+      final currentUrl = await controller.getUrl();
+      if (currentUrl == null) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Cannot inject Taobao language scripts: URL is null');
+        }
+        return;
+      }
+
+      final urlString = currentUrl.toString();
+
+      // Only inject on world.taobao.com to avoid cookie security errors
+      if (!urlString.contains('world.taobao.com')) {
+        if (kDebugMode) {
+          debugPrint(
+            '⚠️ Skipping Taobao language scripts: Not on world.taobao.com (current: $urlString)',
+          );
+        }
+        return;
+      }
+
+      // JavaScript to switch Taobao to English
+      const taobaoLanguageScript = '''
+        (function() {
+          console.log('🌐 Injecting Taobao language scripts on world.taobao.com');
+
+          // Only try to set cookies if we're on world.taobao.com
+          if (window.location.hostname.includes('world.taobao.com')) {
+            try {
+              document.cookie = "thw=en; domain=.taobao.com; path=/; max-age=31536000";
+              document.cookie = "t=en; domain=.taobao.com; path=/; max-age=31536000";
+              document.cookie = "_lang=en_US; domain=.taobao.com; path=/; max-age=31536000";
+              console.log('✅ Language cookies set successfully');
+            } catch (e) {
+              console.log('⚠️ Could not set cookies:', e.message);
+            }
+          }
+
+          // Try to find and click language switcher if exists
+          setTimeout(function() {
+            // Common language switcher selectors
+            const languageSelectors = [
+              'a[href*="lang=en"]',
+              'a[href*="language=en"]',
+              'button[data-lang="en"]',
+              '.language-switcher[data-lang="en"]',
+              '[class*="lang-en"]',
+              '[class*="english"]'
+            ];
+
+            for (const selector of languageSelectors) {
+              const element = document.querySelector(selector);
+              if (element) {
+                console.log('🌐 Found language switcher:', selector);
+                element.click();
+                break;
+              }
+            }
+
+            // Try to change HTML lang attribute
+            if (document.documentElement) {
+              document.documentElement.lang = 'en';
+            }
+
+            console.log('✅ Taobao language scripts injected');
+          }, 1000);
+        })();
+      ''';
+
+      await controller.evaluateJavascript(source: taobaoLanguageScript);
+
+      if (kDebugMode) {
+        debugPrint('🌐 Taobao language scripts injected on world.taobao.com');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error injecting Taobao language scripts: $e');
       }
     }
   }
