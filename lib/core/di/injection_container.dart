@@ -46,6 +46,18 @@ import '../../features/webview/domain/usecases/save_webview_state.dart';
 import '../../features/webview/domain/usecases/get_platform_url.dart';
 import '../../features/webview/presentation/bloc/webview_bloc.dart';
 
+// Support chat
+import '../../features/support_chat/data/datasources/support_chat_remote_ds.dart';
+import '../../features/support_chat/data/repositories/support_chat_repo_impl.dart';
+import '../../features/support_chat/domain/repositories/support_chat_repository.dart';
+import '../../features/support_chat/domain/usecases/create_or_get_thread.dart';
+import '../../features/support_chat/domain/usecases/subscribe_messages.dart';
+import '../../features/support_chat/domain/usecases/send_message.dart';
+import '../../features/support_chat/domain/usecases/list_threads.dart';
+import '../../features/support_chat/domain/usecases/close_thread.dart';
+import '../../features/support_chat/presentation/bloc/thread/chat_thread_bloc.dart';
+import '../../features/support_chat/presentation/bloc/list/chat_list_bloc.dart';
+
 // Cart feature imports
 import '../../features/cart/data/datasources/cart_remote_data_source.dart';
 import '../../features/cart/data/repositories/cart_repository_impl.dart';
@@ -87,6 +99,8 @@ Future<void> init() async {
 
   //! Features - Wallet
   await _initWallet();
+  //! Features - Support Chat
+  await _initSupportChat();
 
   //! Core
   await _initCore();
@@ -187,6 +201,35 @@ Future<void> _initHome() async {
   sl.registerLazySingleton<HomeLocalDataSource>(
     () => HomeLocalDataSourceImpl(),
   );
+}
+
+Future<void> _initSupportChat() async {
+  // Use cases
+  sl.registerLazySingleton(() => CreateOrGetThread(sl()));
+  sl.registerLazySingleton(() => SubscribeMessages(sl()));
+  sl.registerLazySingleton(() => SendMessage(sl()));
+  sl.registerLazySingleton(() => ListThreads(sl()));
+  sl.registerLazySingleton(() => CloseThread(sl()));
+
+  // Repository
+  sl.registerLazySingleton<SupportChatRepository>(
+        () => SupportChatRepositoryImpl(remote: sl()),
+  );
+
+  // Data source
+  sl.registerLazySingleton<SupportChatRemoteDataSource>(
+        () => SupportChatRemoteDataSource(sl()), // Supabase client already registered
+  );
+
+  // Blocs
+  sl.registerFactory(() => ChatThreadBloc(
+    createOrGetThread: sl(),
+    subscribeMessages: sl(),
+    sendMessage: sl(),
+    closeThread: sl(),
+  ));
+
+  sl.registerFactory(() => ChatListBloc(listThreads: sl()));
 }
 
 Future<void> _initWebView() async {

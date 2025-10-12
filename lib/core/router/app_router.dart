@@ -5,6 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../features/authentication/presentation/pages/phone_input_page.dart';
 import '../../features/authentication/presentation/pages/otp_verification_page.dart';
 import '../../features/authentication/presentation/pages/registration_page.dart';
+
+import 'package:broker_app/features/support_chat/presentation/pages/support_threads_page.dart';
+import 'package:broker_app/features/support_chat/presentation/pages/support_chat_page.dart';
+
 import '../../features/temp_auth/presentation/pages/temp_login_page.dart';
 import '../../features/temp_auth/presentation/pages/temp_signup_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -25,6 +29,10 @@ class AppRouter {
   static const String phoneInput = '/phone-input';
   static const String otpVerification = '/otp-verification';
   static const String registration = '/registration';
+
+  static const String support = '/support';
+  static const String supportThread = '/support/thread';
+
   static const String tempLogin = '/temp-login';
   static const String tempSignup = '/temp-signup';
   static const String main = '/main';
@@ -116,6 +124,21 @@ class AppRouter {
           final url = state.uri.queryParameters['url'] ?? '';
           final title = state.uri.queryParameters['title'] ?? 'متصفح';
           return WebViewScreen(initialUrl: url, title: title);
+        },
+      ),
+
+      GoRoute(
+        path: support,
+        name: 'support-threads',
+        builder: (context, state) => const SupportThreadsPage(),
+      ),
+      GoRoute(
+        path: '$supportThread/:threadId',
+        name: 'support-thread',
+        builder: (context, state) {
+          final id = state.pathParameters['threadId'];
+          // if you ever pass 'new', SupportChatPage will create/get via RPC
+          return SupportChatPage(threadId: id == 'new' ? null : id);
         },
       ),
 
@@ -230,6 +253,21 @@ class AppRouter {
   static bool isMainRoute(String location) {
     return location.startsWith('/main');
   }
+
+
+  static void goToSupportList(BuildContext context) {
+    context.push(support);
+  }
+
+  static void goToSupportThread(BuildContext context, String threadId) {
+    context.push('$supportThread/$threadId');
+  }
+
+// Optional: for "start new" (create-or-get via RPC on page load)
+  static void goToSupportNew(BuildContext context) {
+    context.push('$supportThread/new');
+  }
+
 
   // Get current tab index for bottom navigation
   static int getCurrentTabIndex(String location) {

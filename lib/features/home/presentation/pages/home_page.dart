@@ -1,3 +1,4 @@
+import 'package:broker_app/core/router/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -32,8 +33,12 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: AppColors.background,
       appBar: CustomAppBar(
         notificationCount: 3, // Dummy notification count
-        onSupportTap: () {
-          // TODO: Navigate to customer support
+        onSupportTap: () async {
+          // If you want a list first:
+          AppRouter.goToSupportList(context);
+
+          // If you want to jump straight to "create or get" chat:
+          // AppRouter.goToSupportNew(context);
         },
         onNotificationTap: () {
           // TODO: Navigate to notifications
