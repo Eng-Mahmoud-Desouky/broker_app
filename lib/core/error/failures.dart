@@ -42,3 +42,20 @@ class InvalidOtpFailure extends Failure {
 class OtpExpiredFailure extends Failure {
   const OtpExpiredFailure({required super.message});
 }
+
+// Wallet specific failures
+class WalletFailure extends Failure {
+  const WalletFailure({required super.message});
+}
+
+class InsufficientBalanceFailure extends Failure {
+  const InsufficientBalanceFailure({required super.message});
+}
+
+class PaymentFailure extends Failure {
+  const PaymentFailure({required super.message});
+}
+
+class InvalidAmountFailure extends Failure {
+  const InvalidAmountFailure({required super.message});
+}
