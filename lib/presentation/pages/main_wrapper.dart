@@ -71,6 +71,11 @@ class MainWrapper extends StatelessWidget {
               activeIcon: Icon(Icons.shopping_cart),
               label: 'السلة',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              activeIcon: Icon(Icons.account_balance_wallet),
+              label: 'المحفظة',
+            ),
           ],
         ),
       ),
@@ -93,6 +98,9 @@ class MainWrapper extends StatelessWidget {
         break;
       case 4:
         context.go(AppRouter.cart);
+        break;
+      case 5:
+        context.go(AppRouter.wallet);
         break;
     }
   }

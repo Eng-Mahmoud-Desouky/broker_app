@@ -69,6 +69,16 @@ import '../../features/cart/domain/usecases/remove_from_cart.dart';
 import '../../features/cart/domain/usecases/clear_cart.dart';
 import '../../features/cart/presentation/bloc/cart_bloc.dart';
 
+// Wallet feature imports
+import '../../features/wallet/data/datasources/wallet_remote_data_source.dart';
+import '../../features/wallet/data/repositories/wallet_repository_impl.dart';
+import '../../features/wallet/domain/repositories/wallet_repository.dart';
+import '../../features/wallet/domain/usecases/get_wallet_balance.dart';
+import '../../features/wallet/domain/usecases/get_transaction_history.dart';
+import '../../features/wallet/domain/usecases/create_topup_transaction.dart';
+import '../../features/wallet/domain/usecases/get_transaction_by_id.dart';
+import '../../features/wallet/presentation/bloc/wallet_bloc.dart';
+
 import '../network/network_info.dart';
 import '../utils/constants.dart';
 
@@ -87,6 +97,8 @@ Future<void> init() async {
   //! Features - Cart
   await _initCart();
 
+  //! Features - Wallet
+  await _initWallet();
   //! Features - Support Chat
   await _initSupportChat();
 
@@ -310,4 +322,32 @@ Future<void> _initExternal() async {
 
   // Supabase client
   sl.registerLazySingleton(() => Supabase.instance.client);
+}
+
+Future<void> _initWallet() async {
+  // Bloc
+  sl.registerFactory(
+    () => WalletBloc(
+      getWalletBalance: sl(),
+      getTransactionHistory: sl(),
+      createTopUpTransaction: sl(),
+      getTransactionById: sl(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetWalletBalance(sl()));
+  sl.registerLazySingleton(() => GetTransactionHistory(sl()));
+  sl.registerLazySingleton(() => CreateTopUpTransaction(sl()));
+  sl.registerLazySingleton(() => GetTransactionById(sl()));
+
+  // Repository
+  sl.registerLazySingleton<WalletRepository>(
+    () => WalletRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<WalletRemoteDataSource>(
+    () => WalletRemoteDataSourceImpl(supabaseClient: sl()),
+  );
 }

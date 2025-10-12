@@ -17,6 +17,7 @@ import '../../features/home/presentation/pages/platform_products_page.dart';
 import '../../features/home/presentation/pages/product_list_page.dart';
 import '../../features/home/presentation/pages/product_details_page.dart';
 import '../../features/webview/presentation/pages/webview_screen.dart';
+import '../../features/wallet/presentation/pages/wallet_screen.dart';
 import '../../presentation/pages/main_wrapper.dart';
 import '../../presentation/pages/favorites_page.dart';
 import '../../presentation/pages/profile_page.dart';
@@ -40,6 +41,7 @@ class AppRouter {
   static const String profile = '/main/profile';
   static const String settings = '/main/settings';
   static const String cart = '/main/cart';
+  static const String wallet = '/main/wallet';
   static const String offers = '/offers';
   static const String platformProducts = '/platform';
   static const String products = '/products';
@@ -169,6 +171,11 @@ class AppRouter {
             name: 'cart',
             builder: (context, state) => const CartScreen(),
           ),
+          GoRoute(
+            path: AppRouter.wallet,
+            name: 'wallet',
+            builder: (context, state) => const WalletScreen(),
+          ),
         ],
       ),
     ],
@@ -238,6 +245,10 @@ class AppRouter {
     context.go(tempSignup);
   }
 
+  static void goToWallet(BuildContext context) {
+    context.go(wallet);
+  }
+
   // Check if current route is in main app
   static bool isMainRoute(String location) {
     return location.startsWith('/main');
@@ -271,6 +282,8 @@ class AppRouter {
         return 3;
       case cart:
         return 4;
+      case wallet:
+        return 5;
       default:
         return 0;
     }
