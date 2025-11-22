@@ -28,11 +28,12 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
   @override
   Future<WalletModel> getWalletBalance(String userId) async {
     try {
-      final response = await supabaseClient
-          .from('wallets')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
+      final response =
+          await supabaseClient
+              .from('wallets')
+              .select('*')
+              .eq('user_id', userId)
+              .single();
 
       return WalletModel.fromJson(response);
     } on PostgrestException catch (e) {
@@ -66,7 +67,10 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
       final response = await query;
 
       return (response as List<dynamic>)
-          .map((json) => WalletTransactionModel.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) =>
+                WalletTransactionModel.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
     } on PostgrestException catch (e) {
       throw ServerException(message: 'Database error: ${e.message}');
@@ -83,10 +87,7 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
     try {
       final response = await supabaseClient.functions.invoke(
         'zaincash-topup',
-        body: {
-          'user_id': userId,
-          'amount': amount.toString(),
-        },
+        body: {'user_id': userId, 'amount': amount},
       );
 
       if (response.data == null) {
@@ -102,13 +103,16 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
   }
 
   @override
-  Future<WalletTransactionModel> getTransactionById(String transactionId) async {
+  Future<WalletTransactionModel> getTransactionById(
+    String transactionId,
+  ) async {
     try {
-      final response = await supabaseClient
-          .from('wallet_transactions')
-          .select('*')
-          .eq('id', transactionId)
-          .single();
+      final response =
+          await supabaseClient
+              .from('wallet_transactions')
+              .select('*')
+              .eq('id', transactionId)
+              .single();
 
       return WalletTransactionModel.fromJson(response);
     } on PostgrestException catch (e) {
@@ -131,7 +135,9 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
           return WalletModel.fromJson(data.first);
         })
         .handleError((error) {
-          throw ServerException(message: 'Failed to watch wallet balance: $error');
+          throw ServerException(
+            message: 'Failed to watch wallet balance: $error',
+          );
         });
   }
 
@@ -148,7 +154,9 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
               .toList();
         })
         .handleError((error) {
-          throw ServerException(message: 'Failed to watch transaction history: $error');
+          throw ServerException(
+            message: 'Failed to watch transaction history: $error',
+          );
         });
   }
 }

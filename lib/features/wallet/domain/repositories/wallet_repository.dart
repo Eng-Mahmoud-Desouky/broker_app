@@ -18,15 +18,19 @@ abstract class WalletRepository {
   /// Create a top-up transaction and get payment session
   Future<Either<Failure, Map<String, dynamic>>> createTopUpTransaction({
     required String userId,
-    required int amount, // Amount in fils
+    required int amount, // Amount in Iraqi Dinars (IQD)
   });
 
   /// Get transaction by ID
-  Future<Either<Failure, WalletTransaction>> getTransactionById(String transactionId);
+  Future<Either<Failure, WalletTransaction>> getTransactionById(
+    String transactionId,
+  );
 
   /// Stream wallet balance changes
   Stream<Either<Failure, Wallet>> watchWalletBalance(String userId);
 
   /// Stream transaction history changes
-  Stream<Either<Failure, List<WalletTransaction>>> watchTransactionHistory(String userId);
+  Stream<Either<Failure, List<WalletTransaction>>> watchTransactionHistory(
+    String userId,
+  );
 }

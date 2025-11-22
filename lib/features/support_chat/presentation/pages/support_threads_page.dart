@@ -36,12 +36,15 @@ class SupportThreadsPage extends StatelessWidget {
           title: Text(forAgent ? 'All Support Threads' : 'My Support Threads'),
           actions: [
             Builder(
-              builder: (ctx) => IconButton(
-                tooltip: 'Refresh',
-                icon: const Icon(Icons.refresh),
-                onPressed: () =>
-                    ctx.read<ChatListBloc>().add(const RefreshChatThreads()),
-              ),
+              builder:
+                  (ctx) => IconButton(
+                    tooltip: 'Refresh',
+                    icon: const Icon(Icons.refresh),
+                    onPressed:
+                        () => ctx.read<ChatListBloc>().add(
+                          const RefreshChatThreads(),
+                        ),
+                  ),
             ),
           ],
         ),
@@ -66,8 +69,9 @@ class SupportThreadsPage extends StatelessWidget {
 
                       try {
                         final repo = sl<SupportChatRepository>();
-                        final thread =
-                        await repo.createOrGetMyThread(subject: subject);
+                        final thread = await repo.createOrGetMyThread(
+                          subject: subject,
+                        );
                         if (context.mounted) {
                           context.push('/support/thread/${thread.id}');
                         }
@@ -99,12 +103,15 @@ class SupportThreadsPage extends StatelessWidget {
                       final message = Uri.encodeComponent(
                         'Hello, I need help with the Broker app.',
                       );
-                      final url =
-                      Uri.parse('https://wa.me/$phone?text=$message');
+                      final url = Uri.parse(
+                        'https://wa.me/$phone?text=$message',
+                      );
 
                       if (await canLaunchUrl(url)) {
-                        await launchUrl(url,
-                            mode: LaunchMode.externalApplication);
+                        await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication,
+                        );
                       } else {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -149,8 +156,8 @@ class _ThreadListView extends StatelessWidget {
               border: OutlineInputBorder(),
               isDense: true,
             ),
-            onChanged: (q) =>
-                context.read<ChatListBloc>().add(ApplyThreadSearch(q)),
+            onChanged:
+                (q) => context.read<ChatListBloc>().add(ApplyThreadSearch(q)),
           ),
         ),
 
@@ -181,9 +188,9 @@ class _ThreadListView extends StatelessWidget {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context
-                        .read<ChatListBloc>()
-                        .add(const RefreshChatThreads());
+                    context.read<ChatListBloc>().add(
+                      const RefreshChatThreads(),
+                    );
                   },
                   color: Theme.of(context).colorScheme.primary,
                   child: ListView.separated(
@@ -218,8 +225,7 @@ class _ThreadTile extends StatelessWidget {
     return ListTile(
       leading: Icon(
         isClosed ? Icons.check_circle_outline : Icons.forum_outlined,
-        color:
-        isClosed ? Colors.green : Theme.of(context).colorScheme.primary,
+        color: isClosed ? Colors.green : Theme.of(context).colorScheme.primary,
       ),
       title: Text(
         (thread.subject?.trim().isNotEmpty ?? false)
@@ -231,7 +237,7 @@ class _ThreadTile extends StatelessWidget {
       ),
       subtitle: Text(
         'Status: ${thread.status.toUpperCase()} • '
-            'Last: ${df.format(thread.lastMessageAt)}',
+        'Last: ${df.format(thread.lastMessageAt)}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -269,8 +275,7 @@ class _NewThreadSubjectDialogState extends State<_NewThreadSubjectDialog> {
           border: OutlineInputBorder(),
         ),
         textInputAction: TextInputAction.done,
-        onSubmitted: (_) =>
-            Navigator.of(context).pop(_controller.text.trim()),
+        onSubmitted: (_) => Navigator.of(context).pop(_controller.text.trim()),
       ),
       actions: [
         TextButton(

@@ -44,10 +44,7 @@ class WalletTopUpRequested extends WalletEvent {
   final String userId;
   final int amount; // Amount in fils
 
-  const WalletTopUpRequested({
-    required this.userId,
-    required this.amount,
-  });
+  const WalletTopUpRequested({required this.userId, required this.amount});
 
   @override
   List<Object> get props => [userId, amount];
@@ -89,4 +86,20 @@ class WalletTransactionsUpdated extends WalletEvent {
 
   @override
   List<Object> get props => [transactions];
+}
+
+class WalletUnauthenticatedRequested extends WalletEvent {
+  const WalletUnauthenticatedRequested();
+
+  @override
+  List<Object> get props => [];
+}
+
+class WalletErrorOccurred extends WalletEvent {
+  final String message;
+
+  const WalletErrorOccurred({required this.message});
+
+  @override
+  List<Object> get props => [message];
 }

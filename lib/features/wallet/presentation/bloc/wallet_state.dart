@@ -51,10 +51,7 @@ class WalletTopUpLoading extends WalletState {
   final Wallet wallet;
   final List<WalletTransaction> transactions;
 
-  const WalletTopUpLoading({
-    required this.wallet,
-    required this.transactions,
-  });
+  const WalletTopUpLoading({required this.wallet, required this.transactions});
 
   @override
   List<Object> get props => [wallet, transactions];
@@ -90,4 +87,26 @@ class WalletTopUpError extends WalletState {
 
   @override
   List<Object> get props => [wallet, transactions, message];
+}
+
+class WalletUnauthenticated extends WalletState {
+  const WalletUnauthenticated();
+
+  @override
+  List<Object> get props => [];
+}
+
+class WalletTopUpCompleted extends WalletState {
+  final Wallet wallet;
+  final List<WalletTransaction> transactions;
+  final String transactionId;
+
+  const WalletTopUpCompleted({
+    required this.wallet,
+    required this.transactions,
+    required this.transactionId,
+  });
+
+  @override
+  List<Object> get props => [wallet, transactions, transactionId];
 }

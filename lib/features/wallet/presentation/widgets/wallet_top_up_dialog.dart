@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -5,7 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
 class WalletTopUpDialog extends StatefulWidget {
-  final Function(int amount) onTopUp; // Amount in fils
+  final Function(int amount) onTopUp; // Amount in Iraqi Dinars (IQD)
 
   const WalletTopUpDialog({super.key, required this.onTopUp});
 
@@ -258,11 +260,14 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
         amount = double.parse(_amountController.text);
       }
 
-      // Convert dinars to fils (multiply by 1000)
-      final amountInFils = (amount * 1000).round();
+      log('💰 Top-up amount: $amount د.ع');
 
-      Navigator.of(context).pop();
-      widget.onTopUp(amountInFils);
+      // Convert to integer (amount is already in dinars)
+      final amountInDinars = amount.round();
+      log('💰 Amount in dinars: $amountInDinars');
+
+      // Call the callback with amount in dinars
+      widget.onTopUp(amountInDinars);
     }
   }
 }

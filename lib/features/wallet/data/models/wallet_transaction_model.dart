@@ -15,17 +15,53 @@ class WalletTransactionModel extends WalletTransaction {
   });
 
   factory WalletTransactionModel.fromJson(Map<String, dynamic> json) {
+    // Handle nullable fields from Supabase
+    final id = json['id'];
+    if (id == null) {
+      throw FormatException('id cannot be null in transaction data');
+    }
+
+    final userId = json['user_id'];
+    if (userId == null) {
+      throw FormatException('user_id cannot be null in transaction data');
+    }
+
+    final amount = json['amount'];
+    if (amount == null) {
+      throw FormatException('amount cannot be null in transaction data');
+    } 
+
+    final typeStr = json['type'];
+    if (typeStr == null) {
+      throw FormatException('type cannot be null in transaction data');
+    }
+
+    final statusStr = json['status'];
+    if (statusStr == null) {
+      throw FormatException('status cannot be null in transaction data');
+    }
+
+    final createdAtStr = json['created_at'];
+    if (createdAtStr == null) {
+      throw FormatException('created_at cannot be null in transaction data');
+    }
+
+    final updatedAtStr = json['updated_at'];
+    if (updatedAtStr == null) {
+      throw FormatException('updated_at cannot be null in transaction data');
+    }
+
     return WalletTransactionModel(
-      id: json['id'] as String,
-      userId: json['user_id'] as String,
-      amount: json['amount'] as int,
-      type: _parseTransactionType(json['type'] as String),
+      id: id as String,
+      userId: userId as String,
+      amount: amount as int,
+      type: _parseTransactionType(typeStr as String),
       provider: json['provider'] as String?,
       providerReference: json['provider_reference'] as String?,
-      status: _parseTransactionStatus(json['status'] as String),
+      status: _parseTransactionStatus(statusStr as String),
       metadata: json['metadata'] as Map<String, dynamic>?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: DateTime.parse(createdAtStr as String),
+      updatedAt: DateTime.parse(updatedAtStr as String),
     );
   }
 
