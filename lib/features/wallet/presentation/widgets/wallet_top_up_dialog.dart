@@ -20,10 +20,6 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
   final _amountController = TextEditingController();
   final _focusNode = FocusNode();
 
-  // Predefined amounts in dinars
-  final List<double> _predefinedAmounts = [5.0, 10.0, 25.0, 50.0, 100.0];
-  double? _selectedAmount;
-
   @override
   void initState() {
     super.initState();
@@ -56,8 +52,6 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
                 children: [
                   _buildHeader(),
                   const SizedBox(height: 24),
-                  _buildPredefinedAmounts(),
-                  const SizedBox(height: 16),
                   _buildCustomAmountField(),
                   const SizedBox(height: 24),
                   _buildPaymentInfo(),
@@ -85,57 +79,9 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
         ),
         const SizedBox(height: 8),
         Text(
-          'اختر المبلغ الذي تريد شحنه في محفظتك',
+          'أدخل المبلغ الذي تريد شحنه في محفظتك',
           style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey600),
           textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPredefinedAmounts() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'مبالغ سريعة',
-          style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children:
-              _predefinedAmounts.map((amount) {
-                final isSelected = _selectedAmount == amount;
-                return GestureDetector(
-                  onTap: () => _selectPredefinedAmount(amount),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary : AppColors.grey100,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color:
-                            isSelected ? AppColors.primary : AppColors.border,
-                      ),
-                    ),
-                    child: Text(
-                      '${amount.toStringAsFixed(0)} د.ع',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color:
-                            isSelected
-                                ? AppColors.onPrimary
-                                : AppColors.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
         ),
       ],
     );
@@ -145,11 +91,6 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'أو أدخل مبلغ مخصص',
-          style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
         TextFormField(
           controller: _amountController,
           focusNode: _focusNode,
@@ -167,11 +108,6 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
             ),
           ),
           validator: _validateAmount,
-          onChanged: (value) {
-            setState(() {
-              _selectedAmount = null; // Clear predefined selection
-            });
-          },
         ),
       ],
     );
@@ -219,19 +155,9 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
     );
   }
 
-  void _selectPredefinedAmount(double amount) {
-    setState(() {
-      _selectedAmount = amount;
-      _amountController.text = amount.toStringAsFixed(3);
-    });
-  }
-
   String? _validateAmount(String? value) {
     if (value == null || value.isEmpty) {
-      if (_selectedAmount == null) {
-        return 'يرجى إدخال المبلغ أو اختيار مبلغ سريع';
-      }
-      return null;
+      return 'يرجى إدخال المبلغ';
     }
 
     final amount = double.tryParse(value);
@@ -252,13 +178,7 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
 
   void _submitTopUp() {
     if (_formKey.currentState!.validate()) {
-      double amount;
-
-      if (_selectedAmount != null) {
-        amount = _selectedAmount!;
-      } else {
-        amount = double.parse(_amountController.text);
-      }
+      final amount = double.parse(_amountController.text);
 
       log('💰 Top-up amount: $amount د.ع');
 
