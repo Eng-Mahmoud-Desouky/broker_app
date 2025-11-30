@@ -95,6 +95,15 @@ class WalletUnauthenticatedRequested extends WalletEvent {
   List<Object> get props => [];
 }
 
+class WalletTopUpSessionClosed extends WalletEvent {
+  final String userId;
+
+  const WalletTopUpSessionClosed({required this.userId});
+
+  @override
+  List<Object> get props => [userId];
+}
+
 class WalletErrorOccurred extends WalletEvent {
   final String message;
 

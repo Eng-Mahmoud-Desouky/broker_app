@@ -400,6 +400,7 @@ class _WalletScreenState extends State<WalletScreen> {
               child: PaymentWebViewScreen(
                 paymentUrl: paymentUrl,
                 transactionId: transactionId,
+                userId: _currentUserId!,
               ),
             ),
       ),

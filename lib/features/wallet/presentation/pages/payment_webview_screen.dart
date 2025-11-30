@@ -13,11 +13,13 @@ import '../bloc/wallet_bloc.dart';
 class PaymentWebViewScreen extends StatefulWidget {
   final String paymentUrl;
   final String transactionId;
+  final String userId;
 
   const PaymentWebViewScreen({
     super.key,
     required this.paymentUrl,
     required this.transactionId,
+    required this.userId,
   });
 
   @override
@@ -349,6 +351,14 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       debugPrint('   canPop: ${Navigator.of(context).canPop()}');
     }
 
+    // Dispatch event to reset wallet state
+    if (kDebugMode) {
+      debugPrint('   Dispatching WalletTopUpSessionClosed event...');
+    }
+    context.read<WalletBloc>().add(
+      WalletTopUpSessionClosed(userId: widget.userId),
+    );
+
     // Close dialog if it's open
     if (_isDialogOpen) {
       if (kDebugMode) {
@@ -462,6 +472,16 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
                   // Cancel timer when user closes payment
                   _autoCloseTimer?.cancel();
                   _isDialogOpen = false;
+
+                  // Dispatch event to reset wallet state
+                  if (kDebugMode) {
+                    debugPrint(
+                      '   Dispatching WalletTopUpSessionClosed event...',
+                    );
+                  }
+                  context.read<WalletBloc>().add(
+                    WalletTopUpSessionClosed(userId: widget.userId),
+                  );
 
                   // Close confirmation dialog
                   try {

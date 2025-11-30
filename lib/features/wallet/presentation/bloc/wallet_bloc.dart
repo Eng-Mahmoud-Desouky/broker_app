@@ -30,6 +30,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     on<WalletRefreshRequested>(_onWalletRefreshRequested);
     on<WalletTopUpRequested>(_onWalletTopUpRequested);
     on<WalletTransactionStatusChecked>(_onWalletTransactionStatusChecked);
+    on<WalletTopUpSessionClosed>(_onWalletTopUpSessionClosed);
     on<WalletUnauthenticatedRequested>(_onWalletUnauthenticatedRequested);
     on<WalletErrorOccurred>(_onWalletErrorOccurred);
   }
@@ -348,6 +349,116 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       );
     } catch (e) {
       // If refresh fails, keep the current state
+    }
+  }
+
+  Future<void> _onWalletTopUpSessionClosed(
+    WalletTopUpSessionClosed event,
+    Emitter<WalletState> emit,
+  ) async {
+    if (kDebugMode) {
+      debugPrint('🔄 WalletTopUpSessionClosed event received');
+      debugPrint('   User ID: ${event.userId}');
+      debugPrint('   Current state: ${state.runtimeType}');
+    }
+
+    // Only handle if we're in a top-up related state
+    if (state is WalletTopUpSessionCreated ||
+        state is WalletTopUpLoading ||
+        state is WalletTopUpError) {
+      final Wallet currentWallet;
+      final List<WalletTransaction> currentTransactions;
+
+      if (state is WalletTopUpSessionCreated) {
+        final sessionState = state as WalletTopUpSessionCreated;
+        currentWallet = sessionState.wallet;
+        currentTransactions = sessionState.transactions;
+      } else if (state is WalletTopUpLoading) {
+        final loadingState = state as WalletTopUpLoading;
+        currentWallet = loadingState.wallet;
+        currentTransactions = loadingState.transactions;
+      } else {
+        final errorState = state as WalletTopUpError;
+        currentWallet = errorState.wallet;
+        currentTransactions = errorState.transactions;
+      }
+
+      if (kDebugMode) {
+        debugPrint('   Refreshing wallet data...');
+      }
+
+      try {
+        // Refresh wallet data
+        final walletResult = await getWalletBalance(
+          GetWalletBalanceParams(userId: event.userId),
+        );
+
+        await walletResult.fold(
+          (failure) async {
+            if (kDebugMode) {
+              debugPrint('   ⚠️ Failed to refresh wallet: ${failure.message}');
+              debugPrint('   Using cached wallet data');
+            }
+            // Use cached data if refresh fails
+            emit(
+              WalletLoaded(
+                wallet: currentWallet,
+                transactions: currentTransactions,
+              ),
+            );
+          },
+          (wallet) async {
+            // Load updated transaction history
+            final transactionsResult = await getTransactionHistory(
+              GetTransactionHistoryParams(userId: event.userId, limit: 20),
+            );
+
+            transactionsResult.fold(
+              (failure) {
+                if (kDebugMode) {
+                  debugPrint(
+                    '   ⚠️ Failed to refresh transactions: ${failure.message}',
+                  );
+                  debugPrint('   Using cached transactions');
+                }
+                // Use updated wallet with cached transactions if refresh fails
+                emit(
+                  WalletLoaded(
+                    wallet: wallet,
+                    transactions: currentTransactions,
+                  ),
+                );
+              },
+              (transactions) {
+                if (kDebugMode) {
+                  debugPrint('   ✅ Wallet refreshed successfully');
+                }
+                emit(WalletLoaded(wallet: wallet, transactions: transactions));
+              },
+            );
+          },
+        );
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('   ❌ Exception while refreshing: $e');
+          debugPrint('   Using cached wallet data');
+        }
+        // Use cached data if exception occurs
+        emit(
+          WalletLoaded(
+            wallet: currentWallet,
+            transactions: currentTransactions,
+          ),
+        );
+      }
+
+      if (kDebugMode) {
+        debugPrint('   State reset to WalletLoaded');
+      }
+    } else {
+      if (kDebugMode) {
+        debugPrint('   ⚠️ Ignoring - state is not top-up related');
+      }
     }
   }
 
