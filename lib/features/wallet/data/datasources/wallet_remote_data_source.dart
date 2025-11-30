@@ -85,20 +85,33 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
     required int amount,
   }) async {
     try {
-      final response = await supabaseClient.functions.invoke(
-        'zaincash-topup',
-        body: {'user_id': userId, 'amount': amount},
-      );
+      final response = await supabaseClient.functions
+          .invoke('zaincash-topup', body: {'user_id': userId, 'amount': amount})
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw ServerException(
+                message:
+                    'انتهت مهلة الاتصال بخدمة الدفع. يرجى المحاولة مرة أخرى.',
+              );
+            },
+          );
 
       if (response.data == null) {
-        throw ServerException(message: 'No response from payment service');
+        throw ServerException(message: 'لم يتم استلام رد من خدمة الدفع');
       }
 
       return response.data as Map<String, dynamic>;
     } on FunctionException catch (e) {
-      throw ServerException(message: 'Payment service error: ${e.details}');
+      throw ServerException(
+        message: 'خطأ في خدمة الدفع: ${e.details ?? e.toString()}',
+      );
+    } on ServerException {
+      rethrow; // Re-throw ServerException with original message
     } catch (e) {
-      throw ServerException(message: 'Failed to create top-up transaction: $e');
+      throw ServerException(
+        message: 'فشل الاتصال بخدمة الدفع. تأكد من اتصالك بالإنترنت: $e',
+      );
     }
   }
 

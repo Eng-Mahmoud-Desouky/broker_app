@@ -109,13 +109,25 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       debugPrint('   Amount (dinars): ${event.amount}');
     }
 
-    if (state is WalletLoaded) {
-      final currentState = state as WalletLoaded;
+    // Allow top-up from WalletLoaded or WalletTopUpError states
+    if (state is WalletLoaded || state is WalletTopUpError) {
+      final Wallet currentWallet;
+      final List<WalletTransaction> currentTransactions;
+
+      if (state is WalletLoaded) {
+        final loadedState = state as WalletLoaded;
+        currentWallet = loadedState.wallet;
+        currentTransactions = loadedState.transactions;
+      } else {
+        final errorState = state as WalletTopUpError;
+        currentWallet = errorState.wallet;
+        currentTransactions = errorState.transactions;
+      }
 
       emit(
         WalletTopUpLoading(
-          wallet: currentState.wallet,
-          transactions: currentState.transactions,
+          wallet: currentWallet,
+          transactions: currentTransactions,
         ),
       );
 
@@ -147,8 +159,8 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
 
             emit(
               WalletTopUpError(
-                wallet: currentState.wallet,
-                transactions: currentState.transactions,
+                wallet: currentWallet,
+                transactions: currentTransactions,
                 message: failure.message,
               ),
             );
@@ -173,8 +185,8 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
 
               emit(
                 WalletTopUpError(
-                  wallet: currentState.wallet,
-                  transactions: currentState.transactions,
+                  wallet: currentWallet,
+                  transactions: currentTransactions,
                   message:
                       'خطأ في إنشاء المعاملة: لم يتم استلام معرف المعاملة من الخادم',
                 ),
@@ -195,8 +207,8 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
 
             emit(
               WalletTopUpSessionCreated(
-                wallet: currentState.wallet,
-                transactions: currentState.transactions,
+                wallet: currentWallet,
+                transactions: currentTransactions,
                 transactionId: transactionId,
                 paymentUrl: paymentUrl,
               ),
@@ -215,8 +227,8 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
 
         emit(
           WalletTopUpError(
-            wallet: currentState.wallet,
-            transactions: currentState.transactions,
+            wallet: currentWallet,
+            transactions: currentTransactions,
             message: 'خطأ غير متوقع: $e',
           ),
         );
@@ -224,7 +236,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     } else {
       if (kDebugMode) {
         debugPrint(
-          '⚠️ WalletTopUpRequested ignored - state is not WalletLoaded',
+          '⚠️ WalletTopUpRequested ignored - state is not WalletLoaded or WalletTopUpError',
         );
         debugPrint('   Current state: ${state.runtimeType}');
       }
