@@ -13,7 +13,6 @@ import '../bloc/thread/chat_thread_bloc.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/message_bubble.dart';
 
-
 class SupportChatPage extends StatelessWidget {
   /// If null → will create/get the current user's active thread via RPC.
   final String? threadId;
@@ -34,10 +33,13 @@ class SupportChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<ChatThreadBloc>()
-        ..add(threadId == null
-            ? StartThread(subject: subject)
-            : SubscribeThread(threadId!)),
+      create:
+          (_) =>
+              sl<ChatThreadBloc>()..add(
+                threadId == null
+                    ? StartThread(subject: subject)
+                    : SubscribeThread(threadId!),
+              ),
       child: const _SupportChatScaffold(),
     );
   }
@@ -53,20 +55,20 @@ class _SupportChatScaffold extends StatelessWidget {
       listenWhen: (_, s) => s is ChatClosed || s is ChatError,
       listener: (context, state) {
         if (state is ChatClosed) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Conversation closed')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('تم إغلاق المحادثة')));
           context.pop(); // Back to threads
         } else if (state is ChatError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            tooltip: 'Back to threads',
+            tooltip: 'العودة للمحادثات',
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
@@ -80,20 +82,15 @@ class _SupportChatScaffold extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      (subj != null && subj.isNotEmpty)
-                          ? subj
-                          : 'Support Chat',
+                      (subj != null && subj.isNotEmpty) ? subj : 'الدعم الفني',
                       style: theme.textTheme.titleLarge,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      'Status: $status',
-                      style: theme.textTheme.labelSmall,
-                    ),
+                    Text('الحالة: $status', style: theme.textTheme.labelSmall),
                   ],
                 );
               }
-              return const Text('Support Chat');
+              return const Text('الدعم الفني');
             },
           ),
           actions: [
@@ -104,16 +101,18 @@ class _SupportChatScaffold extends StatelessWidget {
               builder: (innerCtx) {
                 return BlocBuilder<ChatThreadBloc, ChatThreadState>(
                   builder: (context, state) {
-                    final enabled = state is ChatReady &&
+                    final enabled =
+                        state is ChatReady &&
                         !(state.thread?.isClosed ?? false);
                     return IconButton(
-                      tooltip: 'Close thread',
+                      tooltip: 'إغلاق المحادثة',
                       icon: const Icon(Icons.check_circle_outline),
-                      onPressed: enabled
-                          ? () => innerCtx
-                          .read<ChatThreadBloc>()
-                          .add(const CloseThreadEvent())
-                          : null,
+                      onPressed:
+                          enabled
+                              ? () => innerCtx.read<ChatThreadBloc>().add(
+                                const CloseThreadEvent(),
+                              )
+                              : null,
                     );
                   },
                 );
@@ -166,7 +165,9 @@ class _ChatBodyState extends State<_ChatBody> {
             },
             builder: (context, state) {
               if (state is ChatLoading) {
-                return const LoadingIndicator(message: 'Loading chat…');
+                return const LoadingIndicator(
+                  message: 'جارٍ تحميل المحادثة...',
+                );
               }
               if (state is ChatError) {
                 return EmptyState(
@@ -175,14 +176,12 @@ class _ChatBodyState extends State<_ChatBody> {
                 );
               }
               if (state is ChatClosed) {
-                return const EmptyState(
-                  message: 'This conversation is closed.',
-                );
+                return const EmptyState(message: 'هذه المحادثة مغلقة.');
               }
               if (state is ChatReady) {
                 final messages = state.messages;
                 if (messages.isEmpty) {
-                  return const EmptyState(message: 'Say hello! 👋');
+                  return const EmptyState(message: 'قل مرحباً! 👋');
                 }
                 final currentUid =
                     Supabase.instance.client.auth.currentUser?.id;
@@ -214,13 +213,14 @@ class _ChatBodyState extends State<_ChatBody> {
           top: false,
           child: BlocBuilder<ChatThreadBloc, ChatThreadState>(
             builder: (context, state) {
-              final enabled = state is ChatReady &&
-                  !(state.thread?.isClosed ?? false);
+              final enabled =
+                  state is ChatReady && !(state.thread?.isClosed ?? false);
               return ChatInputBar(
                 enabled: enabled,
-                onSend: (text) => context
-                    .read<ChatThreadBloc>()
-                    .add(SendMessageEvent(text, asAgent: false)),
+                onSend:
+                    (text) => context.read<ChatThreadBloc>().add(
+                      SendMessageEvent(text, asAgent: false),
+                    ),
               );
             },
           ),
@@ -253,27 +253,40 @@ class _DayChip extends StatelessWidget {
             color: Theme.of(context).colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Text(
-            text,
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
+          child: Text(text, style: Theme.of(context).textTheme.labelSmall),
         ),
       ),
     );
   }
 
   String _formatDate(DateTime d) {
-    // Example: Fri, Oct 10, 2025
+    // Example: الجمعة، 10 أكتوبر، 2025
     const months = [
-      'Jan','Feb','Mar','Apr','May','Jun',
-      'Jul','Aug','Sep','Oct','Nov','Dec'
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
     ];
     const weekdays = [
-      'Mon','Tue','Wed','Thu','Fri','Sat','Sun'
+      'الإثنين',
+      'الثلاثاء',
+      'الأربعاء',
+      'الخميس',
+      'الجمعة',
+      'السبت',
+      'الأحد',
     ];
     final wd = weekdays[(d.weekday - 1) % 7];
     final mo = months[d.month - 1];
-    return '$wd, $mo ${d.day}, ${d.year}';
+    return '$wd، ${d.day} $mo، ${d.year}';
   }
 }
 
@@ -288,18 +301,19 @@ class _ThreadInfoButton extends StatelessWidget {
           return const SizedBox.shrink();
         }
         return IconButton(
-          tooltip: 'Thread info',
+          tooltip: 'معلومات المحادثة',
           icon: const Icon(Icons.info_outline),
           onPressed: () {
             final thread = state.thread;
             showModalBottomSheet(
               context: context,
               showDragHandle: true,
-              builder: (_) => _ThreadInfoSheet(
-                threadId: state.threadId,
-                subject: thread?.subject,
-                status: thread?.status ?? 'open',
-              ),
+              builder:
+                  (_) => _ThreadInfoSheet(
+                    threadId: state.threadId,
+                    subject: thread?.subject,
+                    status: thread?.status ?? 'open',
+                  ),
             );
           },
         );
@@ -330,16 +344,16 @@ class _ThreadInfoSheet extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.tag),
-              title: const Text('Thread ID'),
+              title: const Text('رقم المحادثة'),
               subtitle: Text(threadId),
               trailing: IconButton(
-                tooltip: 'Copy',
+                tooltip: 'نسخ',
                 icon: const Icon(Icons.copy_rounded),
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: threadId));
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Thread ID copied')),
+                      const SnackBar(content: Text('تم نسخ رقم المحادثة')),
                     );
                   }
                 },
@@ -347,16 +361,14 @@ class _ThreadInfoSheet extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.subject),
-              title: const Text('Subject'),
+              title: const Text('الموضوع'),
               subtitle: Text(
-                (subject?.trim().isNotEmpty ?? false)
-                    ? subject!
-                    : '—',
+                (subject?.trim().isNotEmpty ?? false) ? subject! : '—',
               ),
             ),
             ListTile(
               leading: const Icon(Icons.flag_outlined),
-              title: const Text('Status'),
+              title: const Text('الحالة'),
               subtitle: Text(status.toUpperCase()),
             ),
             const SizedBox(height: 8),
@@ -364,7 +376,7 @@ class _ThreadInfoSheet extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 icon: const Icon(Icons.close),
-                label: const Text('Dismiss'),
+                label: const Text('إغلاق'),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),

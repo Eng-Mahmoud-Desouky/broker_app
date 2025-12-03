@@ -9,7 +9,8 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      
+      fontFamily: 'Cairo',
+
       // Color scheme
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
@@ -24,14 +25,14 @@ class AppTheme {
         onSurface: AppColors.onSurface,
         surfaceVariant: AppColors.surfaceVariant,
         onSurfaceVariant: AppColors.onSurfaceVariant,
-        background: AppColors.background,
+        background: Color.fromRGBO(245, 245, 245, 1),
         onBackground: AppColors.onBackground,
         error: AppColors.error,
         onError: AppColors.white,
         outline: AppColors.border,
         shadow: AppColors.shadow,
       ),
-      
+
       // Text theme
       textTheme: TextTheme(
         displayLarge: AppTextStyles.displayLarge,
@@ -50,7 +51,7 @@ class AppTheme {
         bodyMedium: AppTextStyles.bodyMedium,
         bodySmall: AppTextStyles.bodySmall,
       ),
-      
+
       // App bar theme
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.surface,
@@ -66,7 +67,7 @@ class AppTheme {
           statusBarBrightness: Brightness.light,
         ),
       ),
-      
+
       // Elevated button theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -84,7 +85,7 @@ class AppTheme {
           minimumSize: const Size(double.infinity, 56),
         ),
       ),
-      
+
       // Outlined button theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -99,7 +100,7 @@ class AppTheme {
           minimumSize: const Size(double.infinity, 56),
         ),
       ),
-      
+
       // Text button theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -112,7 +113,7 @@ class AppTheme {
           textStyle: AppTextStyles.button,
         ),
       ),
-      
+
       // Input decoration theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -140,20 +141,21 @@ class AppTheme {
         labelStyle: AppTextStyles.inputLabel,
         hintStyle: AppTextStyles.inputHint,
         errorStyle: AppTextStyles.inputError,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
-      
+
       // Card theme
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 2,
         shadowColor: AppColors.shadow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: const EdgeInsets.all(8),
       ),
-      
+
       // Bottom navigation bar theme
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
@@ -161,17 +163,23 @@ class AppTheme {
         unselectedItemColor: AppColors.grey500,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
-        selectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+        selectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+        ),
       ),
-      
+
       // Divider theme
       dividerTheme: const DividerThemeData(
         color: AppColors.border,
         thickness: 1,
         space: 1,
       ),
-      
+
       // Scaffold background color
       scaffoldBackgroundColor: AppColors.background,
     );

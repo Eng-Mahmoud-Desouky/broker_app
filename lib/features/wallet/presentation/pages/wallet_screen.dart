@@ -6,6 +6,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../authentication/presentation/bloc/auth_bloc.dart';
+import '../../../home/presentation/widgets/custom_app_bar.dart';
 import '../../../temp_auth/temp_auth_service.dart';
 import '../bloc/wallet_bloc.dart';
 import '../widgets/wallet_balance_card.dart';
@@ -112,17 +113,14 @@ class _WalletScreenState extends State<WalletScreen> {
         },
         child: Scaffold(
           backgroundColor: AppColors.background,
-          appBar: AppBar(
-            title: Text('المحفظة', style: AppTextStyles.headlineSmall),
-            backgroundColor: AppColors.surface,
-            elevation: 0,
-            actions: [
-              IconButton(
-                onPressed: _refreshWallet,
-                icon: const Icon(Icons.refresh),
-                tooltip: 'تحديث',
-              ),
-            ],
+          appBar: CustomAppBar(
+            notificationCount: 3,
+            onSupportTap: () async {
+              AppRouter.goToSupportList(context);
+            },
+            onNotificationTap: () {
+              // TODO: Navigate to notifications
+            },
           ),
           body: BlocConsumer<WalletBloc, WalletState>(
             listener: (context, state) {

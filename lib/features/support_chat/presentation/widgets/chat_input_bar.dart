@@ -56,7 +56,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
           // Attachment (optional)
           if (widget.onAttach != null)
             IconButton(
-              tooltip: 'Attach',
+              tooltip: 'إرفاق',
               icon: const Icon(Icons.attach_file_rounded),
               onPressed: disabled ? null : widget.onAttach,
             ),
@@ -76,14 +76,15 @@ class _ChatInputBarState extends State<ChatInputBar> {
                   maxLines: 5,
                   onSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
-                    hintText:
-                    disabled ? 'Thread is closed' : 'Type your message…',
+                    hintText: disabled ? 'المحادثة مغلقة' : 'اكتب رسالتك...',
                     isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     fillColor: theme.colorScheme.surface,
                     filled: true,
                   ),

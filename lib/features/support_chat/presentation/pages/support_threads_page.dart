@@ -33,12 +33,12 @@ class SupportThreadsPage extends StatelessWidget {
       create: (_) => bloc..add(const LoadChatThreads()),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(forAgent ? 'All Support Threads' : 'My Support Threads'),
+          title: Text(forAgent ? 'جميع محادثات الدعم' : 'محادثاتي'),
           actions: [
             Builder(
               builder:
                   (ctx) => IconButton(
-                    tooltip: 'Refresh',
+                    tooltip: 'تحديث',
                     icon: const Icon(Icons.refresh),
                     onPressed:
                         () => ctx.read<ChatListBloc>().add(
@@ -78,15 +78,13 @@ class SupportThreadsPage extends StatelessWidget {
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Failed to create chat: $e'),
-                            ),
+                            SnackBar(content: Text('فشل إنشاء المحادثة: $e')),
                           );
                         }
                       }
                     },
                     icon: const Icon(Icons.add_comment_rounded),
-                    label: const Text('Start New Chat'),
+                    label: const Text('بدء محادثة جديدة'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -101,7 +99,7 @@ class SupportThreadsPage extends StatelessWidget {
                     onPressed: () async {
                       final phone = '+201270927868'; // your support number
                       final message = Uri.encodeComponent(
-                        'Hello, I need help with the Broker app.',
+                        'مرحباً، أحتاج إلى مساعدة بخصوص تطبيق الوسيط.',
                       );
                       final url = Uri.parse(
                         'https://wa.me/$phone?text=$message',
@@ -115,9 +113,7 @@ class SupportThreadsPage extends StatelessWidget {
                       } else {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Could not open WhatsApp'),
-                            ),
+                            const SnackBar(content: Text('لا يمكن فتح واتساب')),
                           );
                         }
                       }
@@ -126,7 +122,7 @@ class SupportThreadsPage extends StatelessWidget {
                       FontAwesomeIcons.whatsapp,
                       color: Colors.white,
                     ),
-                    label: const Text('Contact via WhatsApp'),
+                    label: const Text('التواصل عبر واتساب'),
                   ),
                 ),
               ],
@@ -152,7 +148,7 @@ class _ThreadListView extends StatelessWidget {
           child: TextField(
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.search),
-              hintText: 'Search by subject, status, or ID…',
+              hintText: 'البحث بالموضوع، الحالة، أو الرقم...',
               border: OutlineInputBorder(),
               isDense: true,
             ),
@@ -166,7 +162,9 @@ class _ThreadListView extends StatelessWidget {
           child: BlocBuilder<ChatListBloc, ChatListState>(
             builder: (context, state) {
               if (state is ChatListLoading) {
-                return const LoadingIndicator(message: 'Loading threads…');
+                return const LoadingIndicator(
+                  message: 'جارٍ تحميل المحادثات...',
+                );
               }
 
               if (state is ChatListError) {
@@ -178,7 +176,7 @@ class _ThreadListView extends StatelessWidget {
 
               if (state is ChatListEmpty) {
                 return const EmptyState(
-                  message: 'No threads found.',
+                  message: 'لا توجد محادثات.',
                   icon: Icons.forum_outlined,
                 );
               }
@@ -230,14 +228,14 @@ class _ThreadTile extends StatelessWidget {
       title: Text(
         (thread.subject?.trim().isNotEmpty ?? false)
             ? thread.subject!
-            : 'No subject',
+            : 'بدون موضوع',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       subtitle: Text(
-        'Status: ${thread.status.toUpperCase()} • '
-        'Last: ${df.format(thread.lastMessageAt)}',
+        'الحالة: ${thread.status.toUpperCase()} • '
+        'آخر رسالة: ${df.format(thread.lastMessageAt)}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -267,11 +265,11 @@ class _NewThreadSubjectDialogState extends State<_NewThreadSubjectDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Thread Subject (optional)'),
+      title: const Text('موضوع المحادثة (اختياري)'),
       content: TextField(
         controller: _controller,
         decoration: const InputDecoration(
-          hintText: 'Example: Payment issue',
+          hintText: 'مثال: مشكلة في الدفع',
           border: OutlineInputBorder(),
         ),
         textInputAction: TextInputAction.done,
@@ -280,11 +278,11 @@ class _NewThreadSubjectDialogState extends State<_NewThreadSubjectDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: const Text('إلغاء'),
         ),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, _controller.text.trim()),
-          child: const Text('Start'),
+          child: const Text('بدء'),
         ),
       ],
     );

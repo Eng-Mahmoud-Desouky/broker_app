@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection_container.dart' as di;
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../home/presentation/widgets/custom_app_bar.dart';
 import '../bloc/cart_bloc.dart';
 import '../widgets/cart_item_card.dart';
 import '../widgets/cart_empty_widget.dart';
@@ -38,25 +40,14 @@ class _CartScreenState extends State<CartScreen> {
       value: _cartBloc,
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text('السلة'),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.onPrimary,
-          elevation: 0,
-          actions: [
-            BlocBuilder<CartBloc, CartState>(
-              builder: (context, state) {
-                if (state is CartLoaded && state.items.isNotEmpty) {
-                  return IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => _showClearCartDialog(context),
-                    tooltip: 'مسح السلة',
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ],
+        appBar: CustomAppBar(
+          notificationCount: 3,
+          onSupportTap: () async {
+            AppRouter.goToSupportList(context);
+          },
+          onNotificationTap: () {
+            // TODO: Navigate to notifications
+          },
         ),
         body: BlocConsumer<CartBloc, CartState>(
           listener: (context, state) {
@@ -88,9 +79,7 @@ class _CartScreenState extends State<CartScreen> {
           builder: (context, state) {
             if (state is CartLoading) {
               return const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
+                child: CircularProgressIndicator(color: AppColors.primary),
               );
             }
 
@@ -182,31 +171,4 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
-
-  void _showClearCartDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('مسح السلة'),
-        content: const Text('هل أنت متأكد من مسح جميع المنتجات من السلة؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              _cartBloc.add(const CartClear());
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
-            ),
-            child: const Text('مسح'),
-          ),
-        ],
-      ),
-    );
-  }
 }
-

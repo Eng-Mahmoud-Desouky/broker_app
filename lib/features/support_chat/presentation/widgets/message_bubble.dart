@@ -10,11 +10,7 @@ class MessageBubble extends StatelessWidget {
   final SupportMessage message;
   final bool isMine;
 
-  const MessageBubble({
-    super.key,
-    required this.message,
-    required this.isMine,
-  });
+  const MessageBubble({super.key, required this.message, required this.isMine});
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +23,10 @@ class MessageBubble extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         constraints: const BoxConstraints(maxWidth: 320),
         decoration: BoxDecoration(
-          color: isMine
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surfaceVariant,
+          color:
+              isMine
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.surfaceVariant,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),
@@ -39,16 +36,15 @@ class MessageBubble extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment:
-          isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             // 📝 Message text
             Text(
               message.body,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: isMine
-                    ? Colors.white
-                    : theme.colorScheme.onSurfaceVariant,
+                color:
+                    isMine ? Colors.white : theme.colorScheme.onSurfaceVariant,
               ),
             ),
 
@@ -64,9 +60,10 @@ class MessageBubble extends StatelessWidget {
             Text(
               _formatTime(message.createdAt),
               style: theme.textTheme.labelSmall?.copyWith(
-                color: isMine
-                    ? Colors.white70
-                    : theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                color:
+                    isMine
+                        ? Colors.white70
+                        : theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
                 fontSize: 10,
               ),
             ),
@@ -99,7 +96,7 @@ class _AttachmentPreview extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        '📎 Attachment (${attachments.length})',
+        '📎 مرفق (${attachments.length})',
         style: Theme.of(context).textTheme.labelSmall,
       ),
     );

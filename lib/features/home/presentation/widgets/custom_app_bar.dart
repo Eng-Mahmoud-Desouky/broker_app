@@ -74,11 +74,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.white, Colors.white.withValues(alpha: 0.9)],
-                ),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -88,15 +84,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.shopping_bag_rounded,
-                color: AppColors.primary,
-                size: 24,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Image.asset(
+                    'assets/images/app_logo.jpeg',
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             const Text(
-              'Broker App',
+              'بروكر',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,

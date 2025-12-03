@@ -117,8 +117,8 @@ class _SplashScreenState extends State<SplashScreen>
                     children: [
                       // App logo
                       Container(
-                        width: 120,
-                        height: 120,
+                        width: 150,
+                        height: 150,
                         decoration: BoxDecoration(
                           color: AppColors.white,
                           borderRadius: BorderRadius.circular(
@@ -132,10 +132,17 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.business,
-                          size: 60,
-                          color: AppColors.primary,
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.defaultBorderRadius,
+                            ),
+                            child: Image.asset(
+                              'assets/images/app_logo.jpeg',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                       ),
 
@@ -159,15 +166,6 @@ class _SplashScreenState extends State<SplashScreen>
                         'تطبيق الوسيط للتجارة الإلكترونية',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppColors.white.withOpacity(0.9),
-                        ),
-                      ),
-
-                      const SizedBox(height: AppConstants.largePadding * 2),
-
-                      // Loading indicator
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.white,
                         ),
                       ),
                     ],
