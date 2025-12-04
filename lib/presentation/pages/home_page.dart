@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 
-import '../../core/localization/app_localizations.dart';
+import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/constants.dart';
+import '../../features/home/presentation/widgets/custom_app_bar.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.home),
-        centerTitle: true,
+      appBar: CustomAppBar(
+        notificationCount: 3,
+        onSupportTap: () async {
+          AppRouter.goToSupportList(context);
+        },
+        onNotificationTap: () {
+          // TODO: Navigate to notifications
+        },
       ),
       body: Padding(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -27,7 +31,9 @@ class HomePage extends StatelessWidget {
               padding: const EdgeInsets.all(AppConstants.defaultPadding),
               decoration: BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+                borderRadius: BorderRadius.circular(
+                  AppConstants.defaultBorderRadius,
+                ),
                 gradient: const LinearGradient(
                   colors: [AppColors.primary, AppColors.primaryLight],
                   begin: Alignment.topLeft,
@@ -38,7 +44,7 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    localizations.welcomeTitle,
+                    'مرحباً بك',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: AppColors.onPrimary,
                       fontWeight: FontWeight.bold,
@@ -54,19 +60,19 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: AppConstants.largePadding),
-            
+
             // Quick actions section
             Text(
               'الإجراءات السريعة',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
-            
+
             const SizedBox(height: AppConstants.defaultPadding),
-            
+
             // Grid of action cards
             Expanded(
               child: GridView.count(
@@ -126,9 +132,9 @@ class HomePage extends StatelessWidget {
       child: InkWell(
         onTap: () {
           // TODO: Navigate to respective page
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$title - قريباً')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('$title - قريباً')));
         },
         borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
         child: Padding(
@@ -140,28 +146,26 @@ class HomePage extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius),
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.smallBorderRadius,
+                  ),
                 ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: color,
-                ),
+                child: Icon(icon, size: 32, color: color),
               ),
               const SizedBox(height: 12),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.grey600,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.grey600),
                 textAlign: TextAlign.center,
               ),
             ],

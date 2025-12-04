@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/di/injection_container.dart' as di;
+import '../../../home/presentation/widgets/custom_app_bar.dart';
 import '../bloc/product_details_bloc.dart';
 import '../widgets/product_shimmer.dart';
 import '../widgets/product_image_slider.dart';
@@ -36,14 +38,14 @@ class ProductDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'تفاصيل المنتج',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
+      appBar: CustomAppBar(
+        notificationCount: 3,
+        onSupportTap: () async {
+          AppRouter.goToSupportList(context);
+        },
+        onNotificationTap: () {
+          // TODO: Navigate to notifications
+        },
       ),
       body: BlocBuilder<ProductDetailsBloc, ProductDetailsState>(
         builder: (context, state) {

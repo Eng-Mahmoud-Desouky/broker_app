@@ -140,7 +140,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [AppColors.background, AppColors.background],
+                colors: [AppColors.primary, AppColors.primaryDark],
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
@@ -155,7 +155,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
               onPressed: _pickImage,
               icon: const Icon(
                 Icons.camera_alt_rounded,
-                color: AppColors.primary,
+                color: Colors.white,
                 size: 22,
               ),
               tooltip: 'البحث بالصورة',

@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 
-import '../../core/localization/app_localizations.dart';
+import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/constants.dart';
+import '../../features/home/presentation/widgets/custom_app_bar.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.settings),
-        centerTitle: true,
+      appBar: CustomAppBar(
+        notificationCount: 3,
+        onSupportTap: () async {
+          AppRouter.goToSupportList(context);
+        },
+        onNotificationTap: () {
+          // TODO: Navigate to notifications
+        },
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -23,7 +27,7 @@ class SettingsPage extends StatelessWidget {
           children: [
             // App settings section
             _buildSectionHeader(context, 'إعدادات التطبيق'),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.language_outlined,
@@ -33,7 +37,7 @@ class SettingsPage extends StatelessWidget {
                 _showLanguageDialog(context);
               },
             ),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.dark_mode_outlined,
@@ -45,7 +49,7 @@ class SettingsPage extends StatelessWidget {
                 );
               },
             ),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.notifications_outlined,
@@ -61,12 +65,12 @@ class SettingsPage extends StatelessWidget {
                 activeColor: AppColors.primary,
               ),
             ),
-            
+
             const SizedBox(height: AppConstants.largePadding),
-            
+
             // Account settings section
             _buildSectionHeader(context, 'إعدادات الحساب'),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.security_outlined,
@@ -78,7 +82,7 @@ class SettingsPage extends StatelessWidget {
                 );
               },
             ),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.backup_outlined,
@@ -90,12 +94,12 @@ class SettingsPage extends StatelessWidget {
                 );
               },
             ),
-            
+
             const SizedBox(height: AppConstants.largePadding),
-            
+
             // Support section
             _buildSectionHeader(context, 'الدعم والمساعدة'),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.help_outline,
@@ -107,7 +111,7 @@ class SettingsPage extends StatelessWidget {
                 );
               },
             ),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.feedback_outlined,
@@ -119,7 +123,7 @@ class SettingsPage extends StatelessWidget {
                 );
               },
             ),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.info_outline,
@@ -129,12 +133,12 @@ class SettingsPage extends StatelessWidget {
                 _showAboutDialog(context);
               },
             ),
-            
+
             const SizedBox(height: AppConstants.largePadding),
-            
+
             // Legal section
             _buildSectionHeader(context, 'القانونية'),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.description_outlined,
@@ -146,7 +150,7 @@ class SettingsPage extends StatelessWidget {
                 );
               },
             ),
-            
+
             _buildSettingItem(
               context,
               icon: Icons.privacy_tip_outlined,
@@ -197,29 +201,27 @@ class SettingsPage extends StatelessWidget {
             color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius),
           ),
-          child: Icon(
-            icon,
-            color: AppColors.primary,
-            size: 20,
-          ),
+          child: Icon(icon, color: AppColors.primary, size: 20),
         ),
         title: Text(
           title,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.grey600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.grey600),
         ),
-        trailing: trailing ?? const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-          color: AppColors.grey400,
-        ),
+        trailing:
+            trailing ??
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: AppColors.grey400,
+            ),
         onTap: onTap,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius),
@@ -232,45 +234,46 @@ class SettingsPage extends StatelessWidget {
   void _showLanguageDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('اختر اللغة'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('العربية'),
-              leading: Radio<String>(
-                value: 'ar',
-                groupValue: 'ar',
-                onChanged: (value) {
-                  Navigator.of(context).pop();
-                },
-                activeColor: AppColors.primary,
-              ),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('اختر اللغة'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: const Text('العربية'),
+                  leading: Radio<String>(
+                    value: 'ar',
+                    groupValue: 'ar',
+                    onChanged: (value) {
+                      Navigator.of(context).pop();
+                    },
+                    activeColor: AppColors.primary,
+                  ),
+                ),
+                ListTile(
+                  title: const Text('English'),
+                  leading: Radio<String>(
+                    value: 'en',
+                    groupValue: 'ar',
+                    onChanged: (value) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('تغيير اللغة - قريباً')),
+                      );
+                    },
+                    activeColor: AppColors.primary,
+                  ),
+                ),
+              ],
             ),
-            ListTile(
-              title: const Text('English'),
-              leading: Radio<String>(
-                value: 'en',
-                groupValue: 'ar',
-                onChanged: (value) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('تغيير اللغة - قريباً')),
-                  );
-                },
-                activeColor: AppColors.primary,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('إلغاء'),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('إلغاء'),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -285,11 +288,7 @@ class SettingsPage extends StatelessWidget {
           color: AppColors.primary,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Icon(
-          Icons.business,
-          color: AppColors.white,
-          size: 32,
-        ),
+        child: const Icon(Icons.business, color: AppColors.white, size: 32),
       ),
       children: [
         const Text('تطبيق الوسيط للتجارة الإلكترونية'),

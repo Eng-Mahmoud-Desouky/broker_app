@@ -132,16 +132,13 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                              AppConstants.defaultBorderRadius,
-                            ),
-                            child: Image.asset(
-                              'assets/images/app_logo.jpeg',
-                              fit: BoxFit.cover,
-                            ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.defaultBorderRadius,
+                          ),
+                          child: Image.asset(
+                            'assets/images/app_logo.jpeg',
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),

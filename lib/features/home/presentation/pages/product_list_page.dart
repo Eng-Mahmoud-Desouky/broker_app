@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/di/injection_container.dart' as di;
+import '../../../home/presentation/widgets/custom_app_bar.dart';
 import '../bloc/product_list_bloc.dart';
 import '../widgets/product_shimmer.dart';
 
@@ -27,14 +29,14 @@ class ProductListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'جميع المنتجات',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
+      appBar: CustomAppBar(
+        notificationCount: 3,
+        onSupportTap: () async {
+          AppRouter.goToSupportList(context);
+        },
+        onNotificationTap: () {
+          // TODO: Navigate to notifications
+        },
       ),
       body: BlocBuilder<ProductListBloc, ProductListState>(
         builder: (context, state) {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../core/localization/app_localizations.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/constants.dart';
+import '../../features/home/presentation/widgets/custom_app_bar.dart';
 import '../../features/temp_auth/temp_auth_service.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -11,23 +11,15 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.profile),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {
-              // TODO: Edit profile
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('تعديل الملف الشخصي - قريباً')),
-              );
-            },
-            icon: const Icon(Icons.edit_outlined),
-          ),
-        ],
+      appBar: CustomAppBar(
+        notificationCount: 3,
+        onSupportTap: () async {
+          AppRouter.goToSupportList(context);
+        },
+        onNotificationTap: () {
+          // TODO: Navigate to notifications
+        },
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),

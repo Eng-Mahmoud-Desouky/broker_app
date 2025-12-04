@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:ui' as ui;
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -8,86 +9,84 @@ import '../../domain/entities/wallet_transaction.dart';
 class WalletTransactionItem extends StatelessWidget {
   final WalletTransaction transaction;
 
-  const WalletTransactionItem({
-    super.key,
-    required this.transaction,
-  });
+  const WalletTransactionItem({super.key, required this.transaction});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.border,
-          width: 1,
+    return Directionality(
+      textDirection: ui.TextDirection.rtl,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border, width: 1),
         ),
-      ),
-      child: Row(
-        children: [
-          _buildTransactionIcon(),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        transaction.typeDisplayName,
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTransactionIcon(),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title takes full width now
+                  Text(
+                    transaction.typeDisplayName,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                    _buildStatusChip(),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatDateTime(transaction.createdAt),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.grey600,
                   ),
-                ),
-                if (transaction.provider != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'عبر ${_getProviderDisplayName(transaction.provider!)}',
+                    _formatDateTime(transaction.createdAt),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.grey600,
+                    ),
+                  ),
+                  if (transaction.provider != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'عبر ${_getProviderDisplayName(transaction.provider!)}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.grey600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${transaction.isPositive ? '+' : '-'}${transaction.formattedAmount}',
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color:
+                        transaction.isPositive
+                            ? AppColors.success
+                            : AppColors.error,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Status Chip moved here
+                _buildStatusChip(),
+                if (transaction.providerReference != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '#${transaction.providerReference!.substring(0, 8)}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.grey500,
                     ),
                   ),
                 ],
               ],
             ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${transaction.isPositive ? '+' : '-'}${transaction.formattedAmount}',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: transaction.isPositive ? AppColors.success : AppColors.error,
-                ),
-              ),
-              if (transaction.providerReference != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  'رقم المرجع: ${transaction.providerReference!.substring(0, 8)}...',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.grey500,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -122,11 +121,7 @@ class WalletTransactionItem extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Icon(
-        iconData,
-        color: iconColor,
-        size: 24,
-      ),
+      child: Icon(iconData, color: iconColor, size: 24),
     );
   }
 

@@ -62,11 +62,11 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       description: 'أزياء عصرية بأسعار مناسبة',
     ),
     PlatformModel(
-      id: 'taobao',
-      name: 'Taobao',
-      logoUrl: 'assets/images/Taobao-Logo.png',
+      id: 'aliexpress',
+      name: 'AliExpress',
+      logoUrl: 'assets/images/Aliexpress-Logo.jpg',
       type: PlatformType.retail,
-      description: 'منصة التسوق الصينية الرائدة',
+      description: 'تسوق بالتجزئة من الصين',
     ),
     PlatformModel(
       id: 'amazon',
@@ -84,11 +84,11 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       description: 'منصة التجارة الإلكترونية للجملة',
     ),
     PlatformModel(
-      id: 'aliexpress',
-      name: 'AliExpress',
-      logoUrl: 'assets/images/Aliexpress-Logo.jpg',
+      id: 'taobao',
+      name: 'Taobao',
+      logoUrl: 'assets/images/Taobao-Logo.png',
       type: PlatformType.wholesale,
-      description: 'تسوق بالجملة من الصين',
+      description: 'منصة التسوق بالجملة من الصين',
     ),
   ];
 
