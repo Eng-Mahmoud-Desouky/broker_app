@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../bloc/cart_bloc.dart';
 
 /// Widget displaying cart summary with total items and price
 class CartSummaryWidget extends StatelessWidget {
@@ -90,13 +93,41 @@ class CartSummaryWidget extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement checkout or share cart functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('سيتم إضافة وظيفة الطلب قريباً'),
-                      backgroundColor: AppColors.info,
-                    ),
-                  );
+                  // Get cart items from BLoC
+                  final cartBloc = context.read<CartBloc>();
+                  final cartState = cartBloc.state;
+
+                  if (cartState is CartLoaded) {
+                    final items = cartState.items;
+
+                    // Check if all items have weight
+                    final hasAllWeights = items.every(
+                      (item) => item.weightKg != null,
+                    );
+
+                    if (!hasAllWeights) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'يرجى إضافة أوزان جميع المنتجات قبل إنشاء الطلب',
+                          ),
+                          backgroundColor: AppColors.warning,
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // Navigate to create order
+                    AppRouter.goToCreateOrder(context, items);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('السلة فارغة'),
+                        backgroundColor: AppColors.info,
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -116,4 +147,3 @@ class CartSummaryWidget extends StatelessWidget {
     );
   }
 }
-

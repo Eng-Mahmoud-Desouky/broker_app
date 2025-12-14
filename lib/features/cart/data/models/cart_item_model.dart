@@ -14,6 +14,7 @@ class CartItemModel extends CartItem {
     super.quantity,
     super.rating,
     super.metadata,
+    super.weightKg,
     required super.createdAt,
     required super.updatedAt,
   });
@@ -26,14 +27,19 @@ class CartItemModel extends CartItem {
       productName: json['product_name'] as String,
       price: json['price'] as String,
       imageUrl: json['image_url'] as String?,
-      images: json['images'] != null
-          ? List<String>.from(json['images'] as List)
-          : null,
+      images:
+          json['images'] != null
+              ? List<String>.from(json['images'] as List)
+              : null,
       productUrl: json['product_url'] as String,
       platform: json['platform'] as String,
       quantity: json['quantity'] as int? ?? 1,
       rating: json['rating'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
+      weightKg:
+          json['weight_kg'] != null
+              ? (json['weight_kg'] as num).toDouble()
+              : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -53,6 +59,7 @@ class CartItemModel extends CartItem {
       'quantity': quantity,
       'rating': rating,
       'metadata': metadata,
+      'weight_kg': weightKg,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -71,6 +78,7 @@ class CartItemModel extends CartItem {
       'quantity': quantity,
       'rating': rating,
       'metadata': metadata,
+      'weight_kg': weightKg,
     };
   }
 
@@ -88,6 +96,7 @@ class CartItemModel extends CartItem {
       quantity: item.quantity,
       rating: item.rating,
       metadata: item.metadata,
+      weightKg: item.weightKg,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     );
@@ -106,6 +115,7 @@ class CartItemModel extends CartItem {
     int? quantity,
     String? rating,
     Map<String, dynamic>? metadata,
+    double? weightKg,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -121,9 +131,9 @@ class CartItemModel extends CartItem {
       quantity: quantity ?? this.quantity,
       rating: rating ?? this.rating,
       metadata: metadata ?? this.metadata,
+      weightKg: weightKg ?? this.weightKg,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }
-

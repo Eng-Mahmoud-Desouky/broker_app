@@ -13,6 +13,8 @@ class CartItem extends Equatable {
   final int quantity;
   final String? rating;
   final Map<String, dynamic>? metadata;
+  final double?
+  weightKg; // Weight in kilograms (nullable for backward compatibility)
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -28,6 +30,7 @@ class CartItem extends Equatable {
     this.quantity = 1,
     this.rating,
     this.metadata,
+    this.weightKg, // Weight is optional
     required this.createdAt,
     required this.updatedAt,
   });
@@ -84,6 +87,15 @@ class CartItem extends Equatable {
     return 'USD';
   }
 
+  /// Get total weight (weight * quantity) if weight is available
+  double? get totalWeight {
+    if (weightKg == null) return null;
+    return weightKg! * quantity;
+  }
+
+  /// Check if weight is set
+  bool get hasWeight => weightKg != null;
+
   @override
   List<Object?> get props => [
     id,
@@ -97,6 +109,7 @@ class CartItem extends Equatable {
     quantity,
     rating,
     metadata,
+    weightKg,
     createdAt,
     updatedAt,
   ];

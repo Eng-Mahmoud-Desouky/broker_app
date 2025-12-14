@@ -79,6 +79,24 @@ import '../../features/wallet/domain/usecases/create_topup_transaction.dart';
 import '../../features/wallet/domain/usecases/get_transaction_by_id.dart';
 import '../../features/wallet/presentation/bloc/wallet_bloc.dart';
 
+// Order feature imports
+import '../../features/order/data/datasources/order_remote_data_source.dart';
+import '../../features/order/data/repositories/order_repository_impl.dart';
+import '../../features/order/domain/repositories/order_repository.dart';
+import '../../features/order/domain/usecases/create_order.dart';
+import '../../features/order/domain/usecases/get_user_orders.dart';
+import '../../features/order/presentation/bloc/order_bloc.dart';
+
+// Address feature imports
+import '../../features/address/data/datasources/address_remote_data_source.dart';
+import '../../features/address/data/repositories/address_repository_impl.dart';
+import '../../features/address/domain/repositories/address_repository.dart';
+import '../../features/address/domain/usecases/get_user_addresses.dart';
+import '../../features/address/domain/usecases/add_address.dart';
+import '../../features/address/domain/usecases/set_default_address.dart';
+import '../../features/address/domain/usecases/delete_address.dart';
+import '../../features/address/presentation/bloc/address_bloc.dart';
+
 import '../network/network_info.dart';
 import '../utils/constants.dart';
 
@@ -99,6 +117,13 @@ Future<void> init() async {
 
   //! Features - Wallet
   await _initWallet();
+
+  //! Features - Order
+  await _initOrder();
+
+  //! Features - Address
+  await _initAddress();
+
   //! Features - Support Chat
   await _initSupportChat();
 
@@ -213,21 +238,24 @@ Future<void> _initSupportChat() async {
 
   // Repository
   sl.registerLazySingleton<SupportChatRepository>(
-        () => SupportChatRepositoryImpl(remote: sl()),
+    () => SupportChatRepositoryImpl(remote: sl()),
   );
 
   // Data source
   sl.registerLazySingleton<SupportChatRemoteDataSource>(
-        () => SupportChatRemoteDataSource(sl()), // Supabase client already registered
+    () =>
+        SupportChatRemoteDataSource(sl()), // Supabase client already registered
   );
 
   // Blocs
-  sl.registerFactory(() => ChatThreadBloc(
-    createOrGetThread: sl(),
-    subscribeMessages: sl(),
-    sendMessage: sl(),
-    closeThread: sl(),
-  ));
+  sl.registerFactory(
+    () => ChatThreadBloc(
+      createOrGetThread: sl(),
+      subscribeMessages: sl(),
+      sendMessage: sl(),
+      closeThread: sl(),
+    ),
+  );
 
   sl.registerFactory(() => ChatListBloc(listThreads: sl()));
 }
@@ -349,5 +377,52 @@ Future<void> _initWallet() async {
   // Data sources
   sl.registerLazySingleton<WalletRemoteDataSource>(
     () => WalletRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+}
+
+Future<void> _initOrder() async {
+  // Bloc
+  sl.registerFactory(() => OrderBloc(createOrder: sl(), getUserOrders: sl()));
+
+  // Use cases
+  sl.registerLazySingleton(() => CreateOrder(sl()));
+  sl.registerLazySingleton(() => GetUserOrders(sl()));
+
+  // Repository
+  sl.registerLazySingleton<OrderRepository>(
+    () => OrderRepositoryImpl(remoteDataSource: sl(), supabaseClient: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<OrderRemoteDataSource>(
+    () => OrderRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+}
+
+Future<void> _initAddress() async {
+  // Bloc
+  sl.registerFactory(
+    () => AddressBloc(
+      getUserAddresses: sl(),
+      addAddress: sl(),
+      setDefaultAddress: sl(),
+      deleteAddress: sl(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetUserAddresses(sl()));
+  sl.registerLazySingleton(() => AddAddress(sl()));
+  sl.registerLazySingleton(() => SetDefaultAddress(sl()));
+  sl.registerLazySingleton(() => DeleteAddress(sl()));
+
+  // Repository
+  sl.registerLazySingleton<AddressRepository>(
+    () => AddressRepositoryImpl(remoteDataSource: sl(), supabaseClient: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<AddressRemoteDataSource>(
+    () => AddressRemoteDataSourceImpl(supabaseClient: sl()),
   );
 }

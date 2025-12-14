@@ -1,4 +1,5 @@
 import 'package:broker_app/features/cart/presentation/pages/cart_screen.dart';
+import 'package:broker_app/features/order/presentation/pages/create_order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -47,6 +48,7 @@ class AppRouter {
   static const String products = '/products';
   static const String productDetails = '/product-details';
   static const String webview = '/webview';
+  static const String createOrder = '/order/create';
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
@@ -124,6 +126,23 @@ class AppRouter {
           final url = state.uri.queryParameters['url'] ?? '';
           final title = state.uri.queryParameters['title'] ?? 'متصفح';
           return WebViewScreen(initialUrl: url, title: title);
+        },
+      ),
+
+      // Order routes
+      GoRoute(
+        path: createOrder,
+        name: 'create-order',
+        builder: (context, state) {
+          final cartItems = state.extra as List?;
+          if (cartItems == null || cartItems.isEmpty) {
+            // Navigate back if no items
+            Future.microtask(() => context.go(cart));
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return CreateOrderScreen(cartItems: cartItems.cast());
         },
       ),
 
@@ -254,7 +273,6 @@ class AppRouter {
     return location.startsWith('/main');
   }
 
-
   static void goToSupportList(BuildContext context) {
     context.push(support);
   }
@@ -263,11 +281,15 @@ class AppRouter {
     context.push('$supportThread/$threadId');
   }
 
-// Optional: for "start new" (create-or-get via RPC on page load)
+  // Optional: for "start new" (create-or-get via RPC on page load)
   static void goToSupportNew(BuildContext context) {
     context.push('$supportThread/new');
   }
 
+  /// Navigate to create order with cart items
+  static void goToCreateOrder(BuildContext context, List cartItems) {
+    context.push(createOrder, extra: cartItems);
+  }
 
   // Get current tab index for bottom navigation
   static int getCurrentTabIndex(String location) {
