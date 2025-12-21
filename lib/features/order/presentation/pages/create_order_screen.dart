@@ -4,9 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../core/theme/app_colors.dart';
 import '../../../address/presentation/bloc/address_bloc.dart';
+import '../../../address/presentation/pages/add_address_screen.dart';
+import '../../../address/presentation/pages/address_list_screen.dart';
 import '../../../cart/domain/entities/cart_item.dart';
 import '../../domain/entities/shipping_method.dart';
 import '../bloc/order_bloc.dart';
+import '../widgets/shipping_method_selector.dart';
 
 /// Create order screen where user confirms address and shipping method
 class CreateOrderScreen extends StatefulWidget {
@@ -126,7 +129,18 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('عنوان الشحن', style: Theme.of(context).textTheme.titleMedium),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('عنوان الشحن', style: Theme.of(context).textTheme.titleMedium),
+            TextButton.icon(
+              onPressed: () => _navigateToAddAddress(),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('إضافة عنوان'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         BlocBuilder<AddressBloc, AddressState>(
           builder: (context, state) {
@@ -135,55 +149,168 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             }
 
             if (state is AddressLoaded) {
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: state.addresses.length,
-                itemBuilder: (context, index) {
-                  final address = state.addresses[index];
-                  return RadioListTile<String>(
-                    title: Text(address.name),
-                    subtitle: Text(address.formattedAddress),
-                    value: address.id,
-                    groupValue: _selectedAddressId,
-                    onChanged: (value) {
-                      setState(() => _selectedAddressId = value);
+              if (state.addresses.isEmpty) {
+                return _buildEmptyAddressState();
+              }
+
+              return Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: state.addresses.length,
+                    itemBuilder: (context, index) {
+                      final address = state.addresses[index];
+                      return Card(
+                        elevation: _selectedAddressId == address.id ? 2 : 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color:
+                                _selectedAddressId == address.id
+                                    ? AppColors.primary
+                                    : Colors.grey.shade300,
+                            width: _selectedAddressId == address.id ? 2 : 1,
+                          ),
+                        ),
+                        child: RadioListTile<String>(
+                          title: Row(
+                            children: [
+                              Expanded(child: Text(address.name)),
+                              if (address.isDefault)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'افتراضي',
+                                    style: TextStyle(
+                                      color: AppColors.onPrimary,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(address.fullName),
+                              Text(
+                                address.formattedAddress,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                          value: address.id,
+                          groupValue: _selectedAddressId,
+                          activeColor: AppColors.primary,
+                          onChanged: (value) {
+                            setState(() => _selectedAddressId = value);
+                          },
+                        ),
+                      );
                     },
-                  );
-                },
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => _navigateToAddressList(),
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text('إدارة العناوين'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                    ),
+                  ),
+                ],
               );
             }
 
-            return const Text('لا توجد عناوين');
+            if (state is AddressEmpty) {
+              return _buildEmptyAddressState();
+            }
+
+            return const Text('حدث خطأ في تحميل العناوين');
           },
         ),
       ],
     );
   }
 
+  Widget _buildEmptyAddressState() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.location_off,
+            size: 48,
+            color: AppColors.onSurfaceVariant.withOpacity(0.5),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'لا توجد عناوين',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'أضف عنوان الشحن للمتابعة',
+            style: TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => _navigateToAddAddress(),
+            icon: const Icon(Icons.add),
+            label: const Text('إضافة عنوان جديد'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToAddAddress() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => const AddAddressScreen()),
+    );
+
+    if (result == true && mounted) {
+      context.read<AddressBloc>().add(const AddressLoadAll());
+    }
+  }
+
+  void _navigateToAddressList() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => const AddressListScreen()),
+    );
+
+    if (result == true && mounted) {
+      context.read<AddressBloc>().add(const AddressLoadAll());
+    }
+  }
+
   Widget _buildShippingMethodSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('طريقة الشحن', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        RadioListTile<ShippingMethod>(
-          title: const Row(children: [Text('⛴️ '), Text('شحن بحري')]),
-          value: ShippingMethod.sea,
-          groupValue: _selectedShippingMethod,
-          onChanged: (value) {
-            setState(() => _selectedShippingMethod = value);
-          },
-        ),
-        RadioListTile<ShippingMethod>(
-          title: const Row(children: [Text('✈️ '), Text('شحن جوي')]),
-          value: ShippingMethod.air,
-          groupValue: _selectedShippingMethod,
-          onChanged: (value) {
-            setState(() => _selectedShippingMethod = value);
-          },
-        ),
-      ],
+    return ShippingMethodSelector(
+      selectedMethod: _selectedShippingMethod,
+      onChanged: (method) {
+        setState(() => _selectedShippingMethod = method);
+      },
     );
   }
 

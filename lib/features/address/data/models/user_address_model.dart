@@ -77,6 +77,27 @@ class UserAddressModel extends UserAddress {
     };
   }
 
+  /// Convert to JSON (for general use)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'name': name,
+      'full_name': fullName,
+      'phone_number': phoneNumber,
+      'country': country,
+      'city': city,
+      'state_province': stateProvince,
+      'street_address': streetAddress,
+      'building_number': buildingNumber,
+      'apartment_number': apartmentNumber,
+      'postal_code': postalCode,
+      'is_default': isDefault,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
   /// Create from entity
   factory UserAddressModel.fromEntity(UserAddress address) {
     return UserAddressModel(

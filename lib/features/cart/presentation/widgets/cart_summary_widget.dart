@@ -100,26 +100,54 @@ class CartSummaryWidget extends StatelessWidget {
                   if (cartState is CartLoaded) {
                     final items = cartState.items;
 
-                    // Check if all items have weight
-                    final hasAllWeights = items.every(
-                      (item) => item.weightKg != null,
-                    );
-
-                    if (!hasAllWeights) {
+                    if (items.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text(
-                            'يرجى إضافة أوزان جميع المنتجات قبل إنشاء الطلب',
-                          ),
-                          backgroundColor: AppColors.warning,
-                          duration: Duration(seconds: 3),
+                          content: Text('السلة فارغة'),
+                          backgroundColor: AppColors.info,
                         ),
                       );
                       return;
                     }
 
-                    // Navigate to create order
-                    AppRouter.goToCreateOrder(context, items);
+                    // Check if items have weights (optional warning)
+                    final itemsWithoutWeight =
+                        items.where((item) => item.weightKg == null).length;
+
+                    if (itemsWithoutWeight > 0) {
+                      // Show warning dialog
+                      showDialog(
+                        context: context,
+                        builder:
+                            (dialogContext) => AlertDialog(
+                              title: const Text('تنبيه'),
+                              content: Text(
+                                'يوجد $itemsWithoutWeight منتج بدون وزن محدد.\n'
+                                'قد يؤثر ذلك على حساب تكلفة الشحن.\n\n'
+                                'هل تريد المتابعة؟',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(dialogContext),
+                                  child: const Text('إلغاء'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(dialogContext);
+                                    AppRouter.goToCreateOrder(context, items);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                  ),
+                                  child: const Text('متابعة'),
+                                ),
+                              ],
+                            ),
+                      );
+                    } else {
+                      // All items have weight, proceed directly
+                      AppRouter.goToCreateOrder(context, items);
+                    }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(

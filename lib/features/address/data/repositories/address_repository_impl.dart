@@ -33,13 +33,16 @@ class AddressRepositoryImpl implements AddressRepository {
   @override
   Future<Either<Failure, UserAddress>> addAddress(UserAddress address) async {
     try {
+      // Data source will handle getting current user ID
       final addressModel = UserAddressModel.fromEntity(address);
-      final added = await remoteDataSource.addAddress(addressModel);
-      return Right(added);
+      final result = await remoteDataSource.addAddress(addressModel);
+      return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
+    } on AuthException catch (e) {
+      return Left(ServerFailure(message: 'غير مصرح: ${e.message}'));
     } catch (e) {
-      return Left(ServerFailure(message: 'فشل إضافة العنوان'));
+      return Left(ServerFailure(message: 'فشل إضافة العنوان: ${e.toString()}'));
     }
   }
 
