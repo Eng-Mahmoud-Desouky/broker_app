@@ -26,7 +26,10 @@ class OrderItemModel extends OrderItem {
       platform: json['platform'] as String,
       price: json['price'] as String,
       quantity: json['quantity'] as int,
-      weightKg: (json['weight_kg'] as num).toDouble(),
+      weightKg:
+          json['weight_kg'] != null
+              ? (json['weight_kg'] as num).toDouble()
+              : 0.01, // Default weight if null
       imageUrl: json['image_url'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
       createdAt: DateTime.parse(json['created_at'] as String),

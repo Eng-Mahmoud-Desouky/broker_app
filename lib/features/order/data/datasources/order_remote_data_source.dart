@@ -50,21 +50,17 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
               .eq('id', addressId)
               .single();
 
-      // Step 2: Calculate total weight and price
-      double totalWeight = 0;
+      // Step 2: Calculate total weight and price (both optional)
+      double totalWeight = 0.01; // Minimum value to satisfy DB constraint
       double? totalPrice;
+      List<double> weights = [];
       List<double> prices = [];
 
       for (var item in cartItems) {
-        // Check if weight is available
-        if (item.metadata?['weight_kg'] == null) {
-          throw ServerException(
-            message: 'يرجى إضافة وزن المنتج: ${item.productName}',
-          );
+        // Calculate weight if available
+        if (item.weightKg != null) {
+          weights.add(item.weightKg! * item.quantity);
         }
-
-        final weightKg = (item.metadata!['weight_kg'] as num).toDouble();
-        totalWeight += weightKg * item.quantity;
 
         // Try to calculate price
         final itemPrice = item.priceValue;
@@ -72,6 +68,12 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
           prices.add(itemPrice * item.quantity);
         }
       }
+
+      // Set total weight (default to 0 if no weights available)
+      totalWeight =
+          weights.isNotEmpty
+              ? weights.fold<double>(0.0, (sum, weight) => sum + weight)
+              : 0.01; // Use 0.01 to satisfy DB constraint (total_weight_kg > 0)
 
       // Calculate total price if all items have valid prices
       if (prices.length == cartItems.length) {
@@ -102,7 +104,8 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       final List<Map<String, dynamic>> itemsData = [];
 
       for (var item in cartItems) {
-        final weightKg = (item.metadata!['weight_kg'] as num).toDouble();
+        // Use weightKg from CartItem entity, default to 0.01 if null
+        final weightKg = item.weightKg ?? 0.01;
         itemsData.add({
           'order_id': orderId,
           'product_name': item.productName,
