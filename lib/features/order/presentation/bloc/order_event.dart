@@ -27,4 +27,17 @@ class OrderCreate extends OrderEvent {
 /// Load all user orders
 class OrderLoadAll extends OrderEvent {
   const OrderLoadAll();
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// Load single order by ID
+class OrderLoadById extends OrderEvent {
+  final String orderId;
+
+  const OrderLoadById({required this.orderId});
+
+  @override
+  List<Object?> get props => [orderId];
 }

@@ -37,6 +37,16 @@ class OrdersLoaded extends OrderState {
   List<Object?> get props => [orders];
 }
 
+/// Single order details loaded
+class OrderDetailsLoaded extends OrderState {
+  final Order order;
+
+  const OrderDetailsLoaded({required this.order});
+
+  @override
+  List<Object?> get props => [order];
+}
+
 /// No orders
 class OrderEmpty extends OrderState {}
 

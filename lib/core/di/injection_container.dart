@@ -85,6 +85,7 @@ import '../../features/order/data/repositories/order_repository_impl.dart';
 import '../../features/order/domain/repositories/order_repository.dart';
 import '../../features/order/domain/usecases/create_order.dart';
 import '../../features/order/domain/usecases/get_user_orders.dart';
+import '../../features/order/domain/usecases/get_order_by_id.dart';
 import '../../features/order/presentation/bloc/order_bloc.dart';
 
 // Address feature imports
@@ -382,11 +383,14 @@ Future<void> _initWallet() async {
 
 Future<void> _initOrder() async {
   // Bloc
-  sl.registerFactory(() => OrderBloc(createOrder: sl(), getUserOrders: sl()));
+  sl.registerFactory(
+    () => OrderBloc(createOrder: sl(), getUserOrders: sl(), getOrderById: sl()),
+  );
 
   // Use cases
   sl.registerLazySingleton(() => CreateOrder(sl()));
   sl.registerLazySingleton(() => GetUserOrders(sl()));
+  sl.registerLazySingleton(() => GetOrderById(sl()));
 
   // Repository
   sl.registerLazySingleton<OrderRepository>(

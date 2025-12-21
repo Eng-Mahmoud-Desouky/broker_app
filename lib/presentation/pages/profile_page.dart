@@ -146,6 +146,16 @@ class ProfilePage extends StatelessWidget {
               },
             ),
 
+            _buildProfileOption(
+              context,
+              icon: Icons.settings_outlined,
+              title: 'الإعدادات',
+              subtitle: 'إعدادات التطبيق والحساب',
+              onTap: () {
+                AppRouter.goToSettings(context);
+              },
+            ),
+
             const SizedBox(height: AppConstants.largePadding),
 
             // Logout button

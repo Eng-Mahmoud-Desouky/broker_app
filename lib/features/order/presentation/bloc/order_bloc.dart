@@ -7,6 +7,7 @@ import '../../../cart/domain/entities/cart_item.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/shipping_method.dart';
 import '../../domain/usecases/create_order.dart';
+import '../../domain/usecases/get_order_by_id.dart';
 import '../../domain/usecases/get_user_orders.dart';
 
 part 'order_event.dart';
@@ -16,11 +17,16 @@ part 'order_state.dart';
 class OrderBloc extends Bloc<OrderEvent, OrderState> {
   final CreateOrder createOrder;
   final GetUserOrders getUserOrders;
+  final GetOrderById getOrderById;
 
-  OrderBloc({required this.createOrder, required this.getUserOrders})
-    : super(OrderInitial()) {
+  OrderBloc({
+    required this.createOrder,
+    required this.getUserOrders,
+    required this.getOrderById,
+  }) : super(OrderInitial()) {
     on<OrderCreate>(_onCreate);
     on<OrderLoadAll>(_onLoadAll);
+    on<OrderLoadById>(_onLoadById);
   }
 
   Future<void> _onCreate(OrderCreate event, Emitter<OrderState> emit) async {
@@ -56,6 +62,22 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           emit(OrdersLoaded(orders: orders));
         }
       },
+    );
+  }
+
+  Future<void> _onLoadById(
+    OrderLoadById event,
+    Emitter<OrderState> emit,
+  ) async {
+    emit(OrderLoading());
+
+    final result = await getOrderById(
+      GetOrderByIdParams(orderId: event.orderId),
+    );
+
+    result.fold(
+      (failure) => emit(OrderError(message: _mapFailureToMessage(failure))),
+      (order) => emit(OrderDetailsLoaded(order: order)),
     );
   }
 

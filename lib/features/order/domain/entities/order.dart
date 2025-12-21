@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
 import '../../../address/domain/entities/user_address.dart';
 import 'order_item.dart';
@@ -42,28 +43,17 @@ class Order extends Equatable {
 
   /// Check if order can be cancelled
   bool get canBeCancelled {
-    return status == OrderStatus.pending || status == OrderStatus.processing;
+    return status.canBeCancelled;
   }
 
   /// Check if order is in final state
   bool get isFinal {
-    return status == OrderStatus.delivered || status == OrderStatus.cancelled;
+    return status.isCompleted;
   }
 
   /// Get status color based on order status
-  String get statusColor {
-    switch (status) {
-      case OrderStatus.pending:
-        return '#FF9800'; // warning
-      case OrderStatus.processing:
-        return '#2196F3'; // info
-      case OrderStatus.shipped:
-        return '#FF9D2D'; // primary
-      case OrderStatus.delivered:
-        return '#4CAF50'; // success
-      case OrderStatus.cancelled:
-        return '#F44336'; // error
-    }
+  Color get statusColor {
+    return status.getStatusColor();
   }
 
   @override

@@ -89,7 +89,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         'total_weight_kg': totalWeight,
         'total_price': totalPrice,
         'currency': 'USD',
-        'status': 'pending',
+        'status': 'under_review', // Updated to match new status workflow
       };
 
       final orderResponse =
@@ -257,7 +257,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Future<void> cancelOrder(String orderId) async {
     try {
-      // Check if order can be cancelled (status should be pending or processing)
+      // Check if order can be cancelled (status should be under_review, purchasing, or purchased)
       final orderResponse =
           await supabaseClient
               .from('orders')
@@ -266,7 +266,10 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
               .single();
 
       final status = orderResponse['status'] as String;
-      if (status != 'pending' && status != 'processing') {
+      // Check against new status values
+      if (status != 'under_review' &&
+          status != 'purchasing' &&
+          status != 'purchased') {
         throw ServerException(message: 'لا يمكن إلغاء هذا الطلب');
       }
 

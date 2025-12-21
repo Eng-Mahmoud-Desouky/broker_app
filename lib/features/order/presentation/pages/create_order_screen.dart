@@ -7,6 +7,7 @@ import '../../../address/presentation/bloc/address_bloc.dart';
 import '../../../address/presentation/pages/add_address_screen.dart';
 import '../../../address/presentation/pages/address_list_screen.dart';
 import '../../../cart/domain/entities/cart_item.dart';
+import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../domain/entities/shipping_method.dart';
 import '../bloc/order_bloc.dart';
 import '../widgets/shipping_method_selector.dart';
@@ -33,21 +34,28 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           create: (_) => di.sl<AddressBloc>()..add(const AddressLoadAll()),
         ),
         BlocProvider(create: (_) => di.sl<OrderBloc>()),
+        BlocProvider(create: (_) => di.sl<CartBloc>()),
       ],
       child: Scaffold(
         appBar: AppBar(title: const Text('إنشاء طلب'), centerTitle: true),
         body: BlocConsumer<OrderBloc, OrderState>(
           listener: (context, state) {
             if (state is OrderCreated) {
+              // Clear cart after successful order creation
+              context.read<CartBloc>().add(const CartClear());
+
               // Show success and navigate back
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    'تم إنشاء الطلب: ${state.order.referenceNumber}',
+                    'تم إنشاء الطلب بنجاح: ${state.order.referenceNumber}',
                   ),
                   backgroundColor: AppColors.success,
+                  duration: const Duration(seconds: 3),
                 ),
               );
+
+              // Navigate back with success flag
               Navigator.of(context).pop(true);
             } else if (state is OrderError) {
               ScaffoldMessenger.of(context).showSnackBar(

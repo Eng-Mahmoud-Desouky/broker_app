@@ -51,30 +51,24 @@ class MainWrapper extends StatelessWidget {
               label: localizations.home,
             ),
             BottomNavigationBarItem(
-              icon: const Icon(Icons.favorite_outline),
-              activeIcon: const Icon(Icons.favorite),
-              label: localizations.favorites,
+              icon: const Icon(Icons.receipt_long_outlined),
+              activeIcon: const Icon(Icons.receipt_long),
+              label: 'طلباتي',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.shopping_cart_outlined),
+              activeIcon: const Icon(Icons.shopping_cart),
+              label: 'السلة',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+              activeIcon: const Icon(Icons.account_balance_wallet),
+              label: 'المحفظة',
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.person_outline),
               activeIcon: const Icon(Icons.person),
               label: localizations.profile,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.settings_outlined),
-              activeIcon: const Icon(Icons.settings),
-              label: localizations.settings,
-            ),
-
-            BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart),
-              activeIcon: Icon(Icons.shopping_cart),
-              label: 'السلة',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              activeIcon: Icon(Icons.account_balance_wallet),
-              label: 'المحفظة',
             ),
           ],
         ),
@@ -88,19 +82,16 @@ class MainWrapper extends StatelessWidget {
         context.go(AppRouter.home);
         break;
       case 1:
-        context.go(AppRouter.favorites);
+        context.go(AppRouter.orders);
         break;
       case 2:
-        context.go(AppRouter.profile);
-        break;
-      case 3:
-        context.go(AppRouter.settings);
-        break;
-      case 4:
         context.go(AppRouter.cart);
         break;
-      case 5:
+      case 3:
         context.go(AppRouter.wallet);
+        break;
+      case 4:
+        context.go(AppRouter.profile);
         break;
     }
   }

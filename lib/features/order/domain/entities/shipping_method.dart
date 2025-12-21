@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
+
 /// Shipping method enum
+
 enum ShippingMethod {
   /// بحري - Sea shipping
   sea('بحري'),
@@ -23,4 +26,14 @@ enum ShippingMethod {
 
   /// Convert to database value
   String toDbValue() => arabicLabel;
+
+  /// Get icon for shipping method
+  IconData get icon {
+    switch (this) {
+      case ShippingMethod.sea:
+        return Icons.directions_boat;
+      case ShippingMethod.air:
+        return Icons.flight;
+    }
+  }
 }
