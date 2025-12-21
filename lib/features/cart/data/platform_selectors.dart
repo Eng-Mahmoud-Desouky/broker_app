@@ -68,12 +68,27 @@ class PlatformSelectors {
         '.uniform-banner-box-price',
       ],
       'image': [
+        // Modern AliExpress selectors (2024+)
+        'img[class*="magnifier-image"]',
+        'img[class*="ImageGallery"]',
+        'div[class*="gallery"] img[class*="index"]',
+        'img[data-role="mainImage"]',
+        'div[class*="mainPic"] img',
+        'div[class*="main-image"] img',
+        // Legacy fallbacks
         'img[class*="magnifier--image"]',
         '.magnifier-image img',
         'img[class*="main"]',
         'img[class*="Product"]',
       ],
       'images': [
+        // Modern thumbnail selectors
+        'div[class*="thumb-item"] img',
+        'ul[class*="images-view"] img',
+        'div[class*="slider"] img',
+        'li[class*="thumb"] img',
+        'div[class*="imageItem"] img',
+        // Legacy selectors
         'div[class*="slider--img"] img',
         '.slider--img--kD4mIg7 img',
         '.images-view-item img',
@@ -122,15 +137,26 @@ class PlatformSelectors {
         'div[class*="price"] strong',
       ],
       'image': [
+        // Modern Alibaba selectors
+        'div[class*="imageView"] img[class*="mainPic"]',
         '.current-main-image img',
         'div[class*="current-main-image"] img',
+        'div[class*="main-img"] img',
+        'img[class*="main-image"]',
+        // Legacy fallbacks
         '.main-image img',
         'img[class*="main"]',
+        'div[class*="gallery"] img:first-child',
       ],
       'images': [
+        // Thumbnail gallery selectors
+        'div[class*="thumbItem"] img',
+        'ul[class*="thumb-list"] img',
+        'div[class*="thumb-image"] img',
         '.thumb-image img',
         'img[class*="thumb"]',
         '.image-gallery img',
+        'li[class*="image-item"] img',
       ],
       'rating': [
         '.detail-review-item.detail-star',
@@ -221,7 +247,7 @@ class PlatformSelectors {
           return null;
         }
         
-        // Helper function to extract all images
+        // Helper function to extract all images with advanced fallbacks
         function extractImages(selectors) {
           if (!Array.isArray(selectors)) selectors = [selectors];
           const images = new Set();
@@ -230,7 +256,24 @@ class PlatformSelectors {
             try {
               const elements = document.querySelectorAll(selector);
               elements.forEach(img => {
-                const src = img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+                // Try multiple image source attributes
+                const src = img.src || 
+                           img.getAttribute('data-src') || 
+                           img.getAttribute('data-lazy-src') ||
+                           img.getAttribute('data-original') ||
+                           img.getAttribute('data-img');
+                
+                // Also check srcset attribute
+                const srcset = img.getAttribute('srcset');
+                if (srcset) {
+                  const srcsetUrls = srcset.split(',').map(s => s.trim().split(' ')[0]);
+                  srcsetUrls.forEach(url => {
+                    if (url && !url.includes('data:image') && url.startsWith('http')) {
+                      images.add(url);
+                    }
+                  });
+                }
+                
                 if (src && !src.includes('data:image') && src.startsWith('http')) {
                   images.add(src);
                 }
@@ -243,6 +286,44 @@ class PlatformSelectors {
           return Array.from(images);
         }
         
+        // Extract image from meta tags (fallback)
+        function extractMetaImage() {
+          const ogImage = document.querySelector('meta[property="og:image"]');
+          if (ogImage) {
+            const content = ogImage.getAttribute('content');
+            if (content && content.startsWith('http')) return content;
+          }
+          
+          const twitterImage = document.querySelector('meta[name="twitter:image"]');
+          if (twitterImage) {
+            const content = twitterImage.getAttribute('content');
+            if (content && content.startsWith('http')) return content;
+          }
+          
+          return null;
+        }
+        
+        // Extract image from JSON-LD schema (fallback)
+        function extractSchemaImage() {
+          const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+          for (const script of scripts) {
+            try {
+              const data = JSON.parse(script.textContent);
+              if (data.image) {
+                const imageUrl = Array.isArray(data.image) ? data.image[0] : data.image;
+                if (typeof imageUrl === 'string' && imageUrl.startsWith('http')) {
+                  return imageUrl;
+                } else if (typeof imageUrl === 'object' && imageUrl.url) {
+                  return imageUrl.url;
+                }
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
+          return null;
+        }
+        
         // Wait for critical elements to load (especially for AliExpress)
         console.log('⏳ Waiting for product data to load...');
         await waitForElement(${_toJsArray(selectors['title'])});
@@ -253,9 +334,21 @@ class PlatformSelectors {
         // Extract data
         const title = trySelectors(${_toJsArray(selectors['title'])});
         const price = trySelectors(${_toJsArray(selectors['price'])});
-        const image = trySelectors(${_toJsArray(selectors['image'])}, 'src') ||
-                     trySelectors(${_toJsArray(selectors['image'])}, 'data-src');
+        
+        // Try multiple methods to get main image
+        let image = trySelectors(${_toJsArray(selectors['image'])}, 'src') ||
+                    trySelectors(${_toJsArray(selectors['image'])}, 'data-src') ||
+                    trySelectors(${_toJsArray(selectors['image'])}, 'data-original') ||
+                    extractMetaImage() ||
+                    extractSchemaImage();
+        
         const images = extractImages(${_toJsArray(selectors['images'])});
+        
+        // If no main image found but we have gallery images, use first gallery image
+        if (!image && images.length > 0) {
+          image = images[0];
+        }
+        
         const rating = trySelectors(${_toJsArray(selectors['rating'])});
         const description = trySelectors(${_toJsArray(selectors['description'] ?? [])});
         const currency = trySelectors(${_toJsArray(selectors['currency'] ?? [])});

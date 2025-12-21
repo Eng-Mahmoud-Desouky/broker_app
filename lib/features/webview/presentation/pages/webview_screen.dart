@@ -303,8 +303,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
         // Configure enhanced cookie manager for better session handling
         await _configureEnhancedCookies();
 
-        // Inject JavaScript for better compatibility
-        await _injectCompatibilityScripts(controller);
+        // Inject safe compatibility scripts using UserScript (early injection)
+        await _injectSafeUserScripts(controller);
 
         if (kDebugMode) {
           debugPrint(
@@ -376,10 +376,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
           }
           _webViewBloc.add(WebViewFinishedLoading(url: url.toString()));
 
-          // Inject anti-detection scripts for SHEIN
-          if (url.toString().toLowerCase().contains('shein.com')) {
-            await _injectAntiDetectionScripts(controller);
-          }
+          // SHEIN: Scripts already injected via UserScript at document start
+          // No need for aggressive post-load injection
 
           // Wait longer for SHEIN dynamic content to load
           if (url.toString().toLowerCase().contains('shein.com')) {
@@ -389,9 +387,13 @@ class _WebViewScreenState extends State<WebViewScreen> {
             await Future.delayed(const Duration(seconds: 3));
           }
 
-          // Inject language-switching scripts for Taobao
+          // Check for Taobao geo-blocking (supports all Taobao domains)
           if (url.toString().toLowerCase().contains('taobao.com')) {
-            await _injectTaobaoLanguageScripts(controller);
+            await _checkForTaobaoGeoBlocking(controller, url.toString());
+            // Only inject language scripts for world.taobao.com
+            if (url.toString().contains('world.taobao.com')) {
+              await _injectTaobaoLanguageScripts(controller);
+            }
           }
 
           // Inject additional compatibility scripts after page load
@@ -420,7 +422,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         // Force stop loading for SHEIN after timeout when progress > 80%
         if (widget.initialUrl.toLowerCase().contains('shein.com') &&
             progress > 80) {
-          Future.delayed(const Duration(seconds: 5), () async {
+          Future.delayed(const Duration(seconds: 8), () async {
             final currentProgress = await controller.getProgress();
             if (currentProgress != null && currentProgress < 100) {
               if (kDebugMode) {
@@ -524,6 +526,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
           'taboola.com',
           'adsystem.com',
           'adsystem.amazon.com',
+          // SHEIN-specific blocking
+          's.pinimg.com', // Pinterest tracking causing fetch errors
+          'pinimg.com',
         ];
 
         // Check if the URL contains any blocked domains
@@ -653,7 +658,17 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
             // Special logging for SHEIN errors
             if (widget.initialUrl.toLowerCase().contains('shein.com')) {
-              debugPrint('❌ SHEIN JS Error: $message');
+              debugPrint('❌ SHEIN JS Error Details: $message');
+              // Check if message indicates a specific type of error
+              if (message.toLowerCase().contains('typeerror')) {
+                debugPrint(
+                  '   ⚠️ TypeError detected - possible object access issue',
+                );
+              } else if (message.toLowerCase().contains('referenceerror')) {
+                debugPrint(
+                  '   ⚠️ ReferenceError detected - undefined variable',
+                );
+              }
             }
           } else if (level == ConsoleMessageLevel.WARNING) {
             debugPrint('⚠️ JS Warning: $message');
@@ -891,67 +906,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
     }
   }
 
-  Future<void> _injectAntiDetectionScripts(
-    InAppWebViewController controller,
-  ) async {
-    try {
-      // Anti-detection JavaScript specifically for SHEIN
-      const antiDetectionScript = '''
-        (function() {
-          console.log('🛡️ Injecting anti-detection scripts for SHEIN');
-
-          // Remove webdriver property
-          Object.defineProperty(navigator, 'webdriver', {
-            get: () => undefined
-          });
-
-          // Remove WebView indicators
-          delete navigator.__proto__.webdriver;
-
-          // Override chrome property to appear like real Chrome
-          if (!window.chrome) {
-            window.chrome = {
-              runtime: {},
-              loadTimes: function() {},
-              csi: function() {},
-              app: {}
-            };
-          }
-
-          // Override permissions
-          const originalQuery = window.navigator.permissions.query;
-          window.navigator.permissions.query = (parameters) => (
-            parameters.name === 'notifications' ?
-              Promise.resolve({ state: Notification.permission }) :
-              originalQuery(parameters)
-          );
-
-          // Override plugins to appear like real browser
-          Object.defineProperty(navigator, 'plugins', {
-            get: () => [1, 2, 3, 4, 5]
-          });
-
-          // Override languages
-          Object.defineProperty(navigator, 'languages', {
-            get: () => ['en-US', 'en']
-          });
-
-          console.log('✅ Anti-detection scripts injected successfully');
-        })();
-      ''';
-
-      await controller.evaluateJavascript(source: antiDetectionScript);
-
-      if (kDebugMode) {
-        debugPrint('🛡️ Anti-detection scripts injected for SHEIN');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ Error injecting anti-detection scripts: $e');
-      }
-    }
-  }
-
   Future<void> _injectTaobaoLanguageScripts(
     InAppWebViewController controller,
   ) async {
@@ -1118,6 +1072,131 @@ class _WebViewScreenState extends State<WebViewScreen> {
       // Note: WebViewDataCleared is not a WebViewEvent, we need to handle this differently
       // For now, we'll just clear the data without emitting an event
     }
+  }
+
+  /// Safe UserScript injection at document start (SHEIN fix)
+  Future<void> _injectSafeUserScripts(InAppWebViewController controller) async {
+    try {
+      // Safer compatibility script without aggressive property overriding
+      const safeScript = '''
+        (function() {
+          console.log('🚀 Safe compatibility script loading...');
+          
+          // Only add missing properties, don't override existing ones
+          if (!window.TouchEvent) {
+            window.TouchEvent = function() {};
+          }
+          
+          // Add mobile indicators passively
+          if (typeof window.isMobileApp === 'undefined') {
+            window.isMobileApp = true;
+          }
+          
+          if (typeof window.isWebView === 'undefined') {
+            window.isWebView = true;
+          }
+          
+          // Override window.open to prevent popup issues (critical for AliExpress)
+          const originalWindowOpen = window.open;
+          window.open = function(url, target, features) {
+            console.log('🪟 window.open intercepted:', url);
+            if (url) {
+              window.location.href = url;
+              return window;
+            }
+            return originalWindowOpen.call(this, url, target, features);
+          };
+          
+          console.log('✅ Safe compatibility script loaded');
+        })();
+      ''';
+
+      // Create UserScript with early injection timing
+      final userScript = UserScript(
+        source: safeScript,
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+      );
+
+      await controller.addUserScript(userScript: userScript);
+
+      if (kDebugMode) {
+        debugPrint('🔒 Safe UserScripts injected at document start');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error injecting safe UserScripts: $e');
+      }
+    }
+  }
+
+  /// Check for Taobao geo-blocking and show dialog
+  Future<void> _checkForTaobaoGeoBlocking(
+    InAppWebViewController controller,
+    String url,
+  ) async {
+    try {
+      // Wait for page to potentially load
+      await Future.delayed(const Duration(seconds: 3));
+
+      // Check if page is blank or has minimal content
+      final html = await controller.getHtml();
+
+      if (html == null || html.length < 100) {
+        if (kDebugMode) {
+          debugPrint(
+            '⚠️ Taobao page appears blank (HTML length: ${html?.length})',
+          );
+        }
+        _showTaobaoGeoBlockingDialog();
+        return;
+      }
+
+      // Check for common blocking messages
+      final htmlLower = html.toLowerCase();
+      if (htmlLower.contains('access denied') ||
+          htmlLower.contains('not available in your region') ||
+          htmlLower.contains('region restrictions') ||
+          htmlLower.contains('访问受限')) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Taobao geo-blocking detected');
+        }
+        _showTaobaoGeoBlockingDialog();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error checking Taobao geo-blocking: $e');
+      }
+    }
+  }
+
+  /// Show Taobao geo-blocking dialog
+  void _showTaobaoGeoBlockingDialog() {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Taobao غير متاح'),
+            content: const Text(
+              'Taobao محظور في منطقتك الجغرافية.\n\n'
+              'للوصول إلى Taobao، ستحتاج إلى:\n'
+              '• استخدام VPN (الصين أو هونغ كونغ)\n'
+              '• أو البحث عن منتجات بديلة على AliExpress\n\n'
+              'ملاحظة: Taobao يخدم السوق المحلي الصيني بشكل أساسي.',
+              textDirection: TextDirection.rtl,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context); // Close WebView too
+                },
+                child: const Text('إغلاق'),
+              ),
+            ],
+          ),
+    );
   }
 
   /// Inject cart button into the page
