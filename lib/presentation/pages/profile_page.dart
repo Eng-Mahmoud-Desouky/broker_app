@@ -104,21 +104,7 @@ class ProfilePage extends StatelessWidget {
               title: 'العناوين',
               subtitle: 'إدارة عناوين التوصيل',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('العناوين - قريباً')),
-                );
-              },
-            ),
-
-            _buildProfileOption(
-              context,
-              icon: Icons.payment_outlined,
-              title: 'طرق الدفع',
-              subtitle: 'إدارة طرق الدفع المحفوظة',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('طرق الدفع - قريباً')),
-                );
+                AppRouter.goToAddressList(context);
               },
             ),
 
@@ -140,19 +126,41 @@ class ProfilePage extends StatelessWidget {
               title: 'المساعدة والدعم',
               subtitle: 'الحصول على المساعدة',
               onTap: () {
+                AppRouter.goToSupportList(context);
+              },
+            ),
+
+            _buildProfileOption(
+              context,
+              icon: Icons.info_outline,
+              title: 'حول التطبيق',
+              subtitle: 'الإصدار ${AppConstants.appVersion}',
+              onTap: () {
+                _showAboutDialog(context);
+              },
+            ),
+
+            _buildProfileOption(
+              context,
+              icon: Icons.description_outlined,
+              title: 'شروط الاستخدام',
+              subtitle: 'اقرأ شروط الاستخدام',
+              onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('المساعدة والدعم - قريباً')),
+                  const SnackBar(content: Text('شروط الاستخدام - قريباً')),
                 );
               },
             ),
 
             _buildProfileOption(
               context,
-              icon: Icons.settings_outlined,
-              title: 'الإعدادات',
-              subtitle: 'إعدادات التطبيق والحساب',
+              icon: Icons.privacy_tip_outlined,
+              title: 'سياسة الخصوصية',
+              subtitle: 'اقرأ سياسة الخصوصية',
               onTap: () {
-                AppRouter.goToSettings(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('سياسة الخصوصية - قريباً')),
+                );
               },
             ),
 
@@ -276,6 +284,27 @@ class ProfilePage extends StatelessWidget {
               ),
             ],
           ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showAboutDialog(
+      context: context,
+      applicationName: AppConstants.appName,
+      applicationVersion: AppConstants.appVersion,
+      applicationIcon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(Icons.business, color: AppColors.white, size: 32),
+      ),
+      children: const [
+        Text('تطبيق الوسيط للتجارة الإلكترونية'),
+        SizedBox(height: 16),
+        Text('تم تطويره بواسطة فريق التطوير'),
+      ],
     );
   }
 }

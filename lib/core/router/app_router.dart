@@ -11,6 +11,7 @@ import '../../features/authentication/presentation/pages/registration_page.dart'
 import 'package:broker_app/features/support_chat/presentation/pages/support_threads_page.dart';
 import 'package:broker_app/features/support_chat/presentation/pages/support_chat_page.dart';
 
+import '../../features/address/presentation/pages/address_list_screen.dart';
 import '../../features/temp_auth/presentation/pages/temp_login_page.dart';
 import '../../features/temp_auth/presentation/pages/temp_signup_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -23,7 +24,6 @@ import '../../features/wallet/presentation/pages/wallet_screen.dart';
 import '../../presentation/pages/main_wrapper.dart';
 import '../../presentation/pages/favorites_page.dart';
 import '../../presentation/pages/profile_page.dart';
-import '../../presentation/pages/settings_page.dart';
 import '../../splash.dart';
 
 class AppRouter {
@@ -41,7 +41,7 @@ class AppRouter {
   static const String home = '/main/home';
   static const String favorites = '/main/favorites';
   static const String profile = '/main/profile';
-  static const String settings = '/main/settings';
+  static const String addressList = '/address-list';
   static const String cart = '/main/cart';
   static const String wallet = '/main/wallet';
   static const String orders = '/main/orders';
@@ -183,9 +183,9 @@ class AppRouter {
             builder: (context, state) => const ProfilePage(),
           ),
           GoRoute(
-            path: settings,
-            name: 'settings',
-            builder: (context, state) => const SettingsPage(),
+            path: addressList,
+            name: 'address-list',
+            builder: (context, state) => const AddressListScreen(),
           ),
           GoRoute(
             path: AppRouter.cart,
@@ -259,8 +259,8 @@ class AppRouter {
     context.go(profile);
   }
 
-  static void goToSettings(BuildContext context) {
-    context.go(settings);
+  static void goToAddressList(BuildContext context) {
+    context.push(addressList);
   }
 
   static void goToTempLogin(BuildContext context) {

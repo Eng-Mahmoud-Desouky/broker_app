@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Widget displayed when cart is empty
@@ -31,19 +32,16 @@ class CartEmptyWidget extends StatelessWidget {
             const SizedBox(height: 12),
             const Text(
               'ابدأ بإضافة منتجات من المنصات المختلفة',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 16, color: AppColors.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).pop();
+                AppRouter.goToHome(context);
               },
-              icon: const Icon(Icons.shopping_bag_outlined),
-              label: const Text('تصفح المنتجات'),
+              icon: const Icon(Icons.home_outlined),
+              label: const Text('الرجوع للرئيسية'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
@@ -63,4 +61,3 @@ class CartEmptyWidget extends StatelessWidget {
     );
   }
 }
-

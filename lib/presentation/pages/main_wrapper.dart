@@ -68,7 +68,7 @@ class MainWrapper extends StatelessWidget {
             BottomNavigationBarItem(
               icon: const Icon(Icons.person_outline),
               activeIcon: const Icon(Icons.person),
-              label: localizations.profile,
+              label: 'الحساب',
             ),
           ],
         ),
