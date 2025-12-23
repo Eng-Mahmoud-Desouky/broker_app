@@ -9,6 +9,7 @@ import '../../../address/presentation/pages/address_list_screen.dart';
 import '../../../cart/domain/entities/cart_item.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../domain/entities/shipping_method.dart';
+import '../../../pricing/presentation/cubit/pricing_cubit.dart';
 import '../bloc/order_bloc.dart';
 import '../widgets/shipping_method_selector.dart';
 
@@ -35,6 +36,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         ),
         BlocProvider(create: (_) => di.sl<OrderBloc>()),
         BlocProvider(create: (_) => di.sl<CartBloc>()),
+        BlocProvider(
+          create: (_) => di.sl<PricingCubit>()..fetchPricingSettings(),
+        ),
       ],
       child: Scaffold(
         appBar: AppBar(title: const Text('إنشاء طلب'), centerTitle: true),
@@ -126,6 +130,67 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 const Text('الوزن الكلي:'),
                 Text('${totalWeight.toStringAsFixed(2)} كجم'),
               ],
+            ),
+            const Divider(),
+            BlocBuilder<PricingCubit, PricingState>(
+              builder: (context, state) {
+                if (state is PricingLoading) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  );
+                }
+
+                if (state is PricingLoaded) {
+                  if (_selectedShippingMethod == null) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        'يرجى اختيار طريقة الشحن لعرض السعر التقريبي',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.onSurfaceVariant,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final expectedTotal = context
+                      .read<PricingCubit>()
+                      .calculateExpectedTotal(
+                        items: widget.cartItems,
+                        settings: state.settings,
+                        shippingMethod: _selectedShippingMethod!,
+                      );
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'المبلغ المتوقع:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '${expectedTotal.toStringAsFixed(2)} \$',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
             ),
           ],
         ),

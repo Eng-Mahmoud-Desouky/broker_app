@@ -98,6 +98,13 @@ import '../../features/address/domain/usecases/set_default_address.dart';
 import '../../features/address/domain/usecases/delete_address.dart';
 import '../../features/address/presentation/bloc/address_bloc.dart';
 
+// Pricing feature imports
+import '../../features/pricing/data/datasources/pricing_remote_data_source.dart';
+import '../../features/pricing/data/repositories/pricing_repository_impl.dart';
+import '../../features/pricing/domain/repositories/pricing_repository.dart';
+import '../../features/pricing/domain/usecases/get_pricing_settings.dart';
+import '../../features/pricing/presentation/cubit/pricing_cubit.dart';
+
 import '../network/network_info.dart';
 import '../utils/constants.dart';
 
@@ -127,6 +134,9 @@ Future<void> init() async {
 
   //! Features - Support Chat
   await _initSupportChat();
+
+  //! Features - Pricing
+  await _initPricing();
 
   //! Core
   await _initCore();
@@ -428,5 +438,23 @@ Future<void> _initAddress() async {
   // Data sources
   sl.registerLazySingleton<AddressRemoteDataSource>(
     () => AddressRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+}
+
+Future<void> _initPricing() async {
+  // Cubit
+  sl.registerFactory(() => PricingCubit(getPricingSettings: sl()));
+
+  // Use cases
+  sl.registerLazySingleton(() => GetPricingSettings(sl()));
+
+  // Repository
+  sl.registerLazySingleton<PricingRepository>(
+    () => PricingRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<PricingRemoteDataSource>(
+    () => PricingRemoteDataSourceImpl(supabaseClient: sl()),
   );
 }
