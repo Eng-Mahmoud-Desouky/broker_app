@@ -7,6 +7,7 @@ class PlatformModel extends Platform {
     required super.logoUrl,
     required super.type,
     required super.description,
+    super.brandColor,
     super.isActive,
   });
 
@@ -19,6 +20,7 @@ class PlatformModel extends Platform {
         (e) => e.toString().split('.').last == json['type'],
       ),
       description: json['description'] as String,
+      brandColor: json['brand_color'] as String?,
       isActive: json['is_active'] as bool? ?? true,
     );
   }
@@ -30,6 +32,7 @@ class PlatformModel extends Platform {
       'logo_url': logoUrl,
       'type': type.toString().split('.').last,
       'description': description,
+      'brand_color': brandColor,
       'is_active': isActive,
     };
   }
@@ -41,6 +44,7 @@ class PlatformModel extends Platform {
       logoUrl: platform.logoUrl,
       type: platform.type,
       description: platform.description,
+      brandColor: platform.brandColor,
       isActive: platform.isActive,
     );
   }

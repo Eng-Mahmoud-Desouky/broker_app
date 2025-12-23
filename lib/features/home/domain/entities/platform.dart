@@ -8,6 +8,7 @@ class Platform extends Equatable {
   final String logoUrl;
   final PlatformType type;
   final String description;
+  final String? brandColor;
   final bool isActive;
 
   const Platform({
@@ -16,9 +17,18 @@ class Platform extends Equatable {
     required this.logoUrl,
     required this.type,
     required this.description,
+    this.brandColor,
     this.isActive = true,
   });
 
   @override
-  List<Object> get props => [id, name, logoUrl, type, description, isActive];
+  List<Object?> get props => [
+    id,
+    name,
+    logoUrl,
+    type,
+    description,
+    brandColor,
+    isActive,
+  ];
 }
