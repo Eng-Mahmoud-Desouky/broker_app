@@ -1,6 +1,13 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
+CREATE TABLE public.app_content (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  key text NOT NULL UNIQUE,
+  content text NOT NULL,
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT app_content_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.cart_items (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -18,6 +25,7 @@ CREATE TABLE public.cart_items (
   currency text DEFAULT 'USD'::text,
   description text,
   review_count text,
+  weight_kg numeric CHECK (weight_kg IS NULL OR weight_kg > 0::numeric),
   CONSTRAINT cart_items_pkey PRIMARY KEY (id),
   CONSTRAINT cart_items_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
@@ -44,6 +52,48 @@ CREATE TABLE public.offers (
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT offers_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.order_items (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  order_id uuid NOT NULL,
+  product_name text NOT NULL,
+  product_url text NOT NULL,
+  platform text NOT NULL,
+  price text NOT NULL,
+  quantity integer NOT NULL CHECK (quantity > 0),
+  weight_kg numeric NOT NULL CHECK (weight_kg > 0::numeric),
+  image_url text,
+  metadata jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT order_items_pkey PRIMARY KEY (id),
+  CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
+);
+CREATE TABLE public.order_status_history (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  order_id uuid NOT NULL,
+  status text NOT NULL,
+  notes text,
+  created_at timestamp with time zone DEFAULT now(),
+  created_by uuid,
+  CONSTRAINT order_status_history_pkey PRIMARY KEY (id),
+  CONSTRAINT order_status_history_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
+);
+CREATE TABLE public.orders (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  reference_number text NOT NULL UNIQUE,
+  shipping_address jsonb NOT NULL,
+  shipping_method text NOT NULL CHECK (shipping_method = ANY (ARRAY['بحري'::text, 'جوي'::text])),
+  total_weight_kg numeric NOT NULL CHECK (total_weight_kg > 0::numeric),
+  total_price numeric,
+  currency text DEFAULT 'USD'::text,
+  status text NOT NULL DEFAULT 'under_review'::text CHECK (status = ANY (ARRAY['under_review'::text, 'purchasing'::text, 'purchased'::text, 'in_china_warehouse'::text, 'shipping_to_iraq'::text, 'in_iraq_warehouse'::text, 'ready_for_delivery'::text, 'delivered'::text, 'cancelled'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  shipment_images jsonb DEFAULT '[]'::jsonb,
+  notes text,
+  CONSTRAINT orders_pkey PRIMARY KEY (id),
+  CONSTRAINT orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
 CREATE TABLE public.payment_sessions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -57,6 +107,16 @@ CREATE TABLE public.payment_sessions (
   CONSTRAINT payment_sessions_pkey PRIMARY KEY (id),
   CONSTRAINT payment_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
   CONSTRAINT payment_sessions_wallet_user_id_fkey FOREIGN KEY (wallet_user_id) REFERENCES public.wallets(user_id)
+);
+CREATE TABLE public.pricing_settings (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  broker_commission_percent numeric NOT NULL DEFAULT 5.0,
+  air_freight_price_per_kg numeric NOT NULL DEFAULT 10.0,
+  sea_freight_price_per_kg numeric NOT NULL DEFAULT 5.0,
+  updated_at timestamp with time zone DEFAULT now(),
+  updated_by uuid,
+  CONSTRAINT pricing_settings_pkey PRIMARY KEY (id),
+  CONSTRAINT pricing_settings_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES auth.users(id)
 );
 CREATE TABLE public.product_categories (
   product_id uuid NOT NULL,
@@ -105,6 +165,7 @@ CREATE TABLE public.profiles (
   is_support_agent boolean DEFAULT false,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  role text DEFAULT 'user'::text CHECK (role = ANY (ARRAY['super_admin'::text, 'admin'::text, 'support'::text, 'user'::text])),
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
@@ -133,6 +194,25 @@ CREATE TABLE public.support_threads (
   CONSTRAINT support_threads_pkey PRIMARY KEY (id),
   CONSTRAINT support_threads_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
   CONSTRAINT support_threads_assigned_agent_id_fkey FOREIGN KEY (assigned_agent_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.user_addresses (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  name text NOT NULL,
+  full_name text NOT NULL,
+  phone_number text NOT NULL,
+  country text NOT NULL,
+  city text NOT NULL,
+  state_province text,
+  street_address text NOT NULL,
+  building_number text,
+  apartment_number text,
+  postal_code text,
+  is_default boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_addresses_pkey PRIMARY KEY (id),
+  CONSTRAINT user_addresses_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.wallet_transactions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

@@ -106,6 +106,7 @@ import '../../features/pricing/domain/usecases/get_pricing_settings.dart';
 import '../../features/pricing/presentation/cubit/pricing_cubit.dart';
 
 import '../network/network_info.dart';
+import '../services/notifications_service.dart';
 import '../utils/constants.dart';
 
 final sl = GetIt.instance;
@@ -154,10 +155,16 @@ Future<void> _initAuth() async {
       bypassOtpVerification: sl(),
       getCurrentSession: sl(),
       signOut: sl(),
+      notificationsService: sl(),
     ),
   );
 
-  sl.registerFactory(() => RegistrationBloc(completeRegistration: sl()));
+  sl.registerFactory(
+    () => RegistrationBloc(
+      completeRegistration: sl(),
+      notificationsService: sl(),
+    ),
+  );
 
   // Use cases
   sl.registerLazySingleton(() => SendOtp(sl()));
@@ -330,6 +337,9 @@ Future<void> _initCart() async {
 Future<void> _initCore() async {
   // Network info
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
+
+  // Notifications
+  sl.registerLazySingleton(() => NotificationsService());
 }
 
 Future<void> _initExternal() async {

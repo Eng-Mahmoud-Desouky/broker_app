@@ -6,15 +6,19 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/utils/validators.dart';
 import '../../domain/usecases/complete_registration.dart';
+import '../../../../core/services/notifications_service.dart';
 
 part 'registration_event.dart';
 part 'registration_state.dart';
 
 class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   final CompleteRegistration completeRegistration;
+  final NotificationsService notificationsService;
 
-  RegistrationBloc({required this.completeRegistration})
-    : super(const RegistrationState()) {
+  RegistrationBloc({
+    required this.completeRegistration,
+    required this.notificationsService,
+  }) : super(const RegistrationState()) {
     on<RegistrationNameChanged>(_onNameChanged);
     on<RegistrationGovernorateSelected>(_onGovernorateSelected);
     on<RegistrationDistrictSelected>(_onDistrictSelected);
@@ -109,7 +113,10 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
           errorMessage: failure.message,
         ),
       ),
-      (_) => emit(state.copyWith(formStatus: RegistrationFormStatus.success)),
+      (_) {
+        notificationsService.registerToken();
+        emit(state.copyWith(formStatus: RegistrationFormStatus.success));
+      },
     );
   }
 

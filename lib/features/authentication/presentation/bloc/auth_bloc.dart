@@ -9,6 +9,7 @@ import '../../domain/usecases/get_current_session.dart';
 import '../../domain/usecases/send_otp.dart';
 import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/verify_otp.dart';
+import '../../../../core/services/notifications_service.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -19,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final BypassOtpVerification bypassOtpVerification;
   final GetCurrentSession getCurrentSession;
   final SignOut signOut;
+  final NotificationsService notificationsService;
 
   AuthBloc({
     required this.sendOtp,
@@ -26,6 +28,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.bypassOtpVerification,
     required this.getCurrentSession,
     required this.signOut,
+    required this.notificationsService,
   }) : super(AuthInitial()) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<AuthSendOtpRequested>(_onAuthSendOtpRequested);
@@ -44,6 +47,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     result.fold((failure) => emit(AuthUnauthenticated()), (session) {
       if (session != null && !session.isExpired) {
+        notificationsService.registerToken();
         emit(AuthAuthenticated(session: session));
       } else {
         emit(AuthUnauthenticated());
@@ -75,10 +79,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       VerifyOtpParams(phoneNumber: event.phoneNumber, otp: event.otp),
     );
 
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (session) => emit(AuthAuthenticated(session: session)),
-    );
+    result.fold((failure) => emit(AuthError(message: failure.message)), (
+      session,
+    ) {
+      notificationsService.registerToken();
+      emit(AuthAuthenticated(session: session));
+    });
   }
 
   Future<void> _onAuthBypassOtpRequested(
@@ -91,10 +97,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       BypassOtpParams(phoneNumber: event.phoneNumber),
     );
 
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (session) => emit(AuthAuthenticated(session: session)),
-    );
+    result.fold((failure) => emit(AuthError(message: failure.message)), (
+      session,
+    ) {
+      notificationsService.registerToken();
+      emit(AuthAuthenticated(session: session));
+    });
   }
 
   Future<void> _onAuthSignOutRequested(
@@ -105,9 +113,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     final result = await signOut(NoParams());
 
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (_) => emit(AuthUnauthenticated()),
-    );
+    result.fold((failure) => emit(AuthError(message: failure.message)), (_) {
+      notificationsService.deleteToken();
+      emit(AuthUnauthenticated());
+    });
   }
 }

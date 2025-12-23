@@ -7,6 +7,7 @@ class AppConstants {
   static const String supabaseUrl = 'https://nthzmopgwaqfwcrhfgff.supabase.co';
   static const String supabaseAnonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50aHptb3Bnd2FxZndjcmhmZ2ZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxMjg2OTcsImV4cCI6MjA3MjcwNDY5N30.OvgYUrUl0dR5ZBOBzavOioMivt0iXXe0KpcZ7by-2pk';
+  static const String fcmTokensTable = 'user_fcm_tokens';
 
   // Storage Keys
   static const String userTokenKey = 'user_token';
