@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "408851731896",
+    "project_id": "broker-app-bc258",
+    "storage_bucket": "broker-app-bc258.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408851731896:android:32d6be56632d1228296b4d",
+        "android_client_info": {
+          "package_name": "com.example.broker_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9of-Noq7ElLkW2G70DtZ72eHxH8P0pw8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
