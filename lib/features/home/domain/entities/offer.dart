@@ -9,6 +9,8 @@ class Offer extends Equatable {
   final DateTime validUntil;
   final String actionUrl;
 
+  final bool isActive;
+
   const Offer({
     required this.id,
     required this.title,
@@ -17,16 +19,18 @@ class Offer extends Equatable {
     this.discountPercentage,
     required this.validUntil,
     required this.actionUrl,
+    this.isActive = true,
   });
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        imageUrl,
-        discountPercentage,
-        validUntil,
-        actionUrl,
-      ];
+    id,
+    title,
+    description,
+    imageUrl,
+    discountPercentage,
+    validUntil,
+    actionUrl,
+    isActive,
+  ];
 }

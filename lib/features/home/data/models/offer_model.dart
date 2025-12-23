@@ -9,6 +9,7 @@ class OfferModel extends Offer {
     super.discountPercentage,
     required super.validUntil,
     required super.actionUrl,
+    super.isActive,
   });
 
   factory OfferModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +21,7 @@ class OfferModel extends Offer {
       discountPercentage: json['discount_percentage'] as String?,
       validUntil: DateTime.parse(json['valid_until'] as String),
       actionUrl: json['action_url'] as String,
+      isActive: json['is_active'] as bool? ?? true,
     );
   }
 
@@ -32,6 +34,7 @@ class OfferModel extends Offer {
       'discount_percentage': discountPercentage,
       'valid_until': validUntil.toIso8601String(),
       'action_url': actionUrl,
+      'is_active': isActive,
     };
   }
 
@@ -44,6 +47,7 @@ class OfferModel extends Offer {
       discountPercentage: offer.discountPercentage,
       validUntil: offer.validUntil,
       actionUrl: offer.actionUrl,
+      isActive: offer.isActive,
     );
   }
 }

@@ -72,7 +72,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       // Extract successful results
       final offers = offersResult.fold(
         (l) => <Offer>[],
-        (r) => r as List<Offer>,
+        (r) => (r as List<Offer>).where((o) => o.isActive).toList(),
       );
       final platforms = platformsResult.fold(
         (l) => <Platform>[],

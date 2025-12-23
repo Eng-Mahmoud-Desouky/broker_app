@@ -30,6 +30,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       discountPercentage: '50%',
       validUntil: DateTime.now().add(const Duration(days: 7)),
       actionUrl: '/offers/1',
+      isActive: true,
     ),
     OfferModel(
       id: '2',
@@ -39,6 +40,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       discountPercentage: null,
       validUntil: DateTime.now().add(const Duration(days: 14)),
       actionUrl: '/offers/2',
+      isActive: true,
     ),
     OfferModel(
       id: '3',
@@ -48,6 +50,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       discountPercentage: '30%',
       validUntil: DateTime.now().add(const Duration(days: 10)),
       actionUrl: '/offers/3',
+      isActive: true,
     ),
   ];
 

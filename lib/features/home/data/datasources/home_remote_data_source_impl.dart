@@ -16,7 +16,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<List<OfferModel>> getOffers() async {
     try {
-      final response = await supabaseClient.from('offers').select('*');
+      final response = await supabaseClient
+          .from('offers')
+          .select('*')
+          .eq('is_active', true);
 
       return (response as List<dynamic>)
           .map((json) => OfferModel.fromJson(json as Map<String, dynamic>))
