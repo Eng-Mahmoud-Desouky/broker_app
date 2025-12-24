@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../notifications/presentation/bloc/notifications_cubit.dart';
+import '../../../notifications/presentation/bloc/notifications_state.dart';
 import '../../../webview/domain/entities/platform_url.dart';
 import '../bloc/home_bloc.dart';
 import '../widgets/custom_app_bar.dart';
@@ -31,18 +33,25 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(
-        notificationCount: 3, // Dummy notification count
-        onSupportTap: () async {
-          // If you want a list first:
-          AppRouter.goToSupportList(context);
-
-          // If you want to jump straight to "create or get" chat:
-          // AppRouter.goToSupportNew(context);
-        },
-        onNotificationTap: () {
-          // TODO: Navigate to notifications
-        },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: BlocBuilder<NotificationsCubit, NotificationsState>(
+          builder: (context, state) {
+            int count = 0;
+            if (state is NotificationsLoaded) {
+              count = state.unreadCount;
+            }
+            return CustomAppBar(
+              notificationCount: count,
+              onSupportTap: () async {
+                AppRouter.goToSupportList(context);
+              },
+              onNotificationTap: () {
+                context.push('/notifications');
+              },
+            );
+          },
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async {

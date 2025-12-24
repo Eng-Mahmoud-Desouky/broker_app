@@ -130,6 +130,24 @@ serve(async (req) => {
         const results = await Promise.all(sendPromises)
         console.log("FCM Responses:", JSON.stringify(results))
 
+        // 6. Save to History (app_notifications table)
+        console.log("Saving notification to history...")
+        const { error: historyError } = await supabase
+            .from('app_notifications')
+            .insert({
+                user_id: userId,
+                title: title,
+                body: body,
+                type: table,
+                data: record
+            })
+
+        if (historyError) {
+            console.error("Error saving to history:", historyError)
+        } else {
+            console.log("Saved to history successfully")
+        }
+
         return new Response('Success', { status: 200 })
     } catch (error) {
         console.error('CRITICAL ERROR:', error.message)

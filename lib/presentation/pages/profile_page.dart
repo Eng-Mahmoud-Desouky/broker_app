@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/constants.dart';
+import '../../core/di/injection_container.dart';
+import '../../core/services/notifications_service.dart';
 import '../../features/home/presentation/widgets/custom_app_bar.dart';
+import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
+import '../../features/notifications/presentation/bloc/notifications_state.dart';
 import '../../features/temp_auth/temp_auth_service.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -12,14 +16,25 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        notificationCount: 3,
-        onSupportTap: () async {
-          AppRouter.goToSupportList(context);
-        },
-        onNotificationTap: () {
-          // TODO: Navigate to notifications
-        },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: BlocBuilder<NotificationsCubit, NotificationsState>(
+          builder: (context, state) {
+            int count = 0;
+            if (state is NotificationsLoaded) {
+              count = state.unreadCount;
+            }
+            return CustomAppBar(
+              notificationCount: count,
+              onSupportTap: () async {
+                AppRouter.goToSupportList(context);
+              },
+              onNotificationTap: () {
+                AppRouter.goToNotifications(context);
+              },
+            );
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -108,17 +123,7 @@ class ProfilePage extends StatelessWidget {
               },
             ),
 
-            _buildProfileOption(
-              context,
-              icon: Icons.notifications_outlined,
-              title: 'الإشعارات',
-              subtitle: 'إعدادات الإشعارات',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('الإشعارات - قريباً')),
-                );
-              },
-            ),
+            _buildNotificationToggle(context),
 
             _buildProfileOption(
               context,
@@ -230,6 +235,54 @@ class ProfilePage extends StatelessWidget {
         ),
         tileColor: AppColors.surface,
       ),
+    );
+  }
+
+  Widget _buildNotificationToggle(BuildContext context) {
+    final notificationsService = sl<NotificationsService>();
+    bool isEnabled = notificationsService.isNotificationsEnabled();
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: AppConstants.smallPadding),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius),
+          ),
+          child: SwitchListTile(
+            secondary: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(
+                  AppConstants.smallBorderRadius,
+                ),
+              ),
+              child: const Icon(
+                Icons.notifications_outlined,
+                color: AppColors.primary,
+              ),
+            ),
+            title: const Text(
+              'الإشعارات',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            ),
+            subtitle: const Text(
+              'تلقي التنبيهات عند وجود تحديثات',
+              style: TextStyle(color: AppColors.grey600, fontSize: 12),
+            ),
+            value: isEnabled,
+            activeColor: AppColors.primary,
+            onChanged: (bool value) async {
+              setState(() {
+                isEnabled = value;
+              });
+              await notificationsService.setNotificationsEnabled(value);
+            },
+          ),
+        );
+      },
     );
   }
 

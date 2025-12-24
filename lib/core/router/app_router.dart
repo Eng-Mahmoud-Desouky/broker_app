@@ -24,6 +24,7 @@ import '../../features/wallet/presentation/pages/wallet_screen.dart';
 import '../../presentation/pages/main_wrapper.dart';
 import '../../presentation/pages/favorites_page.dart';
 import '../../presentation/pages/profile_page.dart';
+import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../splash.dart';
 
 class AppRouter {
@@ -51,6 +52,7 @@ class AppRouter {
   static const String productDetails = '/product-details';
   static const String webview = '/webview';
   static const String createOrder = '/order/create';
+  static const String notifications = '/notifications';
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
@@ -161,6 +163,12 @@ class AppRouter {
           // if you ever pass 'new', SupportChatPage will create/get via RPC
           return SupportChatPage(threadId: id == 'new' ? null : id);
         },
+      ),
+
+      GoRoute(
+        path: notifications,
+        name: 'notifications',
+        builder: (context, state) => const NotificationsPage(),
       ),
 
       // Main app routes with shell
@@ -314,5 +322,9 @@ class AppRouter {
       default:
         return 0;
     }
+  }
+
+  static void goToNotifications(BuildContext context) {
+    context.push(notifications);
   }
 }

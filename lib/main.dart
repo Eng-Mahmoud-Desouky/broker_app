@@ -1,5 +1,6 @@
 import 'package:broker_app/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:broker_app/features/home/presentation/bloc/home_bloc.dart';
+import 'package:broker_app/features/notifications/presentation/bloc/notifications_cubit.dart';
 import 'package:broker_app/firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -55,6 +56,9 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => di.sl<AuthBloc>()),
         BlocProvider(create: (context) => di.sl<HomeBloc>()),
+        BlocProvider(
+          create: (context) => di.sl<NotificationsCubit>()..loadNotifications(),
+        ),
       ],
       child: MaterialApp.router(
         title: AppConstants.appName,

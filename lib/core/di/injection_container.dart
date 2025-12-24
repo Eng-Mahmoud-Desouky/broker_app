@@ -17,6 +17,13 @@ import '../../features/authentication/domain/usecases/sign_out.dart';
 import '../../features/authentication/domain/usecases/verify_otp.dart';
 import '../../features/authentication/presentation/bloc/auth_bloc.dart';
 import '../../features/authentication/presentation/bloc/registration_bloc.dart';
+import '../../features/notifications/data/datasources/notifications_remote_data_source.dart';
+import '../../features/notifications/data/repositories/notifications_repository_impl.dart';
+import '../../features/notifications/domain/repositories/notifications_repository.dart';
+import '../../features/notifications/domain/usecases/get_notifications.dart';
+import '../../features/notifications/domain/usecases/get_unread_count.dart';
+import '../../features/notifications/domain/usecases/mark_all_read.dart';
+import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
 
 // Home feature imports
 import '../../features/home/data/datasources/home_local_data_source.dart';
@@ -138,6 +145,9 @@ Future<void> init() async {
 
   //! Features - Pricing
   await _initPricing();
+
+  //! Features - App Notifications
+  await _initAppNotifications();
 
   //! Core
   await _initCore();
@@ -466,5 +476,32 @@ Future<void> _initPricing() async {
   // Data sources
   sl.registerLazySingleton<PricingRemoteDataSource>(
     () => PricingRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+}
+
+Future<void> _initAppNotifications() async {
+  // Cubit
+  sl.registerFactory(
+    () => NotificationsCubit(
+      getNotifications: sl(),
+      getUnreadCount: sl(),
+      markAllAsRead: sl(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetNotifications(sl()));
+  sl.registerLazySingleton(() => GetUnreadNotificationsCount(sl()));
+  sl.registerLazySingleton(() => MarkAllNotificationsAsRead(sl()));
+
+  // Repository
+  sl.registerLazySingleton<NotificationsRepository>(
+    () =>
+        NotificationsRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Data source
+  sl.registerLazySingleton<NotificationsRemoteDataSource>(
+    () => NotificationsRemoteDataSourceImpl(sl()),
   );
 }

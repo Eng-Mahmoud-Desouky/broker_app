@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../di/injection_container.dart';
 import '../utils/constants.dart';
 
 class NotificationsService {
@@ -14,6 +16,42 @@ class NotificationsService {
       NotificationsService._internal();
   factory NotificationsService() => _instance;
   NotificationsService._internal();
+
+  static const String _notificationsEnabledKey = 'notifications_enabled';
+
+  bool isNotificationsEnabled() {
+    final prefs = sl<SharedPreferences>();
+    return prefs.getBool(_notificationsEnabledKey) ?? true;
+  }
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    final prefs = sl<SharedPreferences>();
+    await prefs.setBool(_notificationsEnabledKey, enabled);
+
+    if (enabled) {
+      await registerToken();
+    } else {
+      await _deleteTokenFromSupabase();
+    }
+  }
+
+  Future<void> _deleteTokenFromSupabase() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return;
+
+      await _supabase
+          .from(AppConstants.fcmTokensTable)
+          .delete()
+          .eq('user_id', user.id);
+
+      print(
+        'Notifications: Deleted token from Supabase because notifications are disabled',
+      );
+    } catch (e) {
+      print('Notifications: Error deleting token: $e');
+    }
+  }
 
   Future<void> initialize() async {
     // 1. Request Permission
