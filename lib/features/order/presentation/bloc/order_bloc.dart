@@ -37,6 +37,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         cartItems: event.cartItems,
         addressId: event.addressId,
         shippingMethod: event.shippingMethod,
+        promoCode: event.promoCode,
       ),
     );
 

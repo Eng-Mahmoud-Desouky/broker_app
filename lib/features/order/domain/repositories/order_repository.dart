@@ -12,6 +12,7 @@ abstract class OrderRepository {
     required List<CartItem> cartItems,
     required String addressId,
     required ShippingMethod shippingMethod,
+    String? promoCode,
   });
 
   /// Get all orders for current user

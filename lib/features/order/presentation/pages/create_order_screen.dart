@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../core/theme/app_colors.dart';
@@ -26,6 +27,21 @@ class CreateOrderScreen extends StatefulWidget {
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
   ShippingMethod? _selectedShippingMethod;
   String? _selectedAddressId;
+  final TextEditingController _promoCodeController = TextEditingController();
+
+  // Promo code validation state
+  bool _isValidatingPromo = false;
+  bool? _isPromoValid;
+  double? _promoDiscountAmount;
+  double? _promoFinalPrice;
+  double? _promoPercentage;
+  String? _promoErrorMessage;
+
+  @override
+  void dispose() {
+    _promoCodeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +68,14 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    'تم إنشاء الطلب بنجاح: ${state.order.referenceNumber}',
+                    state.order.discountAmount != null
+                        ? 'تم إنشاء الطلب بنجاح: ${state.order.referenceNumber}\n'
+                            'السعر النهائي: \$${state.order.totalPrice?.toStringAsFixed(2)}\n'
+                            'الخصم: \$${state.order.discountAmount!.toStringAsFixed(2)}'
+                        : 'تم إنشاء الطلب بنجاح: ${state.order.referenceNumber}',
                   ),
                   backgroundColor: AppColors.success,
-                  duration: const Duration(seconds: 3),
+                  duration: const Duration(seconds: 4),
                 ),
               );
 
@@ -76,6 +96,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             }
 
             return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,10 +111,15 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
                   // Shipping method
                   _buildShippingMethodSection(),
+                  const SizedBox(height: 24),
+
+                  // Promo code input
+                  _buildPromoCodeSection(),
                   const SizedBox(height: 32),
 
                   // Confirm button
                   _buildConfirmButton(context),
+                  const SizedBox(height: 50), // Extra space at bottom
                 ],
               ),
             );
@@ -412,7 +438,249 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         cartItems: widget.cartItems,
         addressId: _selectedAddressId!,
         shippingMethod: _selectedShippingMethod!,
+        promoCode:
+            _promoCodeController.text.trim().isEmpty
+                ? null
+                : _promoCodeController.text.trim(),
       ),
     );
+  }
+
+  Widget _buildPromoCodeSection() {
+    return BlocBuilder<PricingCubit, PricingState>(
+      builder: (context, pricingState) {
+        double? basePrice;
+
+        if (pricingState is PricingLoaded && _selectedShippingMethod != null) {
+          basePrice = context.read<PricingCubit>().calculateExpectedTotal(
+            items: widget.cartItems,
+            settings: pricingState.settings,
+            shippingMethod: _selectedShippingMethod!,
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'كود الخصم (اختياري)',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _promoCodeController,
+                    decoration: InputDecoration(
+                      hintText: 'أدخل كود الخصم',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: const Icon(Icons.local_offer),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      errorText:
+                          _isPromoValid == false ? _promoErrorMessage : null,
+                    ),
+                    textCapitalization: TextCapitalization.characters,
+                    onChanged: (_) {
+                      // Reset validation when user types
+                      if (_isPromoValid != null) {
+                        setState(() {
+                          _isPromoValid = null;
+                          _promoDiscountAmount = null;
+                          _promoFinalPrice = null;
+                          _promoPercentage = null;
+                          _promoErrorMessage = null;
+                        });
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Using IntrinsicHeight on the Row or Container creates logic issues here
+                // Simple fix: Override the button style constraints specifically
+                ElevatedButton(
+                  onPressed:
+                      basePrice != null && !_isValidatingPromo
+                          ? () => _validatePromoCode(basePrice!)
+                          : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    // Force height to be reasonable, override theme minSize
+                    minimumSize: const Size(0, 48),
+                    fixedSize: const Size.fromHeight(48),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                  ),
+                  child:
+                      _isValidatingPromo
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : const Text('تطبيق'),
+                ),
+              ],
+            ),
+
+            // Show price preview when promo is valid
+            if (_isPromoValid == true && _promoFinalPrice != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.success.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: AppColors.success,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'تم تطبيق الخصم بنجاح!',
+                          style: TextStyle(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'السعر الأصلي:',
+                          style: TextStyle(
+                            color: AppColors.onSurfaceVariant,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                        Text(
+                          '\$${basePrice?.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: AppColors.onSurfaceVariant,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'الخصم (${_promoPercentage?.toStringAsFixed(0)}%):',
+                          style: const TextStyle(color: AppColors.success),
+                        ),
+                        Text(
+                          '-\$${_promoDiscountAmount?.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'السعر النهائي:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          '\$${_promoFinalPrice?.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _validatePromoCode(double basePrice) async {
+    final promoCode = _promoCodeController.text.trim();
+
+    if (promoCode.isEmpty) {
+      setState(() {
+        _isPromoValid = false;
+        _promoErrorMessage = 'الرجاء إدخال كود الخصم';
+      });
+      return;
+    }
+
+    setState(() {
+      _isValidatingPromo = true;
+      _promoErrorMessage = null;
+    });
+
+    try {
+      final response = await Supabase.instance.client.rpc(
+        'validate_promo_code',
+        params: {'p_promo_code': promoCode, 'p_base_price': basePrice},
+      );
+
+      final data =
+          response is List && response.isNotEmpty
+              ? response[0] as Map<String, dynamic>
+              : response as Map<String, dynamic>;
+
+      final isValid = data['is_valid'] as bool;
+
+      setState(() {
+        _isValidatingPromo = false;
+        _isPromoValid = isValid;
+
+        if (isValid) {
+          _promoPercentage = (data['out_percentage'] as num?)?.toDouble();
+          _promoDiscountAmount =
+              (data['out_discount_amount'] as num?)?.toDouble();
+          _promoFinalPrice = (data['out_final_price'] as num?)?.toDouble();
+          _promoErrorMessage = null;
+        } else {
+          _promoErrorMessage = data['out_error_message'] as String?;
+          _promoDiscountAmount = null;
+          _promoFinalPrice = null;
+          _promoPercentage = null;
+        }
+      });
+    } catch (e) {
+      debugPrint('❌ Error validating promo code: $e'); // Log the actual error
+      setState(() {
+        _isValidatingPromo = false;
+        _isPromoValid = false;
+        _promoErrorMessage = 'حدث خطأ أثناء التحقق من الكود';
+      });
+    }
   }
 }

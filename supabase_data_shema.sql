@@ -38,6 +38,8 @@ CREATE TABLE public.cart_items (
   description text,
   review_count text,
   weight_kg numeric CHECK (weight_kg IS NULL OR weight_kg > 0::numeric),
+  dimensions jsonb,
+  raw_specs jsonb,
   CONSTRAINT cart_items_pkey PRIMARY KEY (id),
   CONSTRAINT cart_items_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
@@ -109,16 +111,18 @@ CREATE TABLE public.orders (
 CREATE TABLE public.payment_sessions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
-  wallet_user_id uuid NOT NULL,
-  provider character varying NOT NULL CHECK (provider::text = ANY (ARRAY['zaincash'::character varying, 'kicard'::character varying]::text[])),
-  amount bigint NOT NULL CHECK (amount > 0),
-  status character varying DEFAULT 'pending'::character varying CHECK (status::text = ANY (ARRAY['pending'::character varying, 'completed'::character varying, 'failed'::character varying]::text[])),
-  reference_id text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
+  provider text NOT NULL DEFAULT 'qi_card'::text,
+  amount numeric NOT NULL CHECK (amount > 0::numeric),
+  status USER-DEFINED NOT NULL DEFAULT 'created'::payment_status,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  currency text NOT NULL DEFAULT 'IQD'::text,
+  provider_session_id text,
+  idempotency_key text,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  closed_at timestamp with time zone,
   CONSTRAINT payment_sessions_pkey PRIMARY KEY (id),
-  CONSTRAINT payment_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
-  CONSTRAINT payment_sessions_wallet_user_id_fkey FOREIGN KEY (wallet_user_id) REFERENCES public.wallets(user_id)
+  CONSTRAINT payment_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.pricing_settings (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

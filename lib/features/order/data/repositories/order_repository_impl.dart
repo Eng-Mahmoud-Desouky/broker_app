@@ -25,6 +25,7 @@ class OrderRepositoryImpl implements OrderRepository {
     required List<CartItem> cartItems,
     required String addressId,
     required ShippingMethod shippingMethod,
+    String? promoCode,
   }) async {
     try {
       if (_currentUserId == null) {
@@ -40,6 +41,7 @@ class OrderRepositoryImpl implements OrderRepository {
         cartItems: cartItems,
         addressId: addressId,
         shippingMethod: shippingMethod,
+        promoCode: promoCode,
       );
 
       return Right(order);

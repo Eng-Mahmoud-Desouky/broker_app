@@ -20,6 +20,8 @@ class Order extends Equatable {
   final List<OrderItem> items;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final double? discountAmount;
+  final String? promoCodeUsed;
 
   const Order({
     required this.id,
@@ -34,6 +36,8 @@ class Order extends Equatable {
     required this.items,
     required this.createdAt,
     required this.updatedAt,
+    this.discountAmount,
+    this.promoCodeUsed,
   });
 
   /// Get total number of items in order
@@ -70,5 +74,7 @@ class Order extends Equatable {
     items,
     createdAt,
     updatedAt,
+    discountAmount,
+    promoCodeUsed,
   ];
 }
