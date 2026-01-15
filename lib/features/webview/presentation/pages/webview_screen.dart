@@ -1356,6 +1356,63 @@ class _WebViewScreenState extends State<WebViewScreen> {
         return;
       }
 
+      // Extract weight (optional)
+      double? weightKg;
+      try {
+        if (productData['weight'] != null && productData['weight'] is Map) {
+          final weightMap = productData['weight'] as Map;
+          final value = weightMap['value'];
+          final unit = weightMap['unit']?.toString().toLowerCase();
+
+          if (value != null && unit != null) {
+            double weightValue =
+                (value is int) ? value.toDouble() : value as double;
+
+            // Convert to kg if needed
+            if (unit == 'kg') {
+              weightKg = weightValue;
+            } else if (unit == 'g') {
+              weightKg = weightValue / 1000;
+            } else if (unit == 'lb') {
+              weightKg = weightValue * 0.453592;
+            } else if (unit == 'oz') {
+              weightKg = weightValue * 0.0283495;
+            }
+          }
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Weight parsing failed (non-critical): $e');
+        }
+      }
+
+      // Extract dimensions (optional)
+      Map<String, dynamic>? dimensions;
+      try {
+        if (productData['dimensions'] != null &&
+            productData['dimensions'] is Map) {
+          dimensions = Map<String, dynamic>.from(
+            productData['dimensions'] as Map,
+          );
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Dimensions parsing failed (non-critical): $e');
+        }
+      }
+
+      // Extract raw specs (optional)
+      Map<String, dynamic>? rawSpecs;
+      try {
+        if (productData['rawSpecs'] != null && productData['rawSpecs'] is Map) {
+          rawSpecs = Map<String, dynamic>.from(productData['rawSpecs'] as Map);
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Raw specs parsing failed (non-critical): $e');
+        }
+      }
+
       // Add to cart via BLoC
       _cartBloc.add(
         CartAddItem(
@@ -1369,6 +1426,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
           productUrl: productData['url'] ?? '',
           platform: productData['platform'] ?? 'unknown',
           rating: productData['rating'],
+          weightKg: weightKg,
+          dimensions: dimensions,
+          rawSpecs: rawSpecs,
           metadata: productData,
         ),
       );

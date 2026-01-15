@@ -23,6 +23,9 @@ class AddToCart implements UseCase<CartItem, AddToCartParams> {
       platform: params.platform,
       rating: params.rating,
       metadata: params.metadata,
+      weightKg: params.weightKg,
+      dimensions: params.dimensions,
+      rawSpecs: params.rawSpecs,
     );
   }
 }
@@ -36,6 +39,9 @@ class AddToCartParams extends Equatable {
   final String platform;
   final String? rating;
   final Map<String, dynamic>? metadata;
+  final double? weightKg;
+  final Map<String, dynamic>? dimensions;
+  final Map<String, dynamic>? rawSpecs;
 
   const AddToCartParams({
     required this.productName,
@@ -46,18 +52,23 @@ class AddToCartParams extends Equatable {
     required this.platform,
     this.rating,
     this.metadata,
+    this.weightKg,
+    this.dimensions,
+    this.rawSpecs,
   });
 
   @override
   List<Object?> get props => [
-        productName,
-        price,
-        imageUrl,
-        images,
-        productUrl,
-        platform,
-        rating,
-        metadata,
-      ];
+    productName,
+    price,
+    imageUrl,
+    images,
+    productUrl,
+    platform,
+    rating,
+    metadata,
+    weightKg,
+    dimensions,
+    rawSpecs,
+  ];
 }
-

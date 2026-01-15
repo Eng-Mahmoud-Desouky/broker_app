@@ -28,12 +28,13 @@ class CartRepositoryImpl implements CartRepository {
     required String platform,
     String? rating,
     Map<String, dynamic>? metadata,
+    double? weightKg,
+    Map<String, dynamic>? dimensions,
+    Map<String, dynamic>? rawSpecs,
   }) async {
     try {
       if (_currentUserId == null) {
-        return Left(
-          AuthenticationFailure(message: 'User not authenticated'),
-        );
+        return Left(AuthenticationFailure(message: 'User not authenticated'));
       }
 
       final result = await remoteDataSource.addToCart(
@@ -46,6 +47,9 @@ class CartRepositoryImpl implements CartRepository {
         platform: platform,
         rating: rating,
         metadata: metadata,
+        weightKg: weightKg,
+        dimensions: dimensions,
+        rawSpecs: rawSpecs,
       );
 
       return Right(result);
@@ -62,9 +66,7 @@ class CartRepositoryImpl implements CartRepository {
   Future<Either<Failure, List<CartItem>>> getCartItems() async {
     try {
       if (_currentUserId == null) {
-        return Left(
-          AuthenticationFailure(message: 'User not authenticated'),
-        );
+        return Left(AuthenticationFailure(message: 'User not authenticated'));
       }
 
       final result = await remoteDataSource.getCartItems(_currentUserId!);
@@ -85,9 +87,7 @@ class CartRepositoryImpl implements CartRepository {
   }) async {
     try {
       if (_currentUserId == null) {
-        return Left(
-          AuthenticationFailure(message: 'User not authenticated'),
-        );
+        return Left(AuthenticationFailure(message: 'User not authenticated'));
       }
 
       if (quantity < 1) {
@@ -113,9 +113,7 @@ class CartRepositoryImpl implements CartRepository {
   Future<Either<Failure, void>> removeFromCart(String itemId) async {
     try {
       if (_currentUserId == null) {
-        return Left(
-          AuthenticationFailure(message: 'User not authenticated'),
-        );
+        return Left(AuthenticationFailure(message: 'User not authenticated'));
       }
 
       await remoteDataSource.removeFromCart(itemId);
@@ -133,9 +131,7 @@ class CartRepositoryImpl implements CartRepository {
   Future<Either<Failure, void>> clearCart() async {
     try {
       if (_currentUserId == null) {
-        return Left(
-          AuthenticationFailure(message: 'User not authenticated'),
-        );
+        return Left(AuthenticationFailure(message: 'User not authenticated'));
       }
 
       await remoteDataSource.clearCart(_currentUserId!);
@@ -153,9 +149,7 @@ class CartRepositoryImpl implements CartRepository {
   Future<Either<Failure, int>> getCartItemsCount() async {
     try {
       if (_currentUserId == null) {
-        return Left(
-          AuthenticationFailure(message: 'User not authenticated'),
-        );
+        return Left(AuthenticationFailure(message: 'User not authenticated'));
       }
 
       final count = await remoteDataSource.getCartItemsCount(_currentUserId!);
@@ -186,4 +180,3 @@ class CartRepositoryImpl implements CartRepository {
     }
   }
 }
-

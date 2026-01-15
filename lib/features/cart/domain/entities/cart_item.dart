@@ -15,6 +15,10 @@ class CartItem extends Equatable {
   final Map<String, dynamic>? metadata;
   final double?
   weightKg; // Weight in kilograms (nullable for backward compatibility)
+  final Map<String, dynamic>?
+  dimensions; // Product dimensions: {length, width, height, unit}
+  final Map<String, dynamic>?
+  rawSpecs; // Raw specification text: {weightText, dimensionText}
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -31,6 +35,8 @@ class CartItem extends Equatable {
     this.rating,
     this.metadata,
     this.weightKg, // Weight is optional
+    this.dimensions, // Dimensions are optional
+    this.rawSpecs, // Raw specs are optional
     required this.createdAt,
     required this.updatedAt,
   });
@@ -96,6 +102,26 @@ class CartItem extends Equatable {
   /// Check if weight is set
   bool get hasWeight => weightKg != null;
 
+  /// Check if dimensions are set
+  bool get hasDimensions => dimensions != null && dimensions!.isNotEmpty;
+
+  /// Get formatted dimensions display (e.g., "30x20x10 cm")
+  String get dimensionsDisplay {
+    if (!hasDimensions) return '';
+    try {
+      final length = dimensions!['length'];
+      final width = dimensions!['width'];
+      final height = dimensions!['height'];
+      final unit = dimensions!['unit'] ?? '';
+      if (length != null && width != null && height != null) {
+        return '$length×$width×$height $unit'.trim();
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+    return '';
+  }
+
   @override
   List<Object?> get props => [
     id,
@@ -110,6 +136,8 @@ class CartItem extends Equatable {
     rating,
     metadata,
     weightKg,
+    dimensions,
+    rawSpecs,
     createdAt,
     updatedAt,
   ];

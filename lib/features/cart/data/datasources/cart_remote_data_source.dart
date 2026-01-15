@@ -16,6 +16,9 @@ abstract class CartRemoteDataSource {
     required String platform,
     String? rating,
     Map<String, dynamic>? metadata,
+    double? weightKg,
+    Map<String, dynamic>? dimensions,
+    Map<String, dynamic>? rawSpecs,
   });
 
   /// Get all cart items for user
@@ -56,20 +59,31 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
     required String platform,
     String? rating,
     Map<String, dynamic>? metadata,
+    double? weightKg,
+    Map<String, dynamic>? dimensions,
+    Map<String, dynamic>? rawSpecs,
   }) async {
     try {
-      final response = await supabaseClient.from('cart_items').insert({
-        'user_id': userId,
-        'product_name': productName,
-        'price': price,
-        'image_url': imageUrl,
-        'images': images,
-        'product_url': productUrl,
-        'platform': platform,
-        'rating': rating,
-        'metadata': metadata,
-        'quantity': 1,
-      }).select().single();
+      final response =
+          await supabaseClient
+              .from('cart_items')
+              .insert({
+                'user_id': userId,
+                'product_name': productName,
+                'price': price,
+                'image_url': imageUrl,
+                'images': images,
+                'product_url': productUrl,
+                'platform': platform,
+                'rating': rating,
+                'metadata': metadata,
+                'weight_kg': weightKg,
+                'dimensions': dimensions,
+                'raw_specs': rawSpecs,
+                'quantity': 1,
+              })
+              .select()
+              .single();
 
       return CartItemModel.fromJson(response);
     } on PostgrestException catch (e) {
@@ -106,15 +120,16 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
     required int quantity,
   }) async {
     try {
-      final response = await supabaseClient
-          .from('cart_items')
-          .update({
-            'quantity': quantity,
-            'updated_at': DateTime.now().toIso8601String(),
-          })
-          .eq('id', itemId)
-          .select()
-          .single();
+      final response =
+          await supabaseClient
+              .from('cart_items')
+              .update({
+                'quantity': quantity,
+                'updated_at': DateTime.now().toIso8601String(),
+              })
+              .eq('id', itemId)
+              .select()
+              .single();
 
       return CartItemModel.fromJson(response);
     } on PostgrestException catch (e) {
@@ -162,9 +177,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
 
       return (response as List<dynamic>).length;
     } on PostgrestException catch (e) {
-      throw ServerException(
-        message: 'Failed to get cart count: ${e.message}',
-      );
+      throw ServerException(message: 'Failed to get cart count: ${e.message}');
     } catch (e) {
       throw ServerException(
         message: 'Failed to get cart count: ${e.toString()}',
@@ -181,9 +194,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
           .eq('user_id', userId)
           .order('created_at', ascending: false)
           .map(
-            (data) => data
-                .map((json) => CartItemModel.fromJson(json))
-                .toList(),
+            (data) => data.map((json) => CartItemModel.fromJson(json)).toList(),
           );
     } catch (e) {
       throw ServerException(
@@ -192,4 +203,3 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
     }
   }
 }
-

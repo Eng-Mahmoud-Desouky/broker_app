@@ -23,6 +23,9 @@ class CartAddItem extends CartEvent {
   final String platform;
   final String? rating;
   final Map<String, dynamic>? metadata;
+  final double? weightKg;
+  final Map<String, dynamic>? dimensions;
+  final Map<String, dynamic>? rawSpecs;
 
   const CartAddItem({
     required this.productName,
@@ -33,19 +36,25 @@ class CartAddItem extends CartEvent {
     required this.platform,
     this.rating,
     this.metadata,
+    this.weightKg,
+    this.dimensions,
+    this.rawSpecs,
   });
 
   @override
   List<Object?> get props => [
-        productName,
-        price,
-        imageUrl,
-        images,
-        productUrl,
-        platform,
-        rating,
-        metadata,
-      ];
+    productName,
+    price,
+    imageUrl,
+    images,
+    productUrl,
+    platform,
+    rating,
+    metadata,
+    weightKg,
+    dimensions,
+    rawSpecs,
+  ];
 }
 
 /// Event to update item quantity
@@ -53,10 +62,7 @@ class CartUpdateQuantity extends CartEvent {
   final String itemId;
   final int quantity;
 
-  const CartUpdateQuantity({
-    required this.itemId,
-    required this.quantity,
-  });
+  const CartUpdateQuantity({required this.itemId, required this.quantity});
 
   @override
   List<Object> get props => [itemId, quantity];
@@ -91,4 +97,3 @@ class CartItemsUpdated extends CartEvent {
   @override
   List<Object> get props => [items];
 }
-

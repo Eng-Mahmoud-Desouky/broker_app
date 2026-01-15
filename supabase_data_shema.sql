@@ -8,6 +8,18 @@ CREATE TABLE public.app_content (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT app_content_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.app_notifications (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  title text NOT NULL,
+  body text NOT NULL,
+  type text,
+  data jsonb,
+  is_read boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT app_notifications_pkey PRIMARY KEY (id),
+  CONSTRAINT app_notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
 CREATE TABLE public.cart_items (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -213,6 +225,17 @@ CREATE TABLE public.user_addresses (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_addresses_pkey PRIMARY KEY (id),
   CONSTRAINT user_addresses_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.user_fcm_tokens (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  fcm_token text NOT NULL,
+  device_id text,
+  platform text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_fcm_tokens_pkey PRIMARY KEY (id),
+  CONSTRAINT user_fcm_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.wallet_transactions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

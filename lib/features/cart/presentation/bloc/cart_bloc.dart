@@ -47,22 +47,18 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
     final result = await getCartItems(NoParams());
 
-    result.fold(
-      (failure) => emit(CartError(message: failure.message)),
-      (items) {
-        if (items.isEmpty) {
-          emit(const CartEmpty());
-        } else {
-          emit(_buildLoadedState(items));
-        }
-      },
-    );
+    result.fold((failure) => emit(CartError(message: failure.message)), (
+      items,
+    ) {
+      if (items.isEmpty) {
+        emit(const CartEmpty());
+      } else {
+        emit(_buildLoadedState(items));
+      }
+    });
   }
 
-  Future<void> _onAddItem(
-    CartAddItem event,
-    Emitter<CartState> emit,
-  ) async {
+  Future<void> _onAddItem(CartAddItem event, Emitter<CartState> emit) async {
     emit(const CartAddingItem());
 
     final result = await addToCart(
@@ -75,17 +71,17 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         platform: event.platform,
         rating: event.rating,
         metadata: event.metadata,
+        weightKg: event.weightKg,
+        dimensions: event.dimensions,
+        rawSpecs: event.rawSpecs,
       ),
     );
 
-    result.fold(
-      (failure) => emit(CartError(message: failure.message)),
-      (item) {
-        emit(CartItemAdded(item: item));
-        // Reload cart items after adding
-        add(const CartLoadItems());
-      },
-    );
+    result.fold((failure) => emit(CartError(message: failure.message)), (item) {
+      emit(CartItemAdded(item: item));
+      // Reload cart items after adding
+      add(const CartLoadItems());
+    });
   }
 
   Future<void> _onUpdateQuantity(
@@ -96,10 +92,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     emit(CartUpdatingQuantity(itemId: event.itemId));
 
     final result = await updateCartQuantity(
-      UpdateCartQuantityParams(
-        itemId: event.itemId,
-        quantity: event.quantity,
-      ),
+      UpdateCartQuantityParams(itemId: event.itemId, quantity: event.quantity),
     );
 
     result.fold(
@@ -145,46 +138,33 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     );
   }
 
-  Future<void> _onClear(
-    CartClear event,
-    Emitter<CartState> emit,
-  ) async {
+  Future<void> _onClear(CartClear event, Emitter<CartState> emit) async {
     emit(const CartClearing());
 
     final result = await clearCart(NoParams());
 
-    result.fold(
-      (failure) => emit(CartError(message: failure.message)),
-      (_) {
-        emit(const CartOperationSuccess(message: 'Cart cleared'));
-        emit(const CartEmpty());
-      },
-    );
+    result.fold((failure) => emit(CartError(message: failure.message)), (_) {
+      emit(const CartOperationSuccess(message: 'Cart cleared'));
+      emit(const CartEmpty());
+    });
   }
 
-  Future<void> _onRefresh(
-    CartRefresh event,
-    Emitter<CartState> emit,
-  ) async {
+  Future<void> _onRefresh(CartRefresh event, Emitter<CartState> emit) async {
     // Don't show loading state on refresh
     final result = await getCartItems(NoParams());
 
-    result.fold(
-      (failure) => emit(CartError(message: failure.message)),
-      (items) {
-        if (items.isEmpty) {
-          emit(const CartEmpty());
-        } else {
-          emit(_buildLoadedState(items));
-        }
-      },
-    );
+    result.fold((failure) => emit(CartError(message: failure.message)), (
+      items,
+    ) {
+      if (items.isEmpty) {
+        emit(const CartEmpty());
+      } else {
+        emit(_buildLoadedState(items));
+      }
+    });
   }
 
-  void _onItemsUpdated(
-    CartItemsUpdated event,
-    Emitter<CartState> emit,
-  ) {
+  void _onItemsUpdated(CartItemsUpdated event, Emitter<CartState> emit) {
     if (event.items.isEmpty) {
       emit(const CartEmpty());
     } else {
@@ -193,24 +173,18 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   CartLoaded _buildLoadedState(List<CartItem> items) {
-    final totalItems = items.fold<int>(
-      0,
-      (sum, item) => sum + item.quantity,
-    );
+    final totalItems = items.fold<int>(0, (sum, item) => sum + item.quantity);
 
     // Calculate total price if possible
     double? totalPrice;
     try {
-      totalPrice = items.fold<double>(
-        0.0,
-        (sum, item) {
-          final price = item.priceValue;
-          if (price != null) {
-            return sum + (price * item.quantity);
-          }
-          return sum;
-        },
-      );
+      totalPrice = items.fold<double>(0.0, (sum, item) {
+        final price = item.priceValue;
+        if (price != null) {
+          return sum + (price * item.quantity);
+        }
+        return sum;
+      });
     } catch (e) {
       totalPrice = null;
     }
@@ -228,4 +202,3 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     return super.close();
   }
 }
-

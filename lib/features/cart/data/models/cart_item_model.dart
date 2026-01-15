@@ -15,6 +15,8 @@ class CartItemModel extends CartItem {
     super.rating,
     super.metadata,
     super.weightKg,
+    super.dimensions,
+    super.rawSpecs,
     required super.createdAt,
     required super.updatedAt,
   });
@@ -40,6 +42,8 @@ class CartItemModel extends CartItem {
           json['weight_kg'] != null
               ? (json['weight_kg'] as num).toDouble()
               : null,
+      dimensions: json['dimensions'] as Map<String, dynamic>?,
+      rawSpecs: json['raw_specs'] as Map<String, dynamic>?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -60,6 +64,8 @@ class CartItemModel extends CartItem {
       'rating': rating,
       'metadata': metadata,
       'weight_kg': weightKg,
+      'dimensions': dimensions,
+      'raw_specs': rawSpecs,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -79,6 +85,8 @@ class CartItemModel extends CartItem {
       'rating': rating,
       'metadata': metadata,
       'weight_kg': weightKg,
+      'dimensions': dimensions,
+      'raw_specs': rawSpecs,
     };
   }
 
@@ -97,6 +105,8 @@ class CartItemModel extends CartItem {
       rating: item.rating,
       metadata: item.metadata,
       weightKg: item.weightKg,
+      dimensions: item.dimensions,
+      rawSpecs: item.rawSpecs,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     );
@@ -116,6 +126,8 @@ class CartItemModel extends CartItem {
     String? rating,
     Map<String, dynamic>? metadata,
     double? weightKg,
+    Map<String, dynamic>? dimensions,
+    Map<String, dynamic>? rawSpecs,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -132,6 +144,8 @@ class CartItemModel extends CartItem {
       rating: rating ?? this.rating,
       metadata: metadata ?? this.metadata,
       weightKg: weightKg ?? this.weightKg,
+      dimensions: dimensions ?? this.dimensions,
+      rawSpecs: rawSpecs ?? this.rawSpecs,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -15,6 +15,9 @@ abstract class CartRepository {
     required String platform,
     String? rating,
     Map<String, dynamic>? metadata,
+    double? weightKg,
+    Map<String, dynamic>? dimensions,
+    Map<String, dynamic>? rawSpecs,
   });
 
   /// Get all cart items for current user
@@ -38,4 +41,3 @@ abstract class CartRepository {
   /// Stream of cart items for real-time updates
   Stream<List<CartItem>> watchCartItems();
 }
-
