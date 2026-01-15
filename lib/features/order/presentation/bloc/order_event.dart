@@ -13,15 +13,17 @@ class OrderCreate extends OrderEvent {
   final List<CartItem> cartItems;
   final String addressId;
   final ShippingMethod shippingMethod;
+  final String? promoCode;
 
   const OrderCreate({
     required this.cartItems,
     required this.addressId,
     required this.shippingMethod,
+    this.promoCode,
   });
 
   @override
-  List<Object?> get props => [cartItems, addressId, shippingMethod];
+  List<Object?> get props => [cartItems, addressId, shippingMethod, promoCode];
 }
 
 /// Load all user orders

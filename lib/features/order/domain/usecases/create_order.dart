@@ -20,6 +20,7 @@ class CreateOrder implements UseCase<Order, CreateOrderParams> {
       cartItems: params.cartItems,
       addressId: params.addressId,
       shippingMethod: params.shippingMethod,
+      promoCode: params.promoCode,
     );
   }
 }
@@ -28,13 +29,15 @@ class CreateOrderParams extends Equatable {
   final List<CartItem> cartItems;
   final String addressId;
   final ShippingMethod shippingMethod;
+  final String? promoCode;
 
   const CreateOrderParams({
     required this.cartItems,
     required this.addressId,
     required this.shippingMethod,
+    this.promoCode,
   });
 
   @override
-  List<Object?> get props => [cartItems, addressId, shippingMethod];
+  List<Object?> get props => [cartItems, addressId, shippingMethod, promoCode];
 }

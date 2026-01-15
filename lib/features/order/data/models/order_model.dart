@@ -19,6 +19,8 @@ class OrderModel extends Order {
     required super.items,
     required super.createdAt,
     required super.updatedAt,
+    super.discountAmount,
+    super.promoCodeUsed,
   });
 
   /// Create from Supabase JSON (without items)
@@ -43,6 +45,11 @@ class OrderModel extends Order {
       items: const [], // Items loaded separately
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      discountAmount:
+          json['discount_amount'] != null
+              ? (json['discount_amount'] as num).toDouble()
+              : null,
+      promoCodeUsed: json['promo_code_used'] as String?,
     );
   }
 
@@ -71,6 +78,11 @@ class OrderModel extends Order {
       items: items,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      discountAmount:
+          json['discount_amount'] != null
+              ? (json['discount_amount'] as num).toDouble()
+              : null,
+      promoCodeUsed: json['promo_code_used'] as String?,
     );
   }
 
@@ -103,6 +115,8 @@ class OrderModel extends Order {
       items: items,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      discountAmount: discountAmount,
+      promoCodeUsed: promoCodeUsed,
     );
   }
 }
