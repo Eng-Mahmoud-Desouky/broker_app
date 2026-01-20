@@ -36,25 +36,38 @@ class AppLocalizations {
   String get settings => _localizedValues[locale.languageCode]!['settings']!;
 
   // Authentication
-  String get welcomeTitle => _localizedValues[locale.languageCode]!['welcome_title']!;
-  String get welcomeSubtitle => _localizedValues[locale.languageCode]!['welcome_subtitle']!;
-  String get phoneNumber => _localizedValues[locale.languageCode]!['phone_number']!;
-  String get phoneNumberHint => _localizedValues[locale.languageCode]!['phone_number_hint']!;
+  String get welcomeTitle =>
+      _localizedValues[locale.languageCode]!['welcome_title']!;
+  String get welcomeSubtitle =>
+      _localizedValues[locale.languageCode]!['welcome_subtitle']!;
+  String get phoneNumber =>
+      _localizedValues[locale.languageCode]!['phone_number']!;
+  String get phoneNumberHint =>
+      _localizedValues[locale.languageCode]!['phone_number_hint']!;
   String get sendOtp => _localizedValues[locale.languageCode]!['send_otp']!;
-  String get otpVerification => _localizedValues[locale.languageCode]!['otp_verification']!;
-  String get otpSentTo => _localizedValues[locale.languageCode]!['otp_sent_to']!;
+  String get otpVerification =>
+      _localizedValues[locale.languageCode]!['otp_verification']!;
+  String get otpSentTo =>
+      _localizedValues[locale.languageCode]!['otp_sent_to']!;
   String get enterOtp => _localizedValues[locale.languageCode]!['enter_otp']!;
   String get verify => _localizedValues[locale.languageCode]!['verify']!;
   String get resendOtp => _localizedValues[locale.languageCode]!['resend_otp']!;
-  String get didntReceiveOtp => _localizedValues[locale.languageCode]!['didnt_receive_otp']!;
+  String get didntReceiveOtp =>
+      _localizedValues[locale.languageCode]!['didnt_receive_otp']!;
 
   // Errors
-  String get invalidPhoneNumber => _localizedValues[locale.languageCode]!['invalid_phone_number']!;
-  String get invalidOtp => _localizedValues[locale.languageCode]!['invalid_otp']!;
-  String get otpExpired => _localizedValues[locale.languageCode]!['otp_expired']!;
-  String get networkError => _localizedValues[locale.languageCode]!['network_error']!;
-  String get serverError => _localizedValues[locale.languageCode]!['server_error']!;
-  String get unknownError => _localizedValues[locale.languageCode]!['unknown_error']!;
+  String get invalidPhoneNumber =>
+      _localizedValues[locale.languageCode]!['invalid_phone_number']!;
+  String get invalidOtp =>
+      _localizedValues[locale.languageCode]!['invalid_otp']!;
+  String get otpExpired =>
+      _localizedValues[locale.languageCode]!['otp_expired']!;
+  String get networkError =>
+      _localizedValues[locale.languageCode]!['network_error']!;
+  String get serverError =>
+      _localizedValues[locale.languageCode]!['server_error']!;
+  String get unknownError =>
+      _localizedValues[locale.languageCode]!['unknown_error']!;
 
   static const Map<String, Map<String, String>> _localizedValues = {
     'ar': {
@@ -99,7 +112,7 @@ class AppLocalizations {
     },
     'en': {
       // Common
-      'app_name': 'Broker App',
+      'app_name': 'زد إكسبريس',
       'ok': 'OK',
       'cancel': 'Cancel',
       'retry': 'Retry',
@@ -140,13 +153,15 @@ class AppLocalizations {
   };
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
   bool isSupported(Locale locale) {
-    return AppLocalizations.supportedLocales
-        .any((supportedLocale) => supportedLocale.languageCode == locale.languageCode);
+    return AppLocalizations.supportedLocales.any(
+      (supportedLocale) => supportedLocale.languageCode == locale.languageCode,
+    );
   }
 
   @override

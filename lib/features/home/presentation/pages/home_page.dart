@@ -463,7 +463,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildInitialState() {
     return const Center(
       child: Text(
-        'مرحباً بك في Broker App',
+        'مرحباً بك في زد إكسبريس',
         style: TextStyle(fontSize: 18, color: AppColors.primary),
       ),
     );

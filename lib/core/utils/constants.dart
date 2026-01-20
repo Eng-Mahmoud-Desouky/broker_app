@@ -1,6 +1,6 @@
 class AppConstants {
   // App Info
-  static const String appName = 'بروكر';
+  static const String appName = 'زد إكسبريس';
   static const String appVersion = '1.0.0';
 
   // Supabase
