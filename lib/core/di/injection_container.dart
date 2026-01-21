@@ -463,7 +463,9 @@ Future<void> _initAddress() async {
 
 Future<void> _initPricing() async {
   // Cubit
-  sl.registerFactory(() => PricingCubit(getPricingSettings: sl()));
+  sl.registerFactory(
+    () => PricingCubit(getPricingSettings: sl(), pricingRepository: sl()),
+  );
 
   // Use cases
   sl.registerLazySingleton(() => GetPricingSettings(sl()));

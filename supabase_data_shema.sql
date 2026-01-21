@@ -78,6 +78,9 @@ CREATE TABLE public.order_items (
   image_url text,
   metadata jsonb,
   created_at timestamp with time zone DEFAULT now(),
+  length numeric,
+  width numeric,
+  height numeric,
   CONSTRAINT order_items_pkey PRIMARY KEY (id),
   CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
 );
@@ -105,8 +108,13 @@ CREATE TABLE public.orders (
   updated_at timestamp with time zone DEFAULT now(),
   shipment_images jsonb DEFAULT '[]'::jsonb,
   notes text,
+  promo_code_id uuid,
+  discount_amount numeric DEFAULT 0,
+  is_estimated_shipping boolean DEFAULT false,
+  missing_shipping_data boolean DEFAULT false,
   CONSTRAINT orders_pkey PRIMARY KEY (id),
-  CONSTRAINT orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+  CONSTRAINT orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT orders_promo_code_fkey FOREIGN KEY (promo_code_id) REFERENCES public.promo_codes(id)
 );
 CREATE TABLE public.payment_sessions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -131,6 +139,7 @@ CREATE TABLE public.pricing_settings (
   sea_freight_price_per_kg numeric NOT NULL DEFAULT 5.0,
   updated_at timestamp with time zone DEFAULT now(),
   updated_by uuid,
+  platform_commissions jsonb DEFAULT '{}'::jsonb,
   CONSTRAINT pricing_settings_pkey PRIMARY KEY (id),
   CONSTRAINT pricing_settings_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES auth.users(id)
 );
@@ -184,6 +193,26 @@ CREATE TABLE public.profiles (
   role text DEFAULT 'user'::text CHECK (role = ANY (ARRAY['super_admin'::text, 'admin'::text, 'support'::text, 'user'::text])),
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.promo_code_usages (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  promo_code_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  order_id uuid NOT NULL,
+  used_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT promo_code_usages_pkey PRIMARY KEY (id),
+  CONSTRAINT promo_code_usages_promo_code_fkey FOREIGN KEY (promo_code_id) REFERENCES public.promo_codes(id),
+  CONSTRAINT promo_code_usages_user_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT promo_code_usages_order_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
+);
+CREATE TABLE public.promo_codes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  code text NOT NULL UNIQUE,
+  percentage numeric NOT NULL CHECK (percentage > 0::numeric AND percentage <= 100::numeric),
+  is_active boolean NOT NULL DEFAULT true,
+  expires_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT promo_codes_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.support_messages (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

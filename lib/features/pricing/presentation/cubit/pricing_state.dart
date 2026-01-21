@@ -20,6 +20,17 @@ class PricingLoaded extends PricingState {
   List<Object?> get props => [settings];
 }
 
+class PricingCalculating extends PricingState {}
+
+class PricingCalculated extends PricingState {
+  final OrderPricingResult result;
+
+  const PricingCalculated({required this.result});
+
+  @override
+  List<Object?> get props => [result];
+}
+
 class PricingError extends PricingState {
   final String message;
 

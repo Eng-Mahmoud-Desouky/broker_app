@@ -56,75 +56,97 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           create: (_) => di.sl<PricingCubit>()..fetchPricingSettings(),
         ),
       ],
-      child: Scaffold(
-        appBar: AppBar(title: const Text('إنشاء طلب'), centerTitle: true),
-        body: BlocConsumer<OrderBloc, OrderState>(
-          listener: (context, state) {
-            if (state is OrderCreated) {
-              // Clear cart after successful order creation
-              context.read<CartBloc>().add(const CartClear());
+      child: Builder(
+        builder: (context) {
+          // Trigger pricing calculation when both address and shipping are selected
+          final pricingState = context.watch<PricingCubit>().state;
+          if (pricingState is PricingLoaded &&
+              _selectedAddressId != null &&
+              _selectedShippingMethod != null) {
+            // Use Future.microtask to avoid calling during build
+            Future.microtask(() {
+              final currentState = context.read<PricingCubit>().state;
+              if (currentState is PricingLoaded) {
+                context.read<PricingCubit>().calculateOrderPricing(
+                  items: widget.cartItems,
+                  settings: currentState.settings,
+                  shippingMethod: _selectedShippingMethod!,
+                );
+              }
+            });
+          }
 
-              // Show success and navigate back
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    state.order.discountAmount != null
-                        ? 'تم إنشاء الطلب بنجاح: ${state.order.referenceNumber}\n'
-                            'السعر النهائي: \$${state.order.totalPrice?.toStringAsFixed(2)}\n'
-                            'الخصم: \$${state.order.discountAmount!.toStringAsFixed(2)}'
-                        : 'تم إنشاء الطلب بنجاح: ${state.order.referenceNumber}',
+          return Scaffold(
+            appBar: AppBar(title: const Text('إنشاء طلب'), centerTitle: true),
+            body: BlocConsumer<OrderBloc, OrderState>(
+              listener: (context, state) {
+                if (state is OrderCreated) {
+                  // Clear cart after successful order creation
+                  context.read<CartBloc>().add(const CartClear());
+
+                  // Show success and navigate back
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        state.order.discountAmount != null
+                            ? 'تم إنشاء الطلب بنجاح: ${state.order.referenceNumber}\n'
+                                'السعر النهائي: \$${state.order.totalPrice?.toStringAsFixed(2)}\n'
+                                'الخصم: \$${state.order.discountAmount!.toStringAsFixed(2)}'
+                            : 'تم إنشاء الطلب بنجاح: ${state.order.referenceNumber}',
+                      ),
+                      backgroundColor: AppColors.success,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+
+                  // Navigate back with success flag
+                  Navigator.of(context).pop(true);
+                } else if (state is OrderError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              },
+              builder: (context, orderState) {
+                if (orderState is OrderCreating) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Cart summary
+                      _buildCartSummary(),
+                      const SizedBox(height: 24),
+
+                      // Address selection
+                      _buildAddressSection(),
+                      const SizedBox(height: 24),
+
+                      // Shipping method
+                      _buildShippingMethodSection(),
+                      const SizedBox(height: 24),
+
+                      // Promo code input
+                      _buildPromoCodeSection(),
+                      const SizedBox(height: 32),
+
+                      // Confirm button
+                      _buildConfirmButton(context),
+                      const SizedBox(height: 50), // Extra space at bottom
+                    ],
                   ),
-                  backgroundColor: AppColors.success,
-                  duration: const Duration(seconds: 4),
-                ),
-              );
-
-              // Navigate back with success flag
-              Navigator.of(context).pop(true);
-            } else if (state is OrderError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: AppColors.error,
-                ),
-              );
-            }
-          },
-          builder: (context, orderState) {
-            if (orderState is OrderCreating) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Cart summary
-                  _buildCartSummary(),
-                  const SizedBox(height: 24),
-
-                  // Address selection
-                  _buildAddressSection(),
-                  const SizedBox(height: 24),
-
-                  // Shipping method
-                  _buildShippingMethodSection(),
-                  const SizedBox(height: 24),
-
-                  // Promo code input
-                  _buildPromoCodeSection(),
-                  const SizedBox(height: 32),
-
-                  // Confirm button
-                  _buildConfirmButton(context),
-                  const SizedBox(height: 50), // Extra space at bottom
-                ],
-              ),
-            );
-          },
-        ),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -160,7 +182,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             const Divider(),
             BlocBuilder<PricingCubit, PricingState>(
               builder: (context, state) {
-                if (state is PricingLoading) {
+                if (state is PricingLoading || state is PricingCalculating) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(8.0),
@@ -173,12 +195,70 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   );
                 }
 
+                if (state is PricingCalculated) {
+                  final result = state.result;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'المبلغ الإجمالي:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '${result.total.toStringAsFixed(2)} \$',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Show estimated shipping warning if needed
+                      if (result.isEstimatedShipping) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange.shade300),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.orange.shade700,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'السعر المعروض تقديري بسبب نقص بيانات الشحن،\nوسيتم التواصل معك في حال وجود فرق.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.orange.shade900,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                }
+
                 if (state is PricingLoaded) {
-                  if (_selectedShippingMethod == null) {
+                  if (_selectedShippingMethod == null ||
+                      _selectedAddressId == null) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8.0),
                       child: Text(
-                        'يرجى اختيار طريقة الشحن لعرض السعر التقريبي',
+                        'يرجى اختيار العنوان وطريقة الشحن لعرض السعر',
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.onSurfaceVariant,
@@ -187,32 +267,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       ),
                     );
                   }
-
-                  final expectedTotal = context
-                      .read<PricingCubit>()
-                      .calculateExpectedTotal(
-                        items: widget.cartItems,
-                        settings: state.settings,
-                        shippingMethod: _selectedShippingMethod!,
-                      );
-
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'المبلغ المتوقع:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${expectedTotal.toStringAsFixed(2)} \$',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  );
                 }
 
                 return const SizedBox.shrink();
@@ -316,7 +370,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                           groupValue: _selectedAddressId,
                           activeColor: AppColors.primary,
                           onChanged: (value) {
-                            setState(() => _selectedAddressId = value);
+                            setState(() {
+                              _selectedAddressId = value;
+                            });
                           },
                         ),
                       );
