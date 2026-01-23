@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
-import '../../../../core/config/app_config.dart';
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -36,233 +34,138 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    return BlocProvider(
-      create: (context) => sl<AuthBloc>(),
-      child: Scaffold(
-        body: BlocConsumer<AuthBloc, AuthState>(
-          listener: (context, state) {
-            if (state is AuthError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: AppColors.error,
-                ),
-              );
-            } else if (state is AuthOtpSent) {
-              AppRouter.goToOtpVerification(context, state.phoneNumber);
-            } else if (state is AuthAuthenticated) {
-              // Handle bypass authentication success
-              final user = state.session.user;
-              if (user.name == null ||
-                  user.governorate == null ||
-                  user.district == null) {
-                AppRouter.goToRegistration(context);
-              } else {
-                AppRouter.goToHome(context);
-              }
+    return Scaffold(
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          print('👂 PhoneInputPage Listener received state: $state');
+
+          if (state is AuthError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          } else if (state is AuthOtpSent) {
+            print(
+              '🚀 Navigation to OTP Verification Page for ${state.phoneNumber}',
+            );
+            AppRouter.goToOtpVerification(context, state.phoneNumber);
+          } else if (state is AuthAuthenticated) {
+            // Handle bypass authentication success
+            final user = state.session.user;
+            if (user.name == null ||
+                user.governorate == null ||
+                user.district == null) {
+              AppRouter.goToRegistration(context);
+            } else {
+              AppRouter.goToHome(context);
             }
-          },
-          builder: (context, state) {
-            return LoadingOverlay(
-              isLoading: state is AuthLoading,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppConstants.defaultPadding),
-                  child: Form(
-                    key: _formKey,
-                    child: SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight:
-                              MediaQuery.of(context).size.height -
-                              MediaQuery.of(context).padding.top -
-                              MediaQuery.of(context).padding.bottom -
-                              (AppConstants.defaultPadding * 2),
-                        ),
-                        child: IntrinsicHeight(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const SizedBox(
-                                height: AppConstants.largePadding * 2,
+          }
+        },
+        builder: (context, state) {
+          return LoadingOverlay(
+            isLoading: state is AuthLoading,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.defaultPadding),
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight:
+                            MediaQuery.of(context).size.height -
+                            MediaQuery.of(context).padding.top -
+                            MediaQuery.of(context).padding.bottom -
+                            (AppConstants.defaultPadding * 2),
+                      ),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const SizedBox(
+                              height: AppConstants.largePadding * 2,
+                            ),
+
+                            // Header
+                            AuthHeader(
+                              title: localizations.welcomeTitle,
+                              subtitle: localizations.welcomeSubtitle,
+                            ),
+
+                            const SizedBox(
+                              height: AppConstants.largePadding * 2,
+                            ),
+
+                            // Phone input field
+                            IntlPhoneField(
+                              controller: _phoneController,
+                              decoration: InputDecoration(
+                                labelText: localizations.phoneNumber,
+                                hintText: localizations.phoneNumberHint,
+                                prefixIcon: const Icon(Icons.phone_outlined),
                               ),
+                              initialCountryCode:
+                                  AppConstants.iraqCountryIsoCode,
+                              showCountryFlag: false,
+                              showDropdownIcon: false,
+                              flagsButtonPadding: EdgeInsets.zero,
+                              flagsButtonMargin: EdgeInsets.zero,
+                              disableLengthCheck: true,
+                              textAlign: TextAlign.right,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              onChanged: (phone) {
+                                setState(() {
+                                  _completePhoneNumber = phone.completeNumber;
+                                  _isValidPhone =
+                                      Validators.isValidIraqiPhoneNumber(
+                                        phone.number,
+                                      );
+                                });
+                              },
+                              validator: (phone) {
+                                if (phone == null || phone.number.isEmpty) {
+                                  return localizations.invalidPhoneNumber;
+                                }
+                                if (!Validators.isValidIraqiPhoneNumber(
+                                  phone.number,
+                                )) {
+                                  return localizations.invalidPhoneNumber;
+                                }
+                                return null;
+                              },
+                            ),
 
-                              // Development mode indicator
-                              if (AppConfig.isDevelopment &&
-                                  AppConfig.bypassOtpInDevelopment)
-                                Container(
-                                  margin: const EdgeInsets.only(
-                                    bottom: AppConstants.defaultPadding,
-                                  ),
-                                  padding: const EdgeInsets.all(
-                                    AppConstants.smallPadding,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.warning.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(
-                                      AppConstants.defaultBorderRadius,
-                                    ),
-                                    border: Border.all(
-                                      color: AppColors.warning,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.developer_mode,
-                                        color: AppColors.warning,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(
-                                        width: AppConstants.smallPadding,
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          'وضع التطوير: تم تعطيل التحقق من OTP',
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodySmall?.copyWith(
-                                            color: AppColors.warning,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                            const SizedBox(height: AppConstants.largePadding),
 
-                              // Header
-                              AuthHeader(
-                                title: localizations.welcomeTitle,
-                                subtitle: localizations.welcomeSubtitle,
-                              ),
+                            // Send OTP button
+                            ElevatedButton(
+                              onPressed: _isValidPhone ? _sendOtp : null,
+                              child: Text(localizations.sendOtp),
+                            ),
 
-                              const SizedBox(
-                                height: AppConstants.largePadding * 2,
-                              ),
+                            const SizedBox(height: AppConstants.defaultPadding),
 
-                              // Phone input field
-                              IntlPhoneField(
-                                controller: _phoneController,
-                                decoration: InputDecoration(
-                                  labelText: localizations.phoneNumber,
-                                  hintText: localizations.phoneNumberHint,
-                                  prefixIcon: const Icon(Icons.phone_outlined),
-                                ),
-                                initialCountryCode:
-                                    AppConstants.iraqCountryIsoCode,
-                                // countries: const ['IQ'], // Only Iraq - commented out due to type issue
-                                showCountryFlag: true,
-                                showDropdownIcon: false,
-                                disableLengthCheck: true,
-                                textAlign: TextAlign.right,
-                                style: Theme.of(context).textTheme.bodyLarge,
-                                onChanged: (phone) {
-                                  setState(() {
-                                    _completePhoneNumber = phone.completeNumber;
-                                    _isValidPhone =
-                                        Validators.isValidIraqiPhoneNumber(
-                                          phone.number,
-                                        );
-                                  });
-                                },
-                                validator: (phone) {
-                                  if (phone == null || phone.number.isEmpty) {
-                                    return localizations.invalidPhoneNumber;
-                                  }
-                                  if (!Validators.isValidIraqiPhoneNumber(
-                                    phone.number,
-                                  )) {
-                                    return localizations.invalidPhoneNumber;
-                                  }
-                                  return null;
-                                },
-                              ),
+                            // Terms and conditions
+                            Text(
+                              'بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.grey600),
+                              textAlign: TextAlign.center,
+                            ),
 
-                              const SizedBox(height: AppConstants.largePadding),
-
-                              // Send OTP button
-                              ElevatedButton(
-                                onPressed: _isValidPhone ? _sendOtp : null,
-                                child: Text(localizations.sendOtp),
-                              ),
-
-                              const Spacer(),
-
-                              // Terms and conditions
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  bottom: AppConstants.defaultPadding,
-                                ),
-                                child: Text(
-                                  'بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: AppColors.grey600),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-
-                              // Temporary authentication option
-                              const Divider(),
-                              const SizedBox(
-                                height: AppConstants.defaultPadding,
-                              ),
-
-                              Text(
-                                'أو يمكنك استخدام التسجيل المؤقت',
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(color: AppColors.grey600),
-                                textAlign: TextAlign.center,
-                              ),
-
-                              const SizedBox(height: AppConstants.smallPadding),
-
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: () {
-                                        AppRouter.goToTempLogin(context);
-                                      },
-                                      style: OutlinedButton.styleFrom(
-                                        side: BorderSide(
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                      child: const Text('تسجيل الدخول'),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    width: AppConstants.smallPadding,
-                                  ),
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: () {
-                                        AppRouter.goToTempSignup(context);
-                                      },
-                                      style: OutlinedButton.styleFrom(
-                                        side: BorderSide(
-                                          color: AppColors.secondary,
-                                        ),
-                                      ),
-                                      child: const Text('إنشاء حساب'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                            const Spacer(),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -271,21 +174,23 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
     if (_formKey.currentState!.validate()) {
       // Ensure we have a valid phone number
       if (_completePhoneNumber.isEmpty) {
+        print('❌ Phone number is empty');
         return;
       }
 
-      // Check if we should bypass OTP in development mode
-      if (AppConfig.shouldBypassOtp(_completePhoneNumber)) {
-        // Bypass OTP verification for development
-        context.read<AuthBloc>().add(
-          AuthBypassOtpRequested(phoneNumber: _completePhoneNumber),
-        );
-      } else {
-        // Normal OTP flow
-        context.read<AuthBloc>().add(
-          AuthSendOtpRequested(phoneNumber: _completePhoneNumber),
-        );
-      }
+      // Debug logging
+      print('\n📱 ===== SENDING OTP =====');
+      print('📱 Phone number: $_completePhoneNumber');
+      print('📱 Phone length: ${_completePhoneNumber.length}');
+
+      print('========================\n');
+
+      // Normal OTP flow
+      context.read<AuthBloc>().add(
+        AuthSendOtpRequested(phoneNumber: _completePhoneNumber),
+      );
+    } else {
+      print('❌ Form validation failed');
     }
   }
 }

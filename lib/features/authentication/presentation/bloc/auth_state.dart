@@ -31,6 +31,14 @@ class AuthAuthenticated extends AuthState {
   List<Object> get props => [session];
 }
 
+class AuthAuthenticatedWithProfile extends AuthAuthenticated {
+  const AuthAuthenticatedWithProfile({required super.session});
+}
+
+class AuthAuthenticatedWithoutProfile extends AuthAuthenticated {
+  const AuthAuthenticatedWithoutProfile({required super.session});
+}
+
 class AuthError extends AuthState {
   final String message;
 

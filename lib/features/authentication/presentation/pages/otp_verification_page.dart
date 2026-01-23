@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/config/app_config.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/router/app_router.dart';
@@ -93,16 +92,10 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   backgroundColor: AppColors.error,
                 ),
               );
-            } else if (state is AuthAuthenticated) {
-              // Check if user profile is complete
-              final user = state.session.user;
-              if (user.name == null ||
-                  user.governorate == null ||
-                  user.district == null) {
-                AppRouter.goToRegistration(context);
-              } else {
-                AppRouter.goToHome(context);
-              }
+            } else if (state is AuthAuthenticatedWithProfile) {
+              AppRouter.goToHome(context);
+            } else if (state is AuthAuthenticatedWithoutProfile) {
+              AppRouter.goToRegistration(context);
             } else if (state is AuthOtpSent) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -117,12 +110,12 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             return LoadingOverlay(
               isLoading: state is AuthLoading,
               child: SafeArea(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(AppConstants.defaultPadding),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Spacer(),
+                      const SizedBox(height: AppConstants.largePadding),
 
                       // Header
                       AuthHeader(
@@ -181,24 +174,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
                       const SizedBox(height: AppConstants.largePadding),
 
-                      // Development bypass button
-                      if (AppConfig.isDevelopment &&
-                          AppConfig.bypassOtpInDevelopment)
-                        Column(
-                          children: [
-                            OutlinedButton.icon(
-                              onPressed: () => _bypassOtp(),
-                              icon: const Icon(Icons.developer_mode),
-                              label: const Text('تجاوز التحقق (وضع التطوير)'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.warning,
-                                side: BorderSide(color: AppColors.warning),
-                              ),
-                            ),
-                            const SizedBox(height: AppConstants.defaultPadding),
-                          ],
-                        ),
-
                       // Verify button
                       ElevatedButton(
                         onPressed:
@@ -208,7 +183,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                         child: Text(localizations.verify),
                       ),
 
-                      const Spacer(flex: 2),
+                      const SizedBox(height: AppConstants.largePadding),
                     ],
                   ),
                 ),
@@ -225,18 +200,19 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       context.read<AuthBloc>().add(
         AuthVerifyOtpRequested(phoneNumber: widget.phoneNumber, otp: otp),
       );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.invalidOtp),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
   void _resendOtp() {
     context.read<AuthBloc>().add(
       AuthSendOtpRequested(phoneNumber: widget.phoneNumber),
-    );
-  }
-
-  void _bypassOtp() {
-    context.read<AuthBloc>().add(
-      AuthBypassOtpRequested(phoneNumber: widget.phoneNumber),
     );
   }
 }

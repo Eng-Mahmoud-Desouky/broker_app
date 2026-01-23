@@ -5,7 +5,6 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/utils/constants.dart';
 import 'features/authentication/presentation/bloc/auth_bloc.dart';
-import 'features/temp_auth/temp_auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,25 +55,8 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (!mounted) return;
 
-    // First check for temporary authentication
-    final isSignedIn = TempAuthService.isSignedIn();
-    if (isSignedIn) {
-      // User is signed in with temporary auth, go to home
-      AppRouter.goToHome(context);
-      return;
-    }
-
-    // Check for session in local storage
-    final hasLocalSession = await TempAuthService.initializeSession();
-    if (hasLocalSession && mounted) {
-      AppRouter.goToHome(context);
-      return;
-    }
-
-    // Fallback to original auth system
-    if (mounted) {
-      context.read<AuthBloc>().add(AuthCheckRequested());
-    }
+    // Check authentication status using AuthBloc
+    context.read<AuthBloc>().add(AuthCheckRequested());
   }
 
   @override
@@ -87,16 +69,10 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthAuthenticated) {
-          // Check if user profile is complete
-          final user = state.session.user;
-          if (user.name == null ||
-              user.governorate == null ||
-              user.district == null) {
-            AppRouter.goToRegistration(context);
-          } else {
-            AppRouter.goToHome(context);
-          }
+        if (state is AuthAuthenticatedWithProfile) {
+          AppRouter.goToHome(context);
+        } else if (state is AuthAuthenticatedWithoutProfile) {
+          AppRouter.goToRegistration(context);
         } else if (state is AuthUnauthenticated) {
           // Route to phone input page for authentication
           AppRouter.goToPhoneInput(context);

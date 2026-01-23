@@ -8,7 +8,7 @@ import '../../core/services/notifications_service.dart';
 import '../../features/home/presentation/widgets/custom_app_bar.dart';
 import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
 import '../../features/notifications/presentation/bloc/notifications_state.dart';
-import '../../features/temp_auth/temp_auth_service.dart';
+import '../../features/authentication/presentation/bloc/auth_bloc.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -36,160 +36,176 @@ class ProfilePage extends StatelessWidget {
           },
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          children: [
-            // Profile header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppConstants.largePadding),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(
-                  AppConstants.defaultBorderRadius,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.shadow,
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Profile picture
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(color: AppColors.primary, width: 3),
+      body: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          String displayName = 'مستخدم جديد';
+          String displayPhone = '';
+
+          if (state is AuthAuthenticated) {
+            displayName = state.session.user.name ?? 'مستخدم جديد';
+            displayPhone = state.session.user.phoneNumber;
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(AppConstants.defaultPadding),
+            child: Column(
+              children: [
+                // Profile header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppConstants.largePadding),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(
+                      AppConstants.defaultBorderRadius,
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 50,
-                      color: AppColors.primary,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.shadow,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // Profile picture
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(50),
+                          border: Border.all(
+                            color: AppColors.primary,
+                            width: 3,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 50,
+                          color: AppColors.primary,
+                        ),
+                      ),
+
+                      const SizedBox(height: AppConstants.defaultPadding),
+
+                      // User name
+                      Text(
+                        displayName,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+
+                      const SizedBox(height: AppConstants.smallPadding),
+
+                      // Phone number
+                      Text(
+                        displayPhone,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppColors.grey600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: AppConstants.largePadding),
+
+                // Profile options
+                _buildProfileOption(
+                  context,
+                  icon: Icons.person_outline,
+                  title: 'المعلومات الشخصية',
+                  subtitle: 'إدارة معلوماتك الشخصية',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('المعلومات الشخصية - قريباً'),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildProfileOption(
+                  context,
+                  icon: Icons.location_on_outlined,
+                  title: 'العناوين',
+                  subtitle: 'إدارة عناوين التوصيل',
+                  onTap: () {
+                    AppRouter.goToAddressList(context);
+                  },
+                ),
+
+                _buildNotificationToggle(context),
+
+                _buildProfileOption(
+                  context,
+                  icon: Icons.help_outline,
+                  title: 'المساعدة والدعم',
+                  subtitle: 'الحصول على المساعدة',
+                  onTap: () {
+                    AppRouter.goToSupportList(context);
+                  },
+                ),
+
+                _buildProfileOption(
+                  context,
+                  icon: Icons.info_outline,
+                  title: 'حول التطبيق',
+                  subtitle: 'الإصدار ${AppConstants.appVersion}',
+                  onTap: () {
+                    _showAboutDialog(context);
+                  },
+                ),
+
+                _buildProfileOption(
+                  context,
+                  icon: Icons.description_outlined,
+                  title: 'شروط الاستخدام',
+                  subtitle: 'اقرأ شروط الاستخدام',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('شروط الاستخدام - قريباً')),
+                    );
+                  },
+                ),
+
+                _buildProfileOption(
+                  context,
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'سياسة الخصوصية',
+                  subtitle: 'اقرأ سياسة الخصوصية',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('سياسة الخصوصية - قريباً')),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: AppConstants.largePadding),
+
+                // Logout button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      _showLogoutDialog(context);
+                    },
+                    icon: const Icon(Icons.logout, color: AppColors.error),
+                    label: const Text(
+                      'تسجيل الخروج',
+                      style: TextStyle(color: AppColors.error),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.error),
                     ),
                   ),
-
-                  const SizedBox(height: AppConstants.defaultPadding),
-
-                  // User name
-                  Text(
-                    'مستخدم جديد',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: AppConstants.smallPadding),
-
-                  // Phone number
-                  Text(
-                    '+964 7XX XXX XXXX',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: AppColors.grey600),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppConstants.largePadding),
-
-            // Profile options
-            _buildProfileOption(
-              context,
-              icon: Icons.person_outline,
-              title: 'المعلومات الشخصية',
-              subtitle: 'إدارة معلوماتك الشخصية',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('المعلومات الشخصية - قريباً')),
-                );
-              },
-            ),
-
-            _buildProfileOption(
-              context,
-              icon: Icons.location_on_outlined,
-              title: 'العناوين',
-              subtitle: 'إدارة عناوين التوصيل',
-              onTap: () {
-                AppRouter.goToAddressList(context);
-              },
-            ),
-
-            _buildNotificationToggle(context),
-
-            _buildProfileOption(
-              context,
-              icon: Icons.help_outline,
-              title: 'المساعدة والدعم',
-              subtitle: 'الحصول على المساعدة',
-              onTap: () {
-                AppRouter.goToSupportList(context);
-              },
-            ),
-
-            _buildProfileOption(
-              context,
-              icon: Icons.info_outline,
-              title: 'حول التطبيق',
-              subtitle: 'الإصدار ${AppConstants.appVersion}',
-              onTap: () {
-                _showAboutDialog(context);
-              },
-            ),
-
-            _buildProfileOption(
-              context,
-              icon: Icons.description_outlined,
-              title: 'شروط الاستخدام',
-              subtitle: 'اقرأ شروط الاستخدام',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('شروط الاستخدام - قريباً')),
-                );
-              },
-            ),
-
-            _buildProfileOption(
-              context,
-              icon: Icons.privacy_tip_outlined,
-              title: 'سياسة الخصوصية',
-              subtitle: 'اقرأ سياسة الخصوصية',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('سياسة الخصوصية - قريباً')),
-                );
-              },
-            ),
-
-            const SizedBox(height: AppConstants.largePadding),
-
-            // Logout button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  _showLogoutDialog(context);
-                },
-                icon: const Icon(Icons.logout, color: AppColors.error),
-                label: const Text(
-                  'تسجيل الخروج',
-                  style: TextStyle(color: AppColors.error),
                 ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.error),
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -303,8 +319,8 @@ class ProfilePage extends StatelessWidget {
                   Navigator.of(context).pop();
 
                   try {
-                    // Sign out from temporary auth
-                    await TempAuthService.signOut();
+                    // Sign out using AuthBloc
+                    context.read<AuthBloc>().add(AuthSignOutRequested());
 
                     if (context.mounted) {
                       // Navigate to phone input page

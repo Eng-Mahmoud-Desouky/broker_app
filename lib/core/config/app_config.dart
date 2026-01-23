@@ -25,9 +25,9 @@ class AppConfig {
       return false;
     }
 
-    // In development mode, bypass OTP for all phone numbers
-    // You can modify this logic to only allow specific numbers
-    return true;
+    // In development mode, bypass OTP only for specific development numbers
+    // All other numbers will use real Supabase OTP
+    return developmentPhoneNumbers.contains(phoneNumber);
   }
 
   /// Get the environment name

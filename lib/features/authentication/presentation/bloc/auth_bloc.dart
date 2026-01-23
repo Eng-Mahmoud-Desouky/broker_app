@@ -48,7 +48,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold((failure) => emit(AuthUnauthenticated()), (session) {
       if (session != null && !session.isExpired) {
         notificationsService.registerToken();
-        emit(AuthAuthenticated(session: session));
+
+        final user = session.user;
+        if (user.name != null &&
+            user.governorate != null &&
+            user.district != null) {
+          emit(AuthAuthenticatedWithProfile(session: session));
+        } else {
+          emit(AuthAuthenticatedWithoutProfile(session: session));
+        }
       } else {
         emit(AuthUnauthenticated());
       }
@@ -59,14 +67,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthSendOtpRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(AuthLoading());
+    try {
+      emit(AuthLoading());
 
-    final result = await sendOtp(SendOtpParams(phoneNumber: event.phoneNumber));
+      print('\n🔄 AuthBloc:Processing AuthSendOtpRequested');
+      final result = await sendOtp(
+        SendOtpParams(phoneNumber: event.phoneNumber),
+      );
 
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (_) => emit(AuthOtpSent(phoneNumber: event.phoneNumber)),
-    );
+      result.fold(
+        (failure) {
+          print('❌ AuthBloc: SendOtp failed: ${failure.message}');
+          emit(AuthError(message: failure.message));
+        },
+        (_) {
+          print('✅ AuthBloc: SendOtp success, emitting AuthOtpSent');
+          emit(AuthOtpSent(phoneNumber: event.phoneNumber));
+        },
+      );
+    } catch (e, stackTrace) {
+      print('❌ CRITICAL ERROR in AuthBloc: $e');
+      print('Stack trace: $stackTrace');
+      emit(AuthError(message: 'حدث خطأ غير متوقع: $e'));
+    }
   }
 
   Future<void> _onAuthVerifyOtpRequested(
@@ -83,7 +106,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       session,
     ) {
       notificationsService.registerToken();
-      emit(AuthAuthenticated(session: session));
+
+      final user = session.user;
+      if (user.name != null &&
+          user.governorate != null &&
+          user.district != null) {
+        emit(AuthAuthenticatedWithProfile(session: session));
+      } else {
+        emit(AuthAuthenticatedWithoutProfile(session: session));
+      }
     });
   }
 
@@ -101,7 +132,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       session,
     ) {
       notificationsService.registerToken();
-      emit(AuthAuthenticated(session: session));
+
+      final user = session.user;
+      if (user.name != null &&
+          user.governorate != null &&
+          user.district != null) {
+        emit(AuthAuthenticatedWithProfile(session: session));
+      } else {
+        emit(AuthAuthenticatedWithoutProfile(session: session));
+      }
     });
   }
 

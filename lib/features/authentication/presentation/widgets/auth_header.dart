@@ -7,11 +7,7 @@ class AuthHeader extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const AuthHeader({
-    super.key,
-    required this.title,
-    required this.subtitle,
-  });
+  const AuthHeader({super.key, required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +28,17 @@ class AuthHeader extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.business,
-            size: 50,
-            color: AppColors.white,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppConstants.largeBorderRadius),
+            child: Image.asset(
+              'assets/images/app_logo.jpeg',
+              fit: BoxFit.cover,
+            ),
           ),
         ),
-        
+
         const SizedBox(height: AppConstants.largePadding),
-        
+
         // Title
         Text(
           title,
@@ -50,15 +48,15 @@ class AuthHeader extends StatelessWidget {
           ),
           textAlign: TextAlign.center,
         ),
-        
+
         const SizedBox(height: AppConstants.smallPadding),
-        
+
         // Subtitle
         Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: AppColors.grey600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.grey600),
           textAlign: TextAlign.center,
         ),
       ],

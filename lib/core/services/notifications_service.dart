@@ -158,7 +158,7 @@ class NotificationsService {
             'fcm_token': token,
             'platform': Platform.isAndroid ? 'android' : 'ios',
             'updated_at': DateTime.now().toIso8601String(),
-          }).select();
+          }, onConflict: 'user_id, fcm_token').select();
       print('FCM Token registered successfully: $response');
     } catch (e) {
       print('Error registering FCM token in Supabase: $e');

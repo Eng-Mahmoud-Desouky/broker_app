@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/auth_session_model.dart';
 import '../models/user_model.dart';
@@ -21,6 +22,9 @@ abstract class AuthRemoteDataSource {
 
   /// Bypass OTP verification for development/testing purposes
   Future<AuthSessionModel> bypassOtpVerification(String phoneNumber);
+
+  /// Fetch user profile from 'profiles' table
+  Future<UserModel?> getProfile(String userId);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -31,14 +35,43 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> sendOtp(String phoneNumber) async {
     try {
+      print('\n📞 ===== Supabase sendOtp =====');
+      print('📞 Sending OTP to: $phoneNumber');
+
       await supabaseClient.auth.signInWithOtp(
         phone: phoneNumber,
         shouldCreateUser: true,
       );
+
+      print('✅ OTP sent successfully');
+      print('==============================\n');
     } on AuthException catch (e) {
-      throw AuthenticationException(message: e.message);
+      print('❌ AuthException: ${e.message}');
+      print('==============================\n');
+
+      // Provide user-friendly error messages in Arabic
+      String userMessage = e.message;
+
+      if (e.message.contains('rate limit') ||
+          e.message.contains('you can only request this after')) {
+        userMessage =
+            'يرجى الانتظار قليلاً قبل طلب رمز تحقق جديد. حاول مرة أخرى بعد دقيقة.';
+      } else if (e.message.contains('invalid phone number')) {
+        userMessage =
+            'رقم الهاتف غير صحيح. يرجى التحقق من الرقم والمحاولة مرة أخرى.';
+      } else if (e.message.contains('Phone provider not configured')) {
+        userMessage =
+            'خدمة إرسال الرسائل غير متاحة حالياً. يرجى المحاولة لاحقاً.';
+      }
+
+      throw AuthenticationException(message: userMessage);
     } catch (e) {
-      throw ServerException(message: 'Failed to send OTP: ${e.toString()}');
+      print('❌ Exception: ${e.toString()}');
+      print('==============================\n');
+      throw ServerException(
+        message:
+            'فشل إرسال رمز التحقق. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.',
+      );
     }
   }
 
@@ -242,6 +275,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<AuthSessionModel> bypassOtpVerification(String phoneNumber) async {
     try {
+      // CRITICAL: This should NEVER be called in production
+      // This method is only for development/testing purposes
+      assert(
+        AppConfig.isDevelopment && AppConfig.bypassOtpInDevelopment,
+        'Bypass OTP should only be used in development mode',
+      );
+
+      // Double-check production environment
+      if (!AppConfig.isDevelopment || !AppConfig.bypassOtpInDevelopment) {
+        throw const AuthenticationException(
+          message: 'Bypass OTP is not allowed in production environment',
+        );
+      }
+
       // Create a mock user for development/testing purposes
       // This bypasses the actual Supabase OTP verification
 
@@ -274,6 +321,45 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(
         message: 'Failed to bypass OTP verification: ${e.toString()}',
       );
+    }
+  }
+
+  @override
+  Future<UserModel?> getProfile(String userId) async {
+    try {
+      final response =
+          await supabaseClient
+              .from('profiles')
+              .select()
+              .eq('id', userId)
+              .maybeSingle();
+
+      if (response == null) {
+        return null;
+      }
+
+      // Convert the profile data to a partial UserModel
+      // Note: We need to combine this with the auth user data usually,
+      // but here we are just returning the profile part
+      return UserModel(
+        id: userId,
+        phoneNumber: '', // Will be filled from auth user
+        email: response['email'],
+        name: response['name'],
+        profilePicture: response['profile_picture'],
+        governorate: response['governorate'],
+        district: response['district'],
+        createdAt: DateTime.parse(response['created_at']),
+        updatedAt:
+            response['updated_at'] != null
+                ? DateTime.parse(response['updated_at'])
+                : null,
+        isVerified: true, // Assumed if they have a profile
+      );
+    } catch (e) {
+      print('❌ Error fetching profile: $e');
+      // Return null instead of throwing to allow flow to continue without profile
+      return null;
     }
   }
 }

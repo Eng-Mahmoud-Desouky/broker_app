@@ -12,8 +12,6 @@ import 'package:broker_app/features/support_chat/presentation/pages/support_thre
 import 'package:broker_app/features/support_chat/presentation/pages/support_chat_page.dart';
 
 import '../../features/address/presentation/pages/address_list_screen.dart';
-import '../../features/temp_auth/presentation/pages/temp_login_page.dart';
-import '../../features/temp_auth/presentation/pages/temp_signup_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/offers_page.dart';
 import '../../features/home/presentation/pages/platform_products_page.dart';
@@ -36,8 +34,6 @@ class AppRouter {
   static const String support = '/support';
   static const String supportThread = '/support/thread';
 
-  static const String tempLogin = '/temp-login';
-  static const String tempSignup = '/temp-signup';
   static const String main = '/main';
   static const String home = '/main/home';
   static const String favorites = '/main/favorites';
@@ -82,18 +78,6 @@ class AppRouter {
         path: registration,
         name: 'registration',
         builder: (context, state) => const RegistrationPage(),
-      ),
-
-      // Temporary authentication routes
-      GoRoute(
-        path: tempLogin,
-        name: 'temp-login',
-        builder: (context, state) => const TempLoginPage(),
-      ),
-      GoRoute(
-        path: tempSignup,
-        name: 'temp-signup',
-        builder: (context, state) => const TempSignupPage(),
       ),
 
       // Standalone routes (outside main wrapper)
@@ -248,7 +232,7 @@ class AppRouter {
   }
 
   static void goToOtpVerification(BuildContext context, String phoneNumber) {
-    context.go(otpVerification, extra: phoneNumber);
+    context.push(otpVerification, extra: phoneNumber);
   }
 
   static void goToRegistration(BuildContext context) {
@@ -269,14 +253,6 @@ class AppRouter {
 
   static void goToAddressList(BuildContext context) {
     context.push(addressList);
-  }
-
-  static void goToTempLogin(BuildContext context) {
-    context.go(tempLogin);
-  }
-
-  static void goToTempSignup(BuildContext context) {
-    context.go(tempSignup);
   }
 
   static void goToWallet(BuildContext context) {

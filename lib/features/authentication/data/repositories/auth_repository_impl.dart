@@ -24,16 +24,25 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, void>> sendOtp(String phoneNumber) async {
+    print('📦 Repository: Checking network connection...');
     if (await networkInfo.isConnected) {
       try {
+        print('📦 Repository: Network connected. Calling RemoteDataSource...');
         await remoteDataSource.sendOtp(phoneNumber);
+        print('📦 Repository: RemoteDataSource success. Returning Right(null)');
         return const Right(null);
       } on AuthenticationException catch (e) {
+        print('📦 Repository: AuthenticationException caught: ${e.message}');
         return Left(AuthenticationFailure(message: e.message));
       } on ServerException catch (e) {
+        print('📦 Repository: ServerException caught: ${e.message}');
         return Left(ServerFailure(message: e.message));
+      } catch (e) {
+        print('📦 Repository: Unexpected error caught: $e');
+        return Left(ServerFailure(message: e.toString()));
       }
     } else {
+      print('📦 Repository: No network connection');
       return const Left(NetworkFailure(message: 'لا يوجد اتصال بالإنترنت'));
     }
   }
@@ -45,7 +54,25 @@ class AuthRepositoryImpl implements AuthRepository {
   ) async {
     if (await networkInfo.isConnected) {
       try {
-        final session = await remoteDataSource.verifyOtp(phoneNumber, otp);
+        var session = await remoteDataSource.verifyOtp(phoneNumber, otp);
+
+        // Fetch full profile from 'profiles' table
+        final profile = await remoteDataSource.getProfile(session.user.id);
+
+        if (profile != null) {
+          // Merge profile data into session user
+          // Note: UserModel inherits from User which has copyWith, but we need to cast back to UserModel or creating a new one
+          final updatedUser = (session.user as UserModel).copyWith(
+            name: profile.name,
+            email: profile.email,
+            profilePicture: profile.profilePicture,
+            governorate: profile.governorate,
+            district: profile.district,
+            isVerified: true,
+          );
+
+          session = session.copyWith(user: updatedUser) as dynamic;
+        }
 
         // Cache the session and user locally
         await localDataSource.cacheSession(session);
@@ -71,10 +98,28 @@ class AuthRepositoryImpl implements AuthRepository {
       // First try to get from remote (Supabase)
       if (await networkInfo.isConnected) {
         try {
-          final remoteSession = await remoteDataSource.getCurrentSession();
+          var remoteSession = await remoteDataSource.getCurrentSession();
           if (remoteSession != null) {
+            // Fetch full profile
+            final profile = await remoteDataSource.getProfile(
+              remoteSession.user.id,
+            );
+
+            if (profile != null) {
+              final updatedUser = (remoteSession.user as UserModel).copyWith(
+                name: profile.name,
+                email: profile.email,
+                profilePicture: profile.profilePicture,
+                governorate: profile.governorate,
+                district: profile.district,
+                isVerified: true,
+              );
+              remoteSession =
+                  remoteSession.copyWith(user: updatedUser) as dynamic;
+            }
+
             // Update local cache
-            await localDataSource.cacheSession(remoteSession);
+            await localDataSource.cacheSession(remoteSession!);
             await localDataSource.cacheUser(remoteSession.user as UserModel);
             return Right(remoteSession);
           }

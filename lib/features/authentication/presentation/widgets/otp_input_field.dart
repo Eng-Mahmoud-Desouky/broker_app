@@ -28,8 +28,11 @@ class _OtpInputFieldState extends State<OtpInputField> {
   void initState() {
     super.initState();
     _focusNodes = List.generate(AppConstants.otpLength, (index) => FocusNode());
-    _controllers = List.generate(AppConstants.otpLength, (index) => TextEditingController());
-    
+    _controllers = List.generate(
+      AppConstants.otpLength,
+      (index) => TextEditingController(),
+    );
+
     // Listen to main controller changes
     widget.controller.addListener(_onMainControllerChanged);
   }
@@ -70,7 +73,7 @@ class _OtpInputFieldState extends State<OtpInputField> {
 
     // Call callbacks
     widget.onChanged?.call(widget.controller.text);
-    
+
     if (widget.controller.text.length == AppConstants.otpLength) {
       widget.onCompleted(widget.controller.text);
     }
@@ -85,7 +88,7 @@ class _OtpInputFieldState extends State<OtpInputField> {
         children: List.generate(
           AppConstants.otpLength,
           (index) => SizedBox(
-            width: 50,
+            width: 55,
             height: 60,
             child: TextFormField(
               controller: _controllers[index],
@@ -93,29 +96,37 @@ class _OtpInputFieldState extends State<OtpInputField> {
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
               maxLength: 1,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 counterText: '',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius),
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.smallBorderRadius,
+                  ),
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius),
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.smallBorderRadius,
+                  ),
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius),
-                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.smallBorderRadius,
+                  ),
+                  borderSide: const BorderSide(
+                    color: AppColors.primary,
+                    width: 2,
+                  ),
                 ),
+                contentPadding: EdgeInsets.zero,
                 filled: true,
                 fillColor: AppColors.surface,
               ),
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onChanged: (value) => _onChanged(value, index),
               onTap: () {
                 _controllers[index].selection = TextSelection.fromPosition(
