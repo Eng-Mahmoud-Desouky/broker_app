@@ -338,19 +338,11 @@ class _HomePageState extends State<HomePage> {
         children: [
           // Search Bar
           CustomSearchBar(
-            onSearchChanged: (query) {
-              if (query.trim().isNotEmpty) {
-                context.read<HomeBloc>().add(HomeSearchProducts(query: query));
-              }
+            readOnly: true,
+            onTap: () {
+              AppRouter.goToSearch(context);
             },
-            onSearchSubmitted: (query) {
-              context.read<HomeBloc>().add(HomeSearchProducts(query: query));
-            },
-            onImageSelected: (imagePath) {
-              context.read<HomeBloc>().add(
-                HomeSearchProductsByImage(imagePath: imagePath),
-              );
-            },
+            hintText: 'Search across shopping platforms...',
           ),
 
           // Offers Banner

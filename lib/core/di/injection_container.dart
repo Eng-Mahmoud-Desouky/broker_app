@@ -112,6 +112,13 @@ import '../../features/pricing/domain/repositories/pricing_repository.dart';
 import '../../features/pricing/domain/usecases/get_pricing_settings.dart';
 import '../../features/pricing/presentation/cubit/pricing_cubit.dart';
 
+// Search feature imports
+import '../../features/search/data/datasources/search_remote_data_source.dart';
+import '../../features/search/data/repositories/search_repository_impl.dart';
+import '../../features/search/domain/repositories/search_repository.dart';
+import '../../features/search/domain/usecases/get_search_url_usecase.dart';
+import '../../features/search/presentation/cubit/search_cubit.dart';
+
 import '../network/network_info.dart';
 import '../services/notifications_service.dart';
 import '../utils/constants.dart';
@@ -145,6 +152,9 @@ Future<void> init() async {
 
   //! Features - Pricing
   await _initPricing();
+
+  //! Features - Search
+  await _initSearch();
 
   //! Features - App Notifications
   await _initAppNotifications();
@@ -505,5 +515,23 @@ Future<void> _initAppNotifications() async {
   // Data source
   sl.registerLazySingleton<NotificationsRemoteDataSource>(
     () => NotificationsRemoteDataSourceImpl(sl()),
+  );
+}
+
+Future<void> _initSearch() async {
+  // Cubit
+  sl.registerFactory(() => SearchCubit(getSearchUrlUseCase: sl()));
+
+  // Use cases
+  sl.registerLazySingleton(() => GetSearchUrlUseCase(sl()));
+
+  // Repository
+  sl.registerLazySingleton<SearchRepository>(
+    () => SearchRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<SearchRemoteDataSource>(
+    () => SearchRemoteDataSourceImpl(supabaseClient: sl()),
   );
 }

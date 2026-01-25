@@ -23,6 +23,7 @@ import '../../presentation/pages/main_wrapper.dart';
 import '../../presentation/pages/favorites_page.dart';
 import '../../presentation/pages/profile_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/search/presentation/pages/search_page.dart';
 import '../../splash.dart';
 
 class AppRouter {
@@ -49,6 +50,7 @@ class AppRouter {
   static const String webview = '/webview';
   static const String createOrder = '/order/create';
   static const String notifications = '/notifications';
+  static const String search = '/search';
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
@@ -153,6 +155,12 @@ class AppRouter {
         path: notifications,
         name: 'notifications',
         builder: (context, state) => const NotificationsPage(),
+      ),
+
+      GoRoute(
+        path: search,
+        name: 'search',
+        builder: (context, state) => const SearchPage(),
       ),
 
       // Main app routes with shell
@@ -302,5 +310,9 @@ class AppRouter {
 
   static void goToNotifications(BuildContext context) {
     context.push(notifications);
+  }
+
+  static void goToSearch(BuildContext context) {
+    context.push(search);
   }
 }

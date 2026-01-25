@@ -8,6 +8,8 @@ class CustomSearchBar extends StatefulWidget {
   final Function(String)? onSearchSubmitted;
   final Function(String)? onImageSelected;
   final String? hintText;
+  final VoidCallback? onTap;
+  final bool readOnly;
 
   const CustomSearchBar({
     super.key,
@@ -15,6 +17,8 @@ class CustomSearchBar extends StatefulWidget {
     this.onSearchSubmitted,
     this.onImageSelected,
     this.hintText,
+    this.onTap,
+    this.readOnly = false,
   });
 
   @override
@@ -87,6 +91,8 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
       ),
       child: TextField(
         controller: _controller,
+        readOnly: widget.readOnly,
+        onTap: widget.onTap,
         textDirection: TextDirection.rtl,
         onChanged: widget.onSearchChanged,
         onSubmitted: widget.onSearchSubmitted,
