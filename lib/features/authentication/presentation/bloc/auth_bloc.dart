@@ -8,6 +8,7 @@ import '../../domain/usecases/bypass_otp_verification.dart';
 import '../../domain/usecases/get_current_session.dart';
 import '../../domain/usecases/send_otp.dart';
 import '../../domain/usecases/sign_out.dart';
+import '../../domain/usecases/update_profile.dart';
 import '../../domain/usecases/verify_otp.dart';
 import '../../../../core/services/notifications_service.dart';
 
@@ -20,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final BypassOtpVerification bypassOtpVerification;
   final GetCurrentSession getCurrentSession;
   final SignOut signOut;
+  final UpdateProfile updateProfile;
   final NotificationsService notificationsService;
 
   AuthBloc({
@@ -28,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.bypassOtpVerification,
     required this.getCurrentSession,
     required this.signOut,
+    required this.updateProfile,
     required this.notificationsService,
   }) : super(AuthInitial()) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
@@ -35,6 +38,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthVerifyOtpRequested>(_onAuthVerifyOtpRequested);
     on<AuthBypassOtpRequested>(_onAuthBypassOtpRequested);
     on<AuthSignOutRequested>(_onAuthSignOutRequested);
+    on<AuthUpdateProfileRequested>(_onAuthUpdateProfileRequested);
   }
 
   Future<void> _onAuthCheckRequested(
@@ -156,5 +160,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       notificationsService.deleteToken();
       emit(AuthUnauthenticated());
     });
+  }
+
+  Future<void> _onAuthUpdateProfileRequested(
+    AuthUpdateProfileRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await updateProfile(
+      UpdateProfileParams(
+        name: event.name,
+        email: event.email,
+        profilePicture: event.profilePicture,
+        governorate: event.governorate,
+        district: event.district,
+      ),
+    );
+
+    await result.fold(
+      (failure) async {
+        emit(AuthError(message: failure.message));
+        // Refresh session to return to authenticated state
+        add(AuthCheckRequested());
+      },
+      (_) async {
+        // Refresh session to get updated user data
+        add(AuthCheckRequested());
+      },
+    );
   }
 }

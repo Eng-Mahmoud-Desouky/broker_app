@@ -14,6 +14,7 @@ import '../../features/authentication/domain/usecases/complete_registration.dart
 import '../../features/authentication/domain/usecases/get_current_session.dart';
 import '../../features/authentication/domain/usecases/send_otp.dart';
 import '../../features/authentication/domain/usecases/sign_out.dart';
+import '../../features/authentication/domain/usecases/update_profile.dart';
 import '../../features/authentication/domain/usecases/verify_otp.dart';
 import '../../features/authentication/presentation/bloc/auth_bloc.dart';
 import '../../features/authentication/presentation/bloc/registration_bloc.dart';
@@ -119,6 +120,13 @@ import '../../features/search/domain/repositories/search_repository.dart';
 import '../../features/search/domain/usecases/get_search_url_usecase.dart';
 import '../../features/search/presentation/cubit/search_cubit.dart';
 
+// Content feature imports
+import '../../features/home/data/datasources/content_remote_data_source.dart';
+import '../../features/home/data/repositories/content_repository_impl.dart';
+import '../../features/home/domain/repositories/content_repository.dart';
+import '../../features/home/domain/usecases/get_app_content.dart';
+import '../../features/home/presentation/bloc/content_cubit.dart';
+
 import '../network/network_info.dart';
 import '../services/notifications_service.dart';
 import '../utils/constants.dart';
@@ -162,8 +170,29 @@ Future<void> init() async {
   //! Core
   await _initCore();
 
+  //! Features - Content
+  await _initContent();
+
   //! External
   await _initExternal();
+}
+
+Future<void> _initContent() async {
+  // Cubit
+  sl.registerFactory(() => ContentCubit(getAppContent: sl()));
+
+  // Use cases
+  sl.registerLazySingleton(() => GetAppContent(sl()));
+
+  // Repository
+  sl.registerLazySingleton<ContentRepository>(
+    () => ContentRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<ContentRemoteDataSource>(
+    () => ContentRemoteDataSourceImpl(supabaseClient: sl()),
+  );
 }
 
 Future<void> _initAuth() async {
@@ -175,6 +204,7 @@ Future<void> _initAuth() async {
       bypassOtpVerification: sl(),
       getCurrentSession: sl(),
       signOut: sl(),
+      updateProfile: sl(),
       notificationsService: sl(),
     ),
   );
@@ -192,6 +222,7 @@ Future<void> _initAuth() async {
   sl.registerLazySingleton(() => BypassOtpVerification(sl()));
   sl.registerLazySingleton(() => GetCurrentSession(sl()));
   sl.registerLazySingleton(() => SignOut(sl()));
+  sl.registerLazySingleton(() => UpdateProfile(sl()));
   sl.registerLazySingleton(() => CompleteRegistration(sl()));
 
   // Repository

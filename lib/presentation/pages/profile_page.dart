@@ -91,10 +91,27 @@ class ProfilePage extends StatelessWidget {
                       const SizedBox(height: AppConstants.defaultPadding),
 
                       // User name
-                      Text(
-                        displayName,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                      InkWell(
+                        onTap: () {
+                          // Allow editing if name is present (even if default)
+                          _showEditNameDialog(context, displayName);
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              displayName,
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.edit,
+                              size: 16,
+                              color: AppColors.grey600,
+                            ),
+                          ],
+                        ),
                       ),
 
                       const SizedBox(height: AppConstants.smallPadding),
@@ -113,19 +130,19 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: AppConstants.largePadding),
 
                 // Profile options
-                _buildProfileOption(
-                  context,
-                  icon: Icons.person_outline,
-                  title: 'المعلومات الشخصية',
-                  subtitle: 'إدارة معلوماتك الشخصية',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('المعلومات الشخصية - قريباً'),
-                      ),
-                    );
-                  },
-                ),
+                // _buildProfileOption(
+                //   context,
+                //   icon: Icons.person_outline,
+                //   title: 'المعلومات الشخصية',
+                //   subtitle: 'إدارة معلوماتك الشخصية',
+                //   onTap: () {
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       const SnackBar(
+                //         content: Text('المعلومات الشخصية - قريباً'),
+                //       ),
+                //     );
+                //   },
+                // ),
 
                 _buildProfileOption(
                   context,
@@ -165,8 +182,10 @@ class ProfilePage extends StatelessWidget {
                   title: 'شروط الاستخدام',
                   subtitle: 'اقرأ شروط الاستخدام',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('شروط الاستخدام - قريباً')),
+                    AppRouter.goToAppContent(
+                      context,
+                      'شروط الاستخدام',
+                      'terms_of_use',
                     );
                   },
                 ),
@@ -177,8 +196,10 @@ class ProfilePage extends StatelessWidget {
                   title: 'سياسة الخصوصية',
                   subtitle: 'اقرأ سياسة الخصوصية',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('سياسة الخصوصية - قريباً')),
+                    AppRouter.goToAppContent(
+                      context,
+                      'سياسة الخصوصية',
+                      'privacy_policy',
                     );
                   },
                 ),
@@ -356,23 +377,71 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
+  void _showEditNameDialog(BuildContext context, String currentName) {
+    final nameController = TextEditingController(text: currentName);
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('تعديل الاسم'),
+            content: TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'الاسم',
+                hintText: 'أدخل اسمك',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('إلغاء'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final newName = nameController.text.trim();
+                  if (newName.isNotEmpty) {
+                    context.read<AuthBloc>().add(
+                      AuthUpdateProfileRequested(name: newName),
+                    );
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('حفظ'),
+              ),
+            ],
+          ),
+    );
+  }
+
   void _showAboutDialog(BuildContext context) {
     showAboutDialog(
       context: context,
-      applicationName: AppConstants.appName,
-      applicationVersion: AppConstants.appVersion,
+      applicationName: 'زيد إكسبريس',
+      applicationVersion: '1.0.0',
       applicationIcon: Container(
-        padding: const EdgeInsets.all(8),
+        width: 60,
+        height: 60,
         decoration: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: const Icon(Icons.business, color: AppColors.white, size: 32),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.asset('assets/images/app_logo.jpeg', fit: BoxFit.cover),
+        ),
       ),
-      children: const [
-        Text('تطبيق الوسيط للتجارة الإلكترونية'),
-        SizedBox(height: 16),
-        Text('تم تطويره بواسطة فريق التطوير'),
+      children: [
+        const Text(
+          'تطبيق زيد إكسبريس هو منصتك المتكاملة للتسوق من مختلف المنصات العالمية والمحلية.',
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }

@@ -12,6 +12,7 @@ import 'package:broker_app/features/support_chat/presentation/pages/support_thre
 import 'package:broker_app/features/support_chat/presentation/pages/support_chat_page.dart';
 
 import '../../features/address/presentation/pages/address_list_screen.dart';
+import '../../features/home/presentation/pages/app_content_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/offers_page.dart';
 import '../../features/home/presentation/pages/platform_products_page.dart';
@@ -161,6 +162,15 @@ class AppRouter {
         path: search,
         name: 'search',
         builder: (context, state) => const SearchPage(),
+      ),
+
+      GoRoute(
+        path: '/content',
+        builder: (context, state) {
+          final title = state.uri.queryParameters['title'] ?? '';
+          final key = state.uri.queryParameters['key'] ?? '';
+          return AppContentPage(title: title, contentKey: key);
+        },
       ),
 
       // Main app routes with shell
@@ -314,5 +324,11 @@ class AppRouter {
 
   static void goToSearch(BuildContext context) {
     context.push(search);
+  }
+
+  static void goToAppContent(BuildContext context, String title, String key) {
+    final encodedTitle = Uri.encodeComponent(title);
+    final encodedKey = Uri.encodeComponent(key);
+    context.push('/content?title=$encodedTitle&key=$encodedKey');
   }
 }

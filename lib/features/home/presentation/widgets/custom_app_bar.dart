@@ -94,7 +94,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
             const SizedBox(width: 12),
             const Text(
-              'بروكر',
+              'زيد إكسبريس',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,

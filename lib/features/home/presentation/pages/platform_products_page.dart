@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/router/app_router.dart';
+import '../../../notifications/presentation/bloc/notifications_cubit.dart';
+import '../../../notifications/presentation/bloc/notifications_state.dart';
 import '../widgets/custom_app_bar.dart';
 
 class PlatformProductsPage extends StatelessWidget {
   final String platformId;
 
-  const PlatformProductsPage({
-    super.key,
-    required this.platformId,
-  });
+  const PlatformProductsPage({super.key, required this.platformId});
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +28,25 @@ class PlatformProductsPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(
-        onSupportTap: () {
-          // TODO: Navigate to customer support
-        },
-        onNotificationTap: () {
-          // TODO: Navigate to notifications
-        },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: BlocBuilder<NotificationsCubit, NotificationsState>(
+          builder: (context, state) {
+            int count = 0;
+            if (state is NotificationsLoaded) {
+              count = state.unreadCount;
+            }
+            return CustomAppBar(
+              notificationCount: count,
+              onSupportTap: () async {
+                // TODO: Navigate to customer support
+              },
+              onNotificationTap: () {
+                AppRouter.goToNotifications(context);
+              },
+            );
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -76,15 +89,12 @@ class PlatformProductsPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'تصفح جميع المنتجات المتاحة في $platformName',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.grey600,
-                  ),
+                  style: TextStyle(fontSize: 16, color: AppColors.grey600),
                 ),
               ],
             ),
           ),
-          
+
           // Content
           Expanded(
             child: Center(

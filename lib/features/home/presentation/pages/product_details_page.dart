@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/di/injection_container.dart' as di;
+import '../../../notifications/presentation/bloc/notifications_cubit.dart';
+import '../../../notifications/presentation/bloc/notifications_state.dart';
 import '../../../home/presentation/widgets/custom_app_bar.dart';
 import '../bloc/product_details_bloc.dart';
 import '../widgets/product_shimmer.dart';
@@ -38,14 +40,25 @@ class ProductDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(
-        notificationCount: 3,
-        onSupportTap: () async {
-          AppRouter.goToSupportList(context);
-        },
-        onNotificationTap: () {
-          // TODO: Navigate to notifications
-        },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: BlocBuilder<NotificationsCubit, NotificationsState>(
+          builder: (context, state) {
+            int count = 0;
+            if (state is NotificationsLoaded) {
+              count = state.unreadCount;
+            }
+            return CustomAppBar(
+              notificationCount: count,
+              onSupportTap: () async {
+                AppRouter.goToSupportList(context);
+              },
+              onNotificationTap: () {
+                AppRouter.goToNotifications(context);
+              },
+            );
+          },
+        ),
       ),
       body: BlocBuilder<ProductDetailsBloc, ProductDetailsState>(
         builder: (context, state) {

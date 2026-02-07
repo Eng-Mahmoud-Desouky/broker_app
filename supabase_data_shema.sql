@@ -48,6 +48,14 @@ CREATE TABLE public.categories (
   name text NOT NULL UNIQUE,
   CONSTRAINT categories_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.invoice_settings (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  template_path text NOT NULL,
+  text_x integer NOT NULL,
+  text_y integer NOT NULL,
+  font_size integer NOT NULL DEFAULT 36,
+  CONSTRAINT invoice_settings_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.offers (
   id text NOT NULL,
   title text NOT NULL,

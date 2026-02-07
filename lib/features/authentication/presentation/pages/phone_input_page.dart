@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl_phone_field/countries.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 import '../../../../core/localization/app_localizations.dart';
@@ -106,14 +107,18 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                                 hintText: localizations.phoneNumberHint,
                                 prefixIcon: const Icon(Icons.phone_outlined),
                               ),
-                              initialCountryCode:
-                                  AppConstants.iraqCountryIsoCode,
-                              showCountryFlag: false,
+                              initialCountryCode: 'IQ',
+                              countries: [
+                                countries.firstWhere(
+                                  (country) => country.code == 'IQ',
+                                ),
+                              ],
+                              showCountryFlag: true,
                               showDropdownIcon: false,
                               flagsButtonPadding: EdgeInsets.zero,
                               flagsButtonMargin: EdgeInsets.zero,
                               disableLengthCheck: true,
-                              textAlign: TextAlign.right,
+                              textAlign: TextAlign.left,
                               style: Theme.of(context).textTheme.bodyLarge,
                               onChanged: (phone) {
                                 setState(() {

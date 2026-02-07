@@ -4,7 +4,7 @@ abstract class AuthEvent extends Equatable {
   const AuthEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class AuthCheckRequested extends AuthEvent {}
@@ -15,7 +15,7 @@ class AuthSendOtpRequested extends AuthEvent {
   const AuthSendOtpRequested({required this.phoneNumber});
 
   @override
-  List<Object> get props => [phoneNumber];
+  List<Object?> get props => [phoneNumber];
 }
 
 class AuthVerifyOtpRequested extends AuthEvent {
@@ -25,7 +25,7 @@ class AuthVerifyOtpRequested extends AuthEvent {
   const AuthVerifyOtpRequested({required this.phoneNumber, required this.otp});
 
   @override
-  List<Object> get props => [phoneNumber, otp];
+  List<Object?> get props => [phoneNumber, otp];
 }
 
 class AuthSignOutRequested extends AuthEvent {}
@@ -37,5 +37,30 @@ class AuthBypassOtpRequested extends AuthEvent {
   const AuthBypassOtpRequested({required this.phoneNumber});
 
   @override
-  List<Object> get props => [phoneNumber];
+  List<Object?> get props => [phoneNumber];
+}
+
+class AuthUpdateProfileRequested extends AuthEvent {
+  final String? name;
+  final String? email;
+  final String? profilePicture;
+  final String? governorate;
+  final String? district;
+
+  const AuthUpdateProfileRequested({
+    this.name,
+    this.email,
+    this.profilePicture,
+    this.governorate,
+    this.district,
+  });
+
+  @override
+  List<Object?> get props => [
+    name,
+    email,
+    profilePicture,
+    governorate,
+    district,
+  ];
 }

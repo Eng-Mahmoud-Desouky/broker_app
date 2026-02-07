@@ -7,6 +7,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../authentication/presentation/bloc/auth_bloc.dart';
 import '../../../home/presentation/widgets/custom_app_bar.dart';
+import '../../../../features/notifications/presentation/bloc/notifications_cubit.dart';
+import '../../../../features/notifications/presentation/bloc/notifications_state.dart';
 import '../bloc/wallet_bloc.dart';
 import '../widgets/wallet_balance_card.dart';
 import '../widgets/wallet_transaction_list.dart';
@@ -93,14 +95,25 @@ class _WalletScreenState extends State<WalletScreen> {
         },
         child: Scaffold(
           backgroundColor: AppColors.background,
-          appBar: CustomAppBar(
-            notificationCount: 3,
-            onSupportTap: () async {
-              AppRouter.goToSupportList(context);
-            },
-            onNotificationTap: () {
-              // TODO: Navigate to notifications
-            },
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: BlocBuilder<NotificationsCubit, NotificationsState>(
+              builder: (context, state) {
+                int count = 0;
+                if (state is NotificationsLoaded) {
+                  count = state.unreadCount;
+                }
+                return CustomAppBar(
+                  notificationCount: count,
+                  onSupportTap: () async {
+                    AppRouter.goToSupportList(context);
+                  },
+                  onNotificationTap: () {
+                    AppRouter.goToNotifications(context);
+                  },
+                );
+              },
+            ),
           ),
           body: BlocConsumer<WalletBloc, WalletState>(
             listener: (context, state) {
