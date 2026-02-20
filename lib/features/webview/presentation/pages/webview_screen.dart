@@ -306,6 +306,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
         // Inject safe compatibility scripts using UserScript (early injection)
         await _injectSafeUserScripts(controller);
 
+        // Inject Alibaba desktop forcing script (UserScript)
+        await _injectAlibabaDesktopScript(controller);
+
         if (kDebugMode) {
           debugPrint(
             '🌐 WebView created with User-Agent: ${_getEnhancedUserAgent()}',
@@ -711,8 +714,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
       // Taobao: Use Chrome Mobile with Chinese locale hints
       return 'Mozilla/5.0 (Linux; Android 14; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36';
     } else if (url.contains('alibaba.com')) {
-      // Alibaba: Use desktop Chrome to avoid mobile restrictions
-      return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36';
+      // Alibaba: Use pure Desktop Chrome (verified working for desktop layout)
+      return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
     } else if (url.contains('aliexpress.com')) {
       // AliExpress: Use latest Chrome Mobile
       return 'Mozilla/5.0 (Linux; Android 14; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36';
@@ -1125,6 +1128,70 @@ class _WebViewScreenState extends State<WebViewScreen> {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('⚠️ Error injecting safe UserScripts: $e');
+      }
+    }
+  }
+
+  /// Force Alibaba to load in desktop mode (Aggressive)
+  Future<void> _injectAlibabaDesktopScript(
+    InAppWebViewController controller,
+  ) async {
+    try {
+      const script = '''
+        (function() {
+          if (!window.location.hostname.includes('alibaba.com')) return;
+          console.log('🖥️ ForceAlibabaDesktop: Aggressive mode');
+
+          function forceDesktop() {
+            // 1. Overwrite Viewport
+            var meta = document.querySelector('meta[name="viewport"]');
+            if (meta) {
+               meta.setAttribute('content', 'width=1200, initial-scale=0.1, user-scalable=yes');
+            } else {
+               meta = document.createElement('meta');
+               meta.name = 'viewport';
+               meta.content = 'width=1200, initial-scale=0.1, user-scalable=yes';
+               document.head.appendChild(meta);
+            }
+            
+            // 2. Force CSS min-width
+            document.documentElement.style.minWidth = '1200px';
+            if (document.body) {
+                document.body.style.minWidth = '1200px';
+                document.body.style.overflowX = 'auto';
+            }
+          }
+
+          // Run immediately
+          forceDesktop();
+
+          // Run on load
+          window.addEventListener('load', forceDesktop);
+          
+          // Run repeatedly for 2 seconds to fight hydration
+          var interval = setInterval(forceDesktop, 100);
+          setTimeout(() => clearInterval(interval), 2000);
+        })();
+      ''';
+
+      // Inject at START
+      await controller.addUserScript(
+        userScript: UserScript(
+          source: script,
+          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        ),
+      );
+
+      // Inject at END as well to ensure it overrides any framework logic
+      await controller.addUserScript(
+        userScript: UserScript(
+          source: script,
+          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error injecting Alibaba desktop script: $e');
       }
     }
   }
