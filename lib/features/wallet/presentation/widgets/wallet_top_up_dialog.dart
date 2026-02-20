@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -57,6 +59,8 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
                   _buildPaymentInfo(),
                   const SizedBox(height: 24),
                   _buildActionButtons(),
+                  const SizedBox(height: 16),
+                  _buildWhatsAppButton(),
                 ],
               ),
             ),
@@ -188,6 +192,55 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
 
       // Call the callback with amount in dinars
       widget.onTopUp(amountInDinars);
+    }
+  }
+
+  Widget _buildWhatsAppButton() {
+    return TextButton.icon(
+      onPressed: _launchWhatsApp,
+      icon: const Icon(Icons.chat, color: AppColors.success),
+      label: const Text(
+        'شحن عن طريق واتساب',
+        style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold),
+      ),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        backgroundColor: AppColors.success.withValues(alpha: 0.1),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Future<void> _launchWhatsApp() async {
+    // TODO: Replace with actual support number from settings/constants
+    const phoneNumber = '+9647700000000';
+    final message = Uri.encodeComponent(
+      'مرحبا، أريد شحن محفظتي في تطبيق زيد إكسبريس.',
+    );
+    final url = Uri.parse('https://wa.me/$phoneNumber?text=$message');
+
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('لا يمكن فتح تطبيق واتساب'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 }

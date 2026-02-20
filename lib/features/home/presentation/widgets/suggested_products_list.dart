@@ -164,39 +164,8 @@ class SuggestedProductsList extends StatelessWidget {
                       ),
                     ),
                   ),
-                // Favorite button
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        // TODO: Add to favorites
-                      },
-                      icon: Icon(
-                        Icons.favorite_border_rounded,
-                        color: AppColors.grey600,
-                        size: 18,
-                      ),
-                      padding: const EdgeInsets.all(6),
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                    ),
-                  ),
-                ),
+
+                // Favorites functionality removed
               ],
             ),
             // Product Details with modern layout

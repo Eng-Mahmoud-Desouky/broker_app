@@ -73,13 +73,6 @@ class OrderDetailsScreen extends StatelessWidget {
 
           // Order items section
           _buildOrderItemsSection(context, order),
-
-          // Cancel button (if applicable)
-          if (order.canBeCancelled)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: _buildCancelButton(context, order),
-            ),
         ],
       ),
     );
@@ -325,56 +318,6 @@ class OrderDetailsScreen extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildCancelButton(BuildContext context, Order order) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: () => _showCancelDialog(context, order),
-        icon: const Icon(Icons.cancel_outlined),
-        label: const Text('إلغاء الطلب'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.error,
-          side: const BorderSide(color: AppColors.error),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-      ),
-    );
-  }
-
-  void _showCancelDialog(BuildContext context, Order order) {
-    showDialog(
-      context: context,
-      builder:
-          (dialogContext) => AlertDialog(
-            title: const Text('إلغاء الطلب'),
-            content: const Text(
-              'هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟\nلا يمكن التراجع عن هذا الإجراء.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('تراجع'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                  // TODO: Implement cancel order functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('سيتم تنفيذ إلغاء الطلب قريباً'),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error,
-                ),
-                child: const Text('إلغاء الطلب'),
-              ),
-            ],
-          ),
     );
   }
 

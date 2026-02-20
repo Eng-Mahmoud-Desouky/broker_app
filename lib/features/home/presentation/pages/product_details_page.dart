@@ -331,27 +331,8 @@ class ProductDetailsView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.primary),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        onPressed: () {
-                          // TODO: Add to favorites functionality
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('تم إضافة المنتج إلى المفضلة'),
-                              backgroundColor: AppColors.info,
-                            ),
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.favorite_border,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
+
+                    // Favorites functionality removed
                   ],
                 ),
               ],
