@@ -465,7 +465,12 @@ Future<void> _initOrder() async {
 
   // Repository
   sl.registerLazySingleton<OrderRepository>(
-    () => OrderRepositoryImpl(remoteDataSource: sl(), supabaseClient: sl()),
+    () => OrderRepositoryImpl(
+      remoteDataSource: sl(),
+      supabaseClient: sl(),
+      walletRepository: sl(),
+      pricingRepository: sl(),
+    ),
   );
 
   // Data sources

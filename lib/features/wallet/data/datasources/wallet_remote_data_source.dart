@@ -18,6 +18,11 @@ abstract class WalletRemoteDataSource {
   Future<WalletTransactionModel> getTransactionById(String transactionId);
   Stream<WalletModel> watchWalletBalance(String userId);
   Stream<List<WalletTransactionModel>> watchTransactionHistory(String userId);
+  Future<void> deductBalance({
+    required String userId,
+    required double amount,
+    required String orderId,
+  });
 }
 
 class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
@@ -171,5 +176,47 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
             message: 'Failed to watch transaction history: $error',
           );
         });
+  }
+
+  @override
+  Future<void> deductBalance({
+    required String userId,
+    required double amount,
+    required String orderId,
+  }) async {
+    try {
+      // 1. Get current balance
+      final walletResponse =
+          await supabaseClient
+              .from('wallets')
+              .select('balance')
+              .eq('user_id', userId)
+              .single();
+
+      final currentBalance = (walletResponse['balance'] as num).toDouble();
+      final newBalance = (currentBalance - amount).round();
+
+      // 2. Update wallet balance
+      await supabaseClient
+          .from('wallets')
+          .update({'balance': newBalance})
+          .eq('user_id', userId);
+
+      // 3. Create transaction record
+      await supabaseClient.from('wallet_transactions').insert({
+        'user_id': userId,
+        'amount': amount.round(),
+        'type': 'purchase',
+        'status': 'success',
+        'metadata': {
+          'order_id': orderId,
+          'description': 'Purchase for order $orderId',
+        },
+      });
+    } on PostgrestException catch (e) {
+      throw ServerException(message: 'Database error: ${e.message}');
+    } catch (e) {
+      throw ServerException(message: 'Failed to deduct balance: $e');
+    }
   }
 }

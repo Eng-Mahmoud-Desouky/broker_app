@@ -5,6 +5,8 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../cart/domain/entities/cart_item.dart';
 import '../../domain/entities/order.dart';
+import '../../../pricing/domain/repositories/pricing_repository.dart';
+import '../../../wallet/domain/repositories/wallet_repository.dart';
 import '../../domain/entities/shipping_method.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../datasources/order_remote_data_source.dart';
@@ -12,10 +14,14 @@ import '../datasources/order_remote_data_source.dart';
 class OrderRepositoryImpl implements OrderRepository {
   final OrderRemoteDataSource remoteDataSource;
   final SupabaseClient supabaseClient;
+  final WalletRepository walletRepository;
+  final PricingRepository pricingRepository;
 
   OrderRepositoryImpl({
     required this.remoteDataSource,
     required this.supabaseClient,
+    required this.walletRepository,
+    required this.pricingRepository,
   });
 
   String? get _currentUserId => supabaseClient.auth.currentUser?.id;
@@ -36,11 +42,35 @@ class OrderRepositoryImpl implements OrderRepository {
         return Left(ValidationFailure(message: 'السلة فارغة'));
       }
 
+      // Step 1: Get pricing settings and calculate total
+      final pricingSettings = await pricingRepository.getPricingSettings();
+      final pricingResult = await pricingRepository.calculateOrderPricing(
+        items: cartItems,
+        settings: pricingSettings,
+        shippingMethod: shippingMethod,
+      );
+
+      // Step 2: Check wallet balance
+      final walletEither = await walletRepository.getWalletBalance(
+        _currentUserId!,
+      );
+      final walletBalance = walletEither.fold((l) => 0.0, (r) => r.balance);
+
+      if (walletBalance < pricingResult.total) {
+        return Left(
+          ValidationFailure(
+            message:
+                'رصيد المحفظة غير كافٍ. الرصيد الحالي: \$${walletBalance.toStringAsFixed(2)}، والمبلغ المطلوب: \$${pricingResult.total.toStringAsFixed(2)}',
+          ),
+        );
+      }
+
       final order = await remoteDataSource.createOrder(
         userId: _currentUserId!,
         cartItems: cartItems,
         addressId: addressId,
         shippingMethod: shippingMethod,
+        totalPrice: pricingResult.total,
         promoCode: promoCode,
       );
 

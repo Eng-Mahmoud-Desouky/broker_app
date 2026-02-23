@@ -14,6 +14,7 @@ abstract class OrderRemoteDataSource {
     required List<CartItem> cartItems,
     required String addressId,
     required ShippingMethod shippingMethod,
+    required double totalPrice,
     String? promoCode,
   });
 
@@ -41,6 +42,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     required List<CartItem> cartItems,
     required String addressId,
     required ShippingMethod shippingMethod,
+    required double totalPrice,
     String? promoCode,
   }) async {
     try {
@@ -95,6 +97,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
           'p_shipping_method': shippingMethod.toDbValue(),
           'p_total_weight_kg': totalWeight,
           'p_base_price': basePrice,
+          'p_total_price': totalPrice,
           'p_promo_code': promoCode,
         },
       );

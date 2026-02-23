@@ -33,4 +33,11 @@ abstract class WalletRepository {
   Stream<Either<Failure, List<WalletTransaction>>> watchTransactionHistory(
     String userId,
   );
+
+  /// Deduct balance from wallet
+  Future<Either<Failure, void>> deductBalance({
+    required String userId,
+    required double amount,
+    required String orderId,
+  });
 }

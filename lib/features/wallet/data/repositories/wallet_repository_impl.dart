@@ -127,4 +127,26 @@ class WalletRepositoryImpl implements WalletRepository {
           );
         });
   }
+
+  @override
+  Future<Either<Failure, void>> deductBalance({
+    required String userId,
+    required double amount,
+    required String orderId,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.deductBalance(
+          userId: userId,
+          amount: amount,
+          orderId: orderId,
+        );
+        return const Right(null);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'لا يوجد اتصال بالإنترنت'));
+    }
+  }
 }
