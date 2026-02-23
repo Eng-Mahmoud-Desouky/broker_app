@@ -16,7 +16,7 @@ class CartLoadItems extends CartEvent {
 /// Event to add item to cart
 class CartAddItem extends CartEvent {
   final String productName;
-  final String price;
+  final double price;
   final String? imageUrl;
   final List<String>? images;
   final String productUrl;

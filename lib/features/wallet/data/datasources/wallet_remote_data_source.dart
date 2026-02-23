@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/currency/currency_service.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/wallet_model.dart';
 import '../models/wallet_transaction_model.dart';
@@ -11,9 +13,9 @@ abstract class WalletRemoteDataSource {
     int? limit,
     int? offset,
   });
-  Future<Map<String, dynamic>> createTopUpTransaction({
+  Future<Map<String, dynamic>> createTopUpSession({
     required String userId,
-    required int amount,
+    required double amount,
   });
   Future<WalletTransactionModel> getTransactionById(String transactionId);
   Stream<WalletModel> watchWalletBalance(String userId);
@@ -23,6 +25,7 @@ abstract class WalletRemoteDataSource {
     required double amount,
     required String orderId,
   });
+  Future<void> cancelTopUpSession(String transactionId);
 }
 
 class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
@@ -85,9 +88,9 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> createTopUpTransaction({
+  Future<Map<String, dynamic>> createTopUpSession({
     required String userId,
-    required int amount,
+    required double amount,
   }) async {
     try {
       final response = await supabaseClient.functions
@@ -193,8 +196,10 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
               .eq('user_id', userId)
               .single();
 
-      final currentBalance = (walletResponse['balance'] as num).toDouble();
-      final newBalance = (currentBalance - amount).round();
+      final currentBalance = CurrencyService.toDouble(
+        walletResponse['balance'],
+      );
+      final newBalance = currentBalance - amount;
 
       // 2. Update wallet balance
       await supabaseClient
@@ -205,7 +210,7 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
       // 3. Create transaction record
       await supabaseClient.from('wallet_transactions').insert({
         'user_id': userId,
-        'amount': amount.round(),
+        'amount': amount,
         'type': 'purchase',
         'status': 'success',
         'metadata': {
@@ -217,6 +222,41 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
       throw ServerException(message: 'Database error: ${e.message}');
     } catch (e) {
       throw ServerException(message: 'Failed to deduct balance: $e');
+    }
+  }
+
+  @override
+  Future<void> cancelTopUpSession(String transactionId) async {
+    try {
+      // 1. Verify it's a pending topup transaction before deleting
+      final txResp =
+          await supabaseClient
+              .from('wallet_transactions')
+              .select('status, type')
+              .eq('provider_reference', transactionId)
+              .maybeSingle();
+
+      if (txResp == null) return;
+
+      final status = txResp['status'] as String;
+      final type = txResp['type'] as String;
+
+      if (status == 'pending' && type == 'topup') {
+        if (kDebugMode) {
+          debugPrint(
+            '🗑️ Deleting cancelled topup transaction: $transactionId',
+          );
+        }
+        await supabaseClient
+            .from('wallet_transactions')
+            .delete()
+            .eq('provider_reference', transactionId);
+      }
+    } catch (e) {
+      // We don't want to throw here to avoid interrupting the UI flow
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to cancel topup session: $e');
+      }
     }
   }
 }

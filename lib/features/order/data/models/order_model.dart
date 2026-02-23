@@ -1,3 +1,4 @@
+import '../../../../core/currency/currency_service.dart';
 import '../../../address/data/models/user_address_model.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
@@ -35,20 +36,14 @@ class OrderModel extends Order {
       shippingMethod: ShippingMethod.fromString(
         json['shipping_method'] as String,
       ),
-      totalWeightKg: (json['total_weight_kg'] as num).toDouble(),
-      totalPrice:
-          json['total_price'] != null
-              ? (json['total_price'] as num).toDouble()
-              : null,
+      totalWeightKg: CurrencyService.toDouble(json['total_weight_kg']),
+      totalPrice: CurrencyService.toDoubleOrNull(json['total_price']),
       currency: json['currency'] as String? ?? 'USD',
       status: OrderStatus.fromString(json['status'] as String),
       items: const [], // Items loaded separately
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      discountAmount:
-          json['discount_amount'] != null
-              ? (json['discount_amount'] as num).toDouble()
-              : null,
+      discountAmount: CurrencyService.toDoubleOrNull(json['discount_amount']),
       promoCodeUsed: json['promo_code_used'] as String?,
     );
   }
@@ -68,20 +63,14 @@ class OrderModel extends Order {
       shippingMethod: ShippingMethod.fromString(
         json['shipping_method'] as String,
       ),
-      totalWeightKg: (json['total_weight_kg'] as num).toDouble(),
-      totalPrice:
-          json['total_price'] != null
-              ? (json['total_price'] as num).toDouble()
-              : null,
+      totalWeightKg: CurrencyService.toDouble(json['total_weight_kg']),
+      totalPrice: CurrencyService.toDoubleOrNull(json['total_price']),
       currency: json['currency'] as String? ?? 'USD',
       status: OrderStatus.fromString(json['status'] as String),
       items: items,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      discountAmount:
-          json['discount_amount'] != null
-              ? (json['discount_amount'] as num).toDouble()
-              : null,
+      discountAmount: CurrencyService.toDoubleOrNull(json['discount_amount']),
       promoCodeUsed: json['promo_code_used'] as String?,
     );
   }

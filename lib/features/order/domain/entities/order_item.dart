@@ -7,7 +7,7 @@ class OrderItem extends Equatable {
   final String productName;
   final String productUrl;
   final String platform;
-  final String price;
+  final double price;
   final int quantity;
   final double weightKg;
   final String? imageUrl;
@@ -31,21 +31,8 @@ class OrderItem extends Equatable {
   /// Get total weight for this item (weight * quantity)
   double get totalWeight => weightKg * quantity;
 
-  /// Parse price to double if possible
-  double? get priceValue {
-    try {
-      final numericString = price.replaceAll(RegExp(r'[^\d.]'), '');
-      return double.tryParse(numericString);
-    } catch (e) {
-      return null;
-    }
-  }
-
   /// Get total price for this item (price * quantity)
-  double? get totalPrice {
-    final pv = priceValue;
-    return pv != null ? pv * quantity : null;
-  }
+  double get totalPrice => price * quantity;
 
   @override
   List<Object?> get props => [

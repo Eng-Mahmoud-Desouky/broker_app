@@ -23,9 +23,7 @@ class CartItemCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -59,7 +57,7 @@ class CartItemCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       // Price
                       Text(
-                        item.price,
+                        '\$${item.price.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -148,27 +146,29 @@ class CartItemCard extends StatelessWidget {
         width: 80,
         height: 80,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          width: 80,
-          height: 80,
-          color: AppColors.grey200,
-          child: const Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: AppColors.primary,
+        placeholder:
+            (context, url) => Container(
+              width: 80,
+              height: 80,
+              color: AppColors.grey200,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              ),
             ),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          width: 80,
-          height: 80,
-          color: AppColors.grey200,
-          child: const Icon(
-            Icons.broken_image_outlined,
-            size: 40,
-            color: AppColors.grey500,
-          ),
-        ),
+        errorWidget:
+            (context, url, error) => Container(
+              width: 80,
+              height: 80,
+              color: AppColors.grey200,
+              child: const Icon(
+                Icons.broken_image_outlined,
+                size: 40,
+                color: AppColors.grey500,
+              ),
+            ),
       ),
     );
   }
@@ -223,34 +223,26 @@ class CartItemCard extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.remove),
-            onPressed: item.quantity > 1
-                ? () => onQuantityChanged(item.quantity - 1)
-                : null,
+            onPressed:
+                item.quantity > 1
+                    ? () => onQuantityChanged(item.quantity - 1)
+                    : null,
             iconSize: 20,
-            constraints: const BoxConstraints(
-              minWidth: 36,
-              minHeight: 36,
-            ),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             padding: EdgeInsets.zero,
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
               '${item.quantity}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => onQuantityChanged(item.quantity + 1),
             iconSize: 20,
-            constraints: const BoxConstraints(
-              minWidth: 36,
-              minHeight: 36,
-            ),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             padding: EdgeInsets.zero,
           ),
         ],
@@ -274,4 +266,3 @@ class CartItemCard extends StatelessWidget {
     }
   }
 }
-

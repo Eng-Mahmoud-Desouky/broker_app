@@ -15,7 +15,7 @@ class CreateTopUpTransaction
   Future<Either<Failure, Map<String, dynamic>>> call(
     CreateTopUpTransactionParams params,
   ) async {
-    return await repository.createTopUpTransaction(
+    return await repository.createTopUpSession(
       userId: params.userId,
       amount: params.amount,
     );
@@ -24,7 +24,7 @@ class CreateTopUpTransaction
 
 class CreateTopUpTransactionParams extends Equatable {
   final String userId;
-  final int amount; // Amount in Iraqi Dinars (IQD)
+  final double amount;
 
   const CreateTopUpTransactionParams({
     required this.userId,

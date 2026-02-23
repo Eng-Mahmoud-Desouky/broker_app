@@ -175,19 +175,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   CartLoaded _buildLoadedState(List<CartItem> items) {
     final totalItems = items.fold<int>(0, (sum, item) => sum + item.quantity);
 
-    // Calculate total price if possible
-    double? totalPrice;
-    try {
-      totalPrice = items.fold<double>(0.0, (sum, item) {
-        final price = item.priceValue;
-        if (price != null) {
-          return sum + (price * item.quantity);
-        }
-        return sum;
-      });
-    } catch (e) {
-      totalPrice = null;
-    }
+    // Calculate total price
+    final totalPrice = items.fold<double>(0.0, (sum, item) {
+      return sum + (item.price * item.quantity);
+    });
 
     return CartLoaded(
       items: items,

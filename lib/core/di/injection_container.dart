@@ -85,6 +85,7 @@ import '../../features/wallet/domain/usecases/get_wallet_balance.dart';
 import '../../features/wallet/domain/usecases/get_transaction_history.dart';
 import '../../features/wallet/domain/usecases/create_topup_transaction.dart';
 import '../../features/wallet/domain/usecases/get_transaction_by_id.dart';
+import '../../features/wallet/domain/usecases/cancel_topup_session.dart';
 import '../../features/wallet/presentation/bloc/wallet_bloc.dart';
 
 // Order feature imports
@@ -432,6 +433,7 @@ Future<void> _initWallet() async {
       getTransactionHistory: sl(),
       createTopUpTransaction: sl(),
       getTransactionById: sl(),
+      cancelTopUpSession: sl(),
     ),
   );
 
@@ -440,6 +442,7 @@ Future<void> _initWallet() async {
   sl.registerLazySingleton(() => GetTransactionHistory(sl()));
   sl.registerLazySingleton(() => CreateTopUpTransaction(sl()));
   sl.registerLazySingleton(() => GetTransactionById(sl()));
+  sl.registerLazySingleton(() => CancelTopUpSession(sl()));
 
   // Repository
   sl.registerLazySingleton<WalletRepository>(

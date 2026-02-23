@@ -23,10 +23,7 @@ class WalletBalanceCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primaryDark,
-          ],
+          colors: [AppColors.primary, AppColors.primaryDark],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
@@ -77,7 +74,7 @@ class WalletBalanceCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'دينار عراقي',
+            'دولار أمريكي (USD)',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.onPrimary.withOpacity(0.8),
             ),
@@ -92,11 +89,7 @@ class WalletBalanceCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.info_outline,
-                  size: 16,
-                  color: AppColors.onPrimary,
-                ),
+                Icon(Icons.info_outline, size: 16, color: AppColors.onPrimary),
                 const SizedBox(width: 6),
                 Text(
                   'آخر تحديث: ${_formatLastUpdate(wallet.updatedAt)}',

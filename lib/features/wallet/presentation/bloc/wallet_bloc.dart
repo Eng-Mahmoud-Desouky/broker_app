@@ -10,6 +10,7 @@ import '../../domain/usecases/get_wallet_balance.dart';
 import '../../domain/usecases/get_transaction_history.dart';
 import '../../domain/usecases/create_topup_transaction.dart';
 import '../../domain/usecases/get_transaction_by_id.dart';
+import '../../domain/usecases/cancel_topup_session.dart';
 
 part 'wallet_event.dart';
 part 'wallet_state.dart';
@@ -19,12 +20,14 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   final GetTransactionHistory getTransactionHistory;
   final CreateTopUpTransaction createTopUpTransaction;
   final GetTransactionById getTransactionById;
+  final CancelTopUpSession cancelTopUpSession;
 
   WalletBloc({
     required this.getWalletBalance,
     required this.getTransactionHistory,
     required this.createTopUpTransaction,
     required this.getTransactionById,
+    required this.cancelTopUpSession,
   }) : super(WalletInitial()) {
     on<WalletLoadRequested>(_onWalletLoadRequested);
     on<WalletRefreshRequested>(_onWalletRefreshRequested);
@@ -387,8 +390,27 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
         debugPrint('   Refreshing wallet data...');
       }
 
+      // 1. Cancel the session in the background if transactionId is provided
+      final transactionId =
+          event.transactionId ??
+          (state is WalletTopUpSessionCreated
+              ? (state as WalletTopUpSessionCreated).transactionId
+              : null);
+
+      if (transactionId != null) {
+        if (kDebugMode) {
+          debugPrint('   Cancelling topup session for TX: $transactionId');
+        }
+        // Fire and forget cancellation - we don't want to block the UI reset
+        unawaited(
+          cancelTopUpSession(
+            CancelTopUpSessionParams(transactionId: transactionId),
+          ),
+        );
+      }
+
       try {
-        // Refresh wallet data
+        // 2. Refresh wallet data
         final walletResult = await getWalletBalance(
           GetWalletBalanceParams(userId: event.userId),
         );

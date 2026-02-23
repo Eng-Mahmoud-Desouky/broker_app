@@ -67,10 +67,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         }
 
         // Calculate price
-        final itemPrice = item.priceValue;
-        if (itemPrice != null) {
-          prices.add(itemPrice * item.quantity);
-        }
+        prices.add(item.price * item.quantity);
       }
 
       // Set total weight

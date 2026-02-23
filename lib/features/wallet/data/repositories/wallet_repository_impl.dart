@@ -54,13 +54,13 @@ class WalletRepositoryImpl implements WalletRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> createTopUpTransaction({
+  Future<Either<Failure, Map<String, dynamic>>> createTopUpSession({
     required String userId,
-    required int amount,
+    required double amount,
   }) async {
     if (await networkInfo.isConnected) {
       try {
-        final result = await remoteDataSource.createTopUpTransaction(
+        final result = await remoteDataSource.createTopUpSession(
           userId: userId,
           amount: amount,
         );
@@ -147,6 +147,22 @@ class WalletRepositoryImpl implements WalletRepository {
       }
     } else {
       return const Left(NetworkFailure(message: 'لا يوجد اتصال بالإنترنت'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> cancelTopUpSession(String transactionId) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.cancelTopUpSession(transactionId);
+        return const Right(null);
+      } catch (e) {
+        // We don't want to fail the whole flow if cleanup fails, but we can log it
+        return const Right(null);
+      }
+    } else {
+      // If offline, we can't cleanup, but we also won't block the user
+      return const Right(null);
     }
   }
 }

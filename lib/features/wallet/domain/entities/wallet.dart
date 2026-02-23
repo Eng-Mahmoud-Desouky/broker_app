@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 class Wallet extends Equatable {
   final String userId;
-  final int balance; // Balance in Iraqi Dinars (IQD)
+  final double balance; // Balance in USD
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -13,12 +13,12 @@ class Wallet extends Equatable {
     required this.updatedAt,
   });
 
-  /// Get formatted balance string in dinars
-  String get formattedBalance => '$balance د.ع';
+  /// Get formatted balance string in USD
+  String get formattedBalance => '\$${balance.toStringAsFixed(2)}';
 
   Wallet copyWith({
     String? userId,
-    int? balance,
+    double? balance,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {

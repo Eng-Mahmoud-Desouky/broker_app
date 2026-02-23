@@ -5,7 +5,7 @@ class CartItem extends Equatable {
   final String id;
   final String userId;
   final String productName;
-  final String price;
+  final double price;
   final String? imageUrl;
   final List<String>? images;
   final String productUrl;
@@ -66,32 +66,8 @@ class CartItem extends Equatable {
     }
   }
 
-  /// Parse price to double
-  double? get priceValue {
-    try {
-      // Remove currency symbols and non-numeric characters except decimal point
-      final numericString = price.replaceAll(RegExp(r'[^\d.]'), '');
-      return double.tryParse(numericString);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Get currency from price string
-  String get currency {
-    if (price.contains('IQD') || price.contains('د.ع')) {
-      return 'IQD';
-    } else if (price.contains('€')) {
-      return 'EUR';
-    } else if (price.contains('£')) {
-      return 'GBP';
-    } else if (price.contains('¥')) {
-      return 'CNY';
-    } else if (price.contains('\$')) {
-      return 'USD';
-    }
-    return 'USD';
-  }
+  /// Get total price for this item
+  double get totalPrice => price * quantity;
 
   /// Get total weight (weight * quantity) if weight is available
   double? get totalWeight {

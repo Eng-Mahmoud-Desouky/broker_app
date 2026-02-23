@@ -1,3 +1,4 @@
+import '../../../../core/currency/currency_service.dart';
 import '../../domain/entities/wallet.dart';
 
 class WalletModel extends Wallet {
@@ -30,7 +31,7 @@ class WalletModel extends Wallet {
 
     return WalletModel(
       userId: userId as String,
-      balance: balance as int,
+      balance: CurrencyService.toDouble(balance),
       createdAt:
           updatedAt, // Use updated_at as created_at since created_at doesn't exist
       updatedAt: updatedAt,
@@ -58,7 +59,7 @@ class WalletModel extends Wallet {
   @override
   WalletModel copyWith({
     String? userId,
-    int? balance,
+    double? balance,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {

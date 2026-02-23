@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
@@ -9,7 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
 class WalletTopUpDialog extends StatefulWidget {
-  final Function(int amount) onTopUp; // Amount in Iraqi Dinars (IQD)
+  final Function(double amount) onTopUp; // Amount in USD
 
   const WalletTopUpDialog({super.key, required this.onTopUp});
 
@@ -41,7 +39,7 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
         ),
         child: SingleChildScrollView(
           child: Padding(
@@ -83,7 +81,7 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
         ),
         const SizedBox(height: 8),
         Text(
-          'أدخل المبلغ الذي تريد شحنه في محفظتك',
+          'أدخل المبلغ بالدولار الذي تريد شحنه في محفظتك',
           style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey600),
           textAlign: TextAlign.center,
         ),
@@ -95,16 +93,21 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          'أدخل المبلغ المراد شحنه:',
+          style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
         TextFormField(
           controller: _amountController,
           focusNode: _focusNode,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,3}')),
+            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
           ],
           decoration: InputDecoration(
-            hintText: 'المبلغ بالدينار العراقي',
-            suffixText: 'د.ع',
+            hintText: 'المبلغ بالدولار',
+            prefixText: '\$ ',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -112,6 +115,14 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
             ),
           ),
           validator: _validateAmount,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'ملاحظة: سيتم تحويل المبلغ إلى الدينار العراقي بسعر صرف 1307 وإتمام الدفع عبر زين كاش.',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.grey600,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       ],
     );
@@ -170,11 +181,11 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
     }
 
     if (amount < 1) {
-      return 'الحد الأدنى للشحن هو 1 دينار';
+      return 'الحد الأدنى للشحن هو 1 دولار';
     }
 
-    if (amount > 1000) {
-      return 'الحد الأقصى للشحن هو 1000 دينار';
+    if (amount > 5000) {
+      return 'الحد الأقصى للشحن هو 5000 دولار';
     }
 
     return null;
@@ -183,15 +194,7 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
   void _submitTopUp() {
     if (_formKey.currentState!.validate()) {
       final amount = double.parse(_amountController.text);
-
-      log('💰 Top-up amount: $amount د.ع');
-
-      // Convert to integer (amount is already in dinars)
-      final amountInDinars = amount.round();
-      log('💰 Amount in dinars: $amountInDinars');
-
-      // Call the callback with amount in dinars
-      widget.onTopUp(amountInDinars);
+      widget.onTopUp(amount);
     }
   }
 

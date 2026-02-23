@@ -1,3 +1,4 @@
+import '../../../../core/currency/currency_service.dart';
 import '../../domain/entities/cart_item.dart';
 
 /// Cart item model for data layer
@@ -27,7 +28,7 @@ class CartItemModel extends CartItem {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       productName: json['product_name'] as String,
-      price: json['price'] as String,
+      price: CurrencyService.parsePrice(json['price']),
       imageUrl: json['image_url'] as String?,
       images:
           json['images'] != null
@@ -38,10 +39,7 @@ class CartItemModel extends CartItem {
       quantity: json['quantity'] as int? ?? 1,
       rating: json['rating'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
-      weightKg:
-          json['weight_kg'] != null
-              ? (json['weight_kg'] as num).toDouble()
-              : null,
+      weightKg: CurrencyService.toDouble(json['weight_kg'], 0.0),
       dimensions: json['dimensions'] as Map<String, dynamic>?,
       rawSpecs: json['raw_specs'] as Map<String, dynamic>?,
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -117,7 +115,7 @@ class CartItemModel extends CartItem {
     String? id,
     String? userId,
     String? productName,
-    String? price,
+    double? price,
     String? imageUrl,
     List<String>? images,
     String? productUrl,

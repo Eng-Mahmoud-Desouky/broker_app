@@ -252,7 +252,7 @@ class SimilarProductsSection extends StatelessWidget {
 
                       // Price
                       Text(
-                        '${product.price.toStringAsFixed(0)} ${product.currency}',
+                        product.formattedPrice,
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,

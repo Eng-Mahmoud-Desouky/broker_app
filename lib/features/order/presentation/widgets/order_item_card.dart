@@ -66,7 +66,7 @@ class OrderItemCard extends StatelessWidget {
                   _buildDetailRow(
                     icon: Icons.attach_money,
                     label: 'السعر',
-                    value: item.price,
+                    value: '\$${item.price.toStringAsFixed(2)}',
                   ),
                   const SizedBox(height: 4),
                   _buildDetailRow(

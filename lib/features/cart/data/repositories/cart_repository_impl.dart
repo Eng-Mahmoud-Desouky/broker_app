@@ -21,7 +21,7 @@ class CartRepositoryImpl implements CartRepository {
   @override
   Future<Either<Failure, CartItem>> addToCart({
     required String productName,
-    required String price,
+    required double price,
     String? imageUrl,
     List<String>? images,
     required String productUrl,

@@ -1,3 +1,4 @@
+import '../../../../core/currency/currency_service.dart';
 import '../../domain/entities/order_item.dart';
 
 /// Order item model for data layer
@@ -24,12 +25,9 @@ class OrderItemModel extends OrderItem {
       productName: json['product_name'] as String,
       productUrl: json['product_url'] as String,
       platform: json['platform'] as String,
-      price: json['price'] as String,
+      price: CurrencyService.parsePrice(json['price']),
       quantity: json['quantity'] as int,
-      weightKg:
-          json['weight_kg'] != null
-              ? (json['weight_kg'] as num).toDouble()
-              : 0.01, // Default weight if null
+      weightKg: CurrencyService.toDouble(json['weight_kg'], 0.01),
       imageUrl: json['image_url'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
       createdAt: DateTime.parse(json['created_at'] as String),

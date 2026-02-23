@@ -198,7 +198,7 @@ CREATE TABLE public.profiles (
   is_support_agent boolean DEFAULT false,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  role text DEFAULT 'user'::text CHECK (role = ANY (ARRAY['super_admin'::text, 'admin'::text, 'support'::text, 'user'::text])),
+  role text DEFAULT 'user'::text CHECK (role = ANY (ARRAY['super_admin'::text, 'full_manager'::text, 'support'::text, 'orders_specialist'::text, 'orders_support'::text, 'orders_marketing'::text, 'user'::text])),
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
@@ -281,7 +281,7 @@ CREATE TABLE public.user_fcm_tokens (
 CREATE TABLE public.wallet_transactions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
-  amount bigint NOT NULL,
+  amount numeric NOT NULL,
   type text NOT NULL CHECK (type = ANY (ARRAY['topup'::text, 'purchase'::text, 'refund'::text])),
   provider text,
   provider_reference text UNIQUE,
@@ -294,7 +294,7 @@ CREATE TABLE public.wallet_transactions (
 );
 CREATE TABLE public.wallets (
   user_id uuid NOT NULL,
-  balance bigint NOT NULL DEFAULT 0,
+  balance numeric NOT NULL DEFAULT 0,
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT wallets_pkey PRIMARY KEY (user_id),
   CONSTRAINT wallets_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)

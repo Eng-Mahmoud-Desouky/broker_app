@@ -9,7 +9,7 @@ abstract class CartRemoteDataSource {
   Future<CartItemModel> addToCart({
     required String userId,
     required String productName,
-    required String price,
+    required double price,
     String? imageUrl,
     List<String>? images,
     required String productUrl,
@@ -52,7 +52,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
   Future<CartItemModel> addToCart({
     required String userId,
     required String productName,
-    required String price,
+    required double price,
     String? imageUrl,
     List<String>? images,
     required String productUrl,

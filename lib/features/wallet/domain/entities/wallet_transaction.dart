@@ -7,7 +7,7 @@ enum WalletTransactionStatus { pending, success, failed }
 class WalletTransaction extends Equatable {
   final String id;
   final String userId;
-  final int amount; // Amount in Iraqi Dinars (IQD)
+  final double amount; // Amount in USD
   final WalletTransactionType type;
   final String? provider; // e.g., 'zaincash'
   final String? providerReference; // Provider's transaction reference
@@ -29,8 +29,8 @@ class WalletTransaction extends Equatable {
     required this.updatedAt,
   });
 
-  /// Get formatted amount string in dinars
-  String get formattedAmount => '$amount د.ع';
+  /// Get formatted amount string in USD
+  String get formattedAmount => '\$${amount.toStringAsFixed(2)}';
 
   /// Get transaction type display name in Arabic
   String get typeDisplayName {
@@ -64,7 +64,7 @@ class WalletTransaction extends Equatable {
   WalletTransaction copyWith({
     String? id,
     String? userId,
-    int? amount,
+    double? amount,
     WalletTransactionType? type,
     String? provider,
     String? providerReference,

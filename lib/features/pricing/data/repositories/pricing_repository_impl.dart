@@ -25,7 +25,7 @@ class PricingRepositoryImpl implements PricingRepository {
     final itemsJson =
         items.map((item) {
           return {
-            'price': item.priceValue ?? 0.0,
+            'price': item.price,
             'quantity': item.quantity,
             'platform': item.platform,
             'weight': item.weightKg,

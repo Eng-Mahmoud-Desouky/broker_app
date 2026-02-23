@@ -1,3 +1,4 @@
+import '../../../../core/currency/currency_service.dart';
 import '../../domain/entities/wallet_transaction.dart';
 
 class WalletTransactionModel extends WalletTransaction {
@@ -29,7 +30,7 @@ class WalletTransactionModel extends WalletTransaction {
     final amount = json['amount'];
     if (amount == null) {
       throw FormatException('amount cannot be null in transaction data');
-    } 
+    }
 
     final typeStr = json['type'];
     if (typeStr == null) {
@@ -54,7 +55,7 @@ class WalletTransactionModel extends WalletTransaction {
     return WalletTransactionModel(
       id: id as String,
       userId: userId as String,
-      amount: amount as int,
+      amount: CurrencyService.toDouble(amount),
       type: _parseTransactionType(typeStr as String),
       provider: json['provider'] as String?,
       providerReference: json['provider_reference'] as String?,
@@ -147,7 +148,7 @@ class WalletTransactionModel extends WalletTransaction {
   WalletTransactionModel copyWith({
     String? id,
     String? userId,
-    int? amount,
+    double? amount,
     WalletTransactionType? type,
     String? provider,
     String? providerReference,

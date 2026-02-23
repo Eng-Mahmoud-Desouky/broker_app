@@ -16,9 +16,9 @@ abstract class WalletRepository {
   });
 
   /// Create a top-up transaction and get payment session
-  Future<Either<Failure, Map<String, dynamic>>> createTopUpTransaction({
+  Future<Either<Failure, Map<String, dynamic>>> createTopUpSession({
     required String userId,
-    required int amount, // Amount in Iraqi Dinars (IQD)
+    required double amount, // Amount in Iraqi Dinars (IQD)
   });
 
   /// Get transaction by ID
@@ -40,4 +40,7 @@ abstract class WalletRepository {
     required double amount,
     required String orderId,
   });
+
+  /// Cancel a top-up session
+  Future<Either<Failure, void>> cancelTopUpSession(String transactionId);
 }

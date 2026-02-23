@@ -55,7 +55,7 @@ class PricingCubit extends Cubit<PricingState> {
     double totalWeight = 0;
 
     for (final item in items) {
-      final price = item.priceValue ?? 0;
+      final price = item.price;
       subtotal += price * item.quantity;
       totalWeight += (item.weightKg ?? 0) * item.quantity;
     }

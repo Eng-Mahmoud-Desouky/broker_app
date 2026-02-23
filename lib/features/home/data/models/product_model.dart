@@ -1,3 +1,4 @@
+import '../../../../core/currency/currency_service.dart';
 import '../../domain/entities/product.dart';
 import 'product_image_model.dart';
 import 'product_color_model.dart';
@@ -9,7 +10,6 @@ class ProductModel extends Product {
     required super.description,
     required super.mainImageUrl,
     required super.price,
-    required super.currency,
     super.originalPrice,
     super.rating,
     super.reviewCount,
@@ -31,15 +31,10 @@ class ProductModel extends Product {
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       mainImageUrl: json['main_image_url'] ?? '',
-      price: (json['price'] ?? 0 as num).toDouble(),
-      currency: json['currency'] ?? 'USD',
-      originalPrice:
-          json['original_price'] != null
-              ? (json['original_price'] as num).toDouble()
-              : null,
-      rating:
-          json['rating'] != null ? (json['rating'] as num).toDouble() : null,
-      reviewCount: json['review_count'] ?? 0 as int?,
+      price: CurrencyService.parsePrice(json['price']),
+      originalPrice: CurrencyService.toDoubleOrNull(json['original_price']),
+      rating: CurrencyService.toDoubleOrNull(json['rating']),
+      reviewCount: json['review_count'] as int? ?? 0,
       platformId: json['platform_id'] ?? '',
       platformName: json['platform_name'] ?? '',
       categoryId: json['category_id'] as String?,
@@ -94,15 +89,10 @@ class ProductModel extends Product {
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       mainImageUrl: json['main_image_url'] ?? '',
-      price: (json['price'] ?? 0 as num).toDouble(),
-      currency: json['currency'] ?? 'USD',
-      originalPrice:
-          json['original_price'] != null
-              ? (json['original_price'] as num).toDouble()
-              : null,
-      rating:
-          json['rating'] != null ? (json['rating'] as num).toDouble() : null,
-      reviewCount: json['review_count'] ?? 0 as int?,
+      price: CurrencyService.parsePrice(json['price']),
+      originalPrice: CurrencyService.toDoubleOrNull(json['original_price']),
+      rating: CurrencyService.toDoubleOrNull(json['rating']),
+      reviewCount: json['review_count'] as int? ?? 0,
       platformId: json['platform_id'] ?? '',
       platformName: json['platform_name'] ?? '',
       categoryId: json['category_id'] as String?,
@@ -143,7 +133,6 @@ class ProductModel extends Product {
       'description': description,
       'main_image_url': mainImageUrl,
       'price': price,
-      'currency': currency,
       'original_price': originalPrice,
       'rating': rating,
       'review_count': reviewCount,
@@ -173,7 +162,6 @@ class ProductModel extends Product {
       description: product.description,
       mainImageUrl: product.mainImageUrl,
       price: product.price,
-      currency: product.currency,
       originalPrice: product.originalPrice,
       rating: product.rating,
       reviewCount: product.reviewCount,

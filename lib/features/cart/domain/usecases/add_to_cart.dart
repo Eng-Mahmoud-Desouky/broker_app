@@ -32,7 +32,7 @@ class AddToCart implements UseCase<CartItem, AddToCartParams> {
 
 class AddToCartParams extends Equatable {
   final String productName;
-  final String price;
+  final double price;
   final String? imageUrl;
   final List<String>? images;
   final String productUrl;

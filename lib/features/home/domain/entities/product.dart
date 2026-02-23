@@ -42,7 +42,6 @@ class Product extends Equatable {
   final String description;
   final String mainImageUrl;
   final double price;
-  final String currency;
   final double? originalPrice;
   final double? rating;
   final int? reviewCount;
@@ -63,7 +62,6 @@ class Product extends Equatable {
     required this.description,
     required this.mainImageUrl,
     required this.price,
-    required this.currency,
     this.originalPrice,
     this.rating,
     this.reviewCount,
@@ -105,7 +103,6 @@ class Product extends Equatable {
     description,
     mainImageUrl,
     price,
-    currency,
     originalPrice,
     rating,
     reviewCount,

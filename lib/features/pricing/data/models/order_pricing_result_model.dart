@@ -1,3 +1,4 @@
+import '../../../../core/currency/currency_service.dart';
 import '../../domain/entities/order_pricing_result.dart';
 
 class OrderPricingResultModel extends OrderPricingResult {
@@ -12,10 +13,10 @@ class OrderPricingResultModel extends OrderPricingResult {
 
   factory OrderPricingResultModel.fromJson(Map<String, dynamic> json) {
     return OrderPricingResultModel(
-      subtotal: (json['subtotal'] as num).toDouble(),
-      commission: (json['commission'] as num).toDouble(),
-      shippingCost: (json['shipping_cost'] as num).toDouble(),
-      total: (json['total'] as num).toDouble(),
+      subtotal: CurrencyService.toDouble(json['subtotal']),
+      commission: CurrencyService.toDouble(json['commission']),
+      shippingCost: CurrencyService.toDouble(json['shipping_cost']),
+      total: CurrencyService.toDouble(json['total']),
       isEstimatedShipping: json['is_estimated_shipping'] as bool,
       missingShippingData: json['missing_shipping_data'] as bool,
     );

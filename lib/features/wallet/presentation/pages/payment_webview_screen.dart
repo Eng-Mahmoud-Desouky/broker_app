@@ -356,7 +356,10 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       debugPrint('   Dispatching WalletTopUpSessionClosed event...');
     }
     context.read<WalletBloc>().add(
-      WalletTopUpSessionClosed(userId: widget.userId),
+      WalletTopUpSessionClosed(
+        userId: widget.userId,
+        transactionId: widget.transactionId,
+      ),
     );
 
     // Close dialog if it's open
@@ -480,7 +483,10 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
                     );
                   }
                   context.read<WalletBloc>().add(
-                    WalletTopUpSessionClosed(userId: widget.userId),
+                    WalletTopUpSessionClosed(
+                      userId: widget.userId,
+                      transactionId: widget.transactionId,
+                    ),
                   );
 
                   // Close confirmation dialog

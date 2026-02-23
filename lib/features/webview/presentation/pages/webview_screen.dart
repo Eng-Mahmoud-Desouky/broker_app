@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
+import '../../../../core/currency/currency_service.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../core/theme/app_colors.dart';
 import '../../../cart/data/platform_selectors.dart';
@@ -1480,18 +1481,45 @@ class _WebViewScreenState extends State<WebViewScreen> {
         }
       }
 
+      // Parse price to double and handle currency conversion if needed
+      double price = 0.0;
+      final rawPrice = productData['price']?.toString() ?? '0';
+      final platform =
+          productData['platform']?.toString().toLowerCase() ?? 'unknown';
+
+      try {
+        // Simple numeric extraction from string (removing currency symbols and commas)
+        final numericPart = rawPrice.replaceAll(RegExp(r'[^0-9.]'), '');
+        price = double.tryParse(numericPart) ?? 0.0;
+
+        // Platform-specific currency conversion logic
+        if (platform == 'aliexpress') {
+          // AliExpress often shows EGP if not forced. If it looks like EGP (e.g., > 100), convert.
+          // Or if the raw string contains 'EGP' or 'ج.م'
+          if (rawPrice.contains('EGP') ||
+              rawPrice.contains('ج.م') ||
+              (price > 200 && !rawPrice.contains('\$'))) {
+            price = CurrencyService.convertToUSD(price, 'EGP');
+            if (kDebugMode)
+              debugPrint('💱 Converted AliExpress price from EGP: $price');
+          }
+        }
+      } catch (e) {
+        if (kDebugMode) debugPrint('⚠️ Price parsing failed: $e');
+      }
+
       // Add to cart via BLoC
       _cartBloc.add(
         CartAddItem(
           productName: productData['title'] ?? 'Unknown Product',
-          price: productData['price'] ?? 'Price not available',
+          price: price,
           imageUrl: productData['image'],
           images:
               productData['images'] != null
                   ? List<String>.from(productData['images'])
                   : null,
           productUrl: productData['url'] ?? '',
-          platform: productData['platform'] ?? 'unknown',
+          platform: platform,
           rating: productData['rating'],
           weightKg: weightKg,
           dimensions: dimensions,

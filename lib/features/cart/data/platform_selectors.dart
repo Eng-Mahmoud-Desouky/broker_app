@@ -13,6 +13,8 @@ class PlatformSelectors {
     'amazon': {
       'title': ['#productTitle', '#title', 'h1[id*="title"]', '.product-title'],
       'price': [
+        '#price_inside_buybox',
+        '#newBuyBoxPrice',
         '.a-price .a-offscreen',
         '#priceblock_ourprice',
         '#priceblock_dealprice',
