@@ -5,12 +5,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../di/injection_container.dart';
 import '../utils/constants.dart';
+import '../router/app_router.dart';
 
 class NotificationsService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   final SupabaseClient _supabase = Supabase.instance.client;
+
+  bool _isSubscribedToPublicTopic = false;
 
   static final NotificationsService _instance =
       NotificationsService._internal();
@@ -80,10 +83,22 @@ class NotificationsService {
       initSettings,
       onDidReceiveNotificationResponse: (details) {
         // Handle notification tap
+        _handleNotificationTap(details.payload);
       },
     );
 
-    // 3. Listen for Foreground Messages
+    // 3. Listen for Background Clicks (when app is opened from notification)
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      _handleRemoteMessageClick(message);
+    });
+
+    // 4. Handle notification that launched the app
+    RemoteMessage? initialMessage = await _fcm.getInitialMessage();
+    if (initialMessage != null) {
+      _handleRemoteMessageClick(initialMessage);
+    }
+
+    // 5. Listen for Foreground Messages
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
     // 4. Token Refresh Listener
@@ -94,6 +109,22 @@ class NotificationsService {
 
     // 5. Register token if already logged in
     await registerToken();
+  }
+
+  void _handleNotificationTap(String? payload) {
+    if (payload == 'public') {
+      _navigateToNotifications();
+    }
+  }
+
+  void _handleRemoteMessageClick(RemoteMessage message) {
+    if (message.data['type'] == 'public') {
+      _navigateToNotifications();
+    }
+  }
+
+  void _navigateToNotifications() {
+    AppRouter.router.push(AppRouter.notifications);
   }
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
@@ -116,6 +147,7 @@ class NotificationsService {
           ),
           iOS: const DarwinNotificationDetails(),
         ),
+        payload: message.data['type']?.toString(),
       );
     }
   }
@@ -138,6 +170,22 @@ class NotificationsService {
       }
     } catch (e) {
       print('Error getting FCM token: $e');
+    }
+
+    // Subscribe to public topic if not already done in this session
+    if (!_isSubscribedToPublicTopic) {
+      await subscribeToPublicTopic();
+    }
+  }
+
+  Future<void> subscribeToPublicTopic() async {
+    try {
+      print('Notifications: Subscribing to all_users topic');
+      await _fcm.subscribeToTopic('all_users');
+      _isSubscribedToPublicTopic = true;
+      print('Notifications: Successfully subscribed to all_users topic');
+    } catch (e) {
+      print('Notifications: Error subscribing to topic: $e');
     }
   }
 

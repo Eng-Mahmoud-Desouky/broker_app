@@ -16,9 +16,13 @@ class NotificationsRemoteDataSourceImpl
 
   @override
   Future<List<AppNotificationModel>> getNotifications() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return [];
+
     final response = await supabase
         .from('app_notifications')
         .select()
+        .or('user_id.eq.${user.id},is_public.eq.true')
         .order('created_at', ascending: false);
 
     return (response as List)
@@ -54,7 +58,7 @@ class NotificationsRemoteDataSourceImpl
     final response = await supabase
         .from('app_notifications')
         .select('id')
-        .eq('user_id', user.id)
+        .or('user_id.eq.${user.id},is_public.eq.true')
         .eq('is_read', false);
 
     return (response as List).length;

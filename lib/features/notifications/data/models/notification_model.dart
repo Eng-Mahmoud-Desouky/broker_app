@@ -3,7 +3,7 @@ import '../../domain/entities/notification.dart';
 class AppNotificationModel extends AppNotification {
   const AppNotificationModel({
     required super.id,
-    required super.userId,
+    super.userId,
     required super.title,
     required super.body,
     super.type,

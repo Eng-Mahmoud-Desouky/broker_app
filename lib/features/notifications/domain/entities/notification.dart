@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 class AppNotification extends Equatable {
   final String id;
-  final String userId;
+  final String? userId;
   final String title;
   final String body;
   final String? type;
@@ -12,7 +12,7 @@ class AppNotification extends Equatable {
 
   const AppNotification({
     required this.id,
-    required this.userId,
+    this.userId,
     required this.title,
     required this.body,
     this.type,
