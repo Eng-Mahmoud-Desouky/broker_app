@@ -10,13 +10,15 @@ CREATE TABLE public.app_content (
 );
 CREATE TABLE public.app_notifications (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
+  user_id uuid,
   title text NOT NULL,
   body text NOT NULL,
   type text,
   data jsonb,
   is_read boolean NOT NULL DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
+  is_public boolean DEFAULT false,
+  target_topic text,
   CONSTRAINT app_notifications_pkey PRIMARY KEY (id),
   CONSTRAINT app_notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );

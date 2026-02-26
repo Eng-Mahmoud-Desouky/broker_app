@@ -109,6 +109,7 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
         throw ServerException(message: 'لم يتم استلام رد من خدمة الدفع');
       }
 
+      // v2 response returns { "redirectUrl": "..." }
       return response.data as Map<String, dynamic>;
     } on FunctionException catch (e) {
       throw ServerException(

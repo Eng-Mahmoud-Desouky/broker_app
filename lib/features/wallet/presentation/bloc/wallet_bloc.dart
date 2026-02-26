@@ -177,14 +177,16 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
               debugPrint('   Keys: ${paymentData.keys.toList()}');
             }
 
-            // Safely extract transaction ID with null check
-            final transactionId = paymentData['id'] as String?;
+            // v2 returns redirectUrl directly
+            final paymentUrl = paymentData['redirectUrl'] as String?;
+            // v2 uses id or externalReferenceId internally, but for compatibility we'll try to get it
+            final transactionId =
+                (paymentData['id'] ?? paymentData['orderId'] ?? '') as String;
 
-            if (transactionId == null || transactionId.isEmpty) {
+            if (paymentUrl == null || paymentUrl.isEmpty) {
               if (kDebugMode) {
-                debugPrint('❌ Transaction ID is null or empty');
+                debugPrint('❌ Redirect URL is null or empty');
                 debugPrint('   Available keys: ${paymentData.keys.toList()}');
-                debugPrint('   Full response: $paymentData');
               }
 
               emit(
@@ -192,21 +194,15 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
                   wallet: currentWallet,
                   transactions: currentTransactions,
                   message:
-                      'خطأ في إنشاء المعاملة: لم يتم استلام معرف المعاملة من الخادم',
+                      'خطأ في إنشاء المعاملة: لم يتم استلام رابط التوجيه من الخادم',
                 ),
               );
               return;
             }
 
             if (kDebugMode) {
-              debugPrint('   Transaction ID: $transactionId');
-            }
-
-            final paymentUrl =
-                'https://test.zaincash.iq/transaction/pay?id=$transactionId';
-
-            if (kDebugMode) {
               debugPrint('   Payment URL: $paymentUrl');
+              debugPrint('   Transaction ID (ref): $transactionId');
             }
 
             emit(

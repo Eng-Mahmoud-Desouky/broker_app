@@ -86,6 +86,7 @@ import '../../features/wallet/domain/usecases/get_transaction_history.dart';
 import '../../features/wallet/domain/usecases/create_topup_transaction.dart';
 import '../../features/wallet/domain/usecases/get_transaction_by_id.dart';
 import '../../features/wallet/domain/usecases/cancel_topup_session.dart';
+import '../../features/wallet/data/services/zaincash_payment_service.dart';
 import '../../features/wallet/presentation/bloc/wallet_bloc.dart';
 
 // Order feature imports
@@ -452,6 +453,11 @@ Future<void> _initWallet() async {
   // Data sources
   sl.registerLazySingleton<WalletRemoteDataSource>(
     () => WalletRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+
+  // Services
+  sl.registerLazySingleton<ZainCashPaymentService>(
+    () => ZainCashPaymentService(walletRepository: sl(), supabaseClient: sl()),
   );
 }
 

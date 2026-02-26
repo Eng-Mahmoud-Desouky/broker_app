@@ -13,6 +13,7 @@ import '../bloc/wallet_bloc.dart';
 import '../widgets/wallet_balance_card.dart';
 import '../widgets/wallet_transaction_list.dart';
 import '../widgets/wallet_top_up_dialog.dart';
+import '../../data/services/zaincash_payment_service.dart';
 import 'payment_webview_screen.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -293,6 +294,30 @@ class _WalletScreenState extends State<WalletScreen> {
             onLoadMore: _loadMoreTransactions,
             isLoadingMore: state is WalletLoaded ? state.isLoadingMore : false,
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final userId = _currentUserId;
+                  if (userId != null) {
+                    di.sl<ZainCashPaymentService>().startZainCashPayment(
+                      context: context,
+                      userId: userId,
+                      amount: 10.0, // Example amount
+                    );
+                  }
+                },
+                icon: const Icon(Icons.payment),
+                label: const Text('ZainCash v2 Payment (Example)'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                ),
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
       ),
     );

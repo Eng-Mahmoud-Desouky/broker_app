@@ -213,13 +213,18 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   }
 
   bool _isPaymentCallbackUrl(String url) {
-    // Check for ZainCash callback URLs or success/failure indicators
-    return url.contains('callback') ||
-        url.contains('success') ||
+    // ZainCash v2 redirects to our Supabase Edge Function
+    // Example: https://[PROJ].supabase.co/functions/v1/zaincash-topup?status=success&...
+    final isSupabaseFunction = url.contains(
+      'supabase.co/functions/v1/zaincash-topup',
+    );
+
+    if (isSupabaseFunction) return true;
+
+    // Fallback for other ZainCash common indicators
+    return url.contains('success') ||
         url.contains('failure') ||
-        url.contains('cancel') ||
-        url.contains('return') ||
-        url.contains('redirect');
+        url.contains('cancel');
   }
 
   void _checkForPaymentCompletion(String url) {
@@ -230,36 +235,38 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   }
 
   void _handlePaymentCallback(String url) {
+    final uri = Uri.parse(url);
+    final status = uri.queryParameters['status'];
+    final externalReferenceId = uri.queryParameters['externalReferenceId'];
+
     if (kDebugMode) {
       debugPrint('💳 Payment callback detected: $url');
-      debugPrint('   Transaction ID: ${widget.transactionId}');
+      debugPrint('   Status: $status');
+      debugPrint('   External Reference ID: $externalReferenceId');
     }
 
-    // Check transaction status
-    if (kDebugMode) {
-      debugPrint('   Dispatching WalletTransactionStatusChecked event...');
+    if (status == 'success') {
+      // Payment successful
+      // The backend has already been called via the redirect, so we just need to verify and refresh.
+      context.read<WalletBloc>().add(
+        WalletTransactionStatusChecked(
+          transactionId: externalReferenceId ?? widget.transactionId,
+        ),
+      );
+      _showPaymentCompletionDialog(isSuccess: true);
+    } else {
+      // Payment failed or cancelled
+      _showPaymentCompletionDialog(isSuccess: false);
     }
-
-    context.read<WalletBloc>().add(
-      WalletTransactionStatusChecked(transactionId: widget.transactionId),
-    );
-
-    if (kDebugMode) {
-      debugPrint('   Event dispatched successfully');
-    }
-
-    // Show completion dialog
-    _showPaymentCompletionDialog();
   }
 
-  void _showPaymentCompletionDialog() {
+  void _showPaymentCompletionDialog({required bool isSuccess}) {
     if (kDebugMode) {
-      debugPrint('💬 Showing payment completion dialog');
+      debugPrint('💬 Showing payment completion dialog (Success: $isSuccess)');
     }
 
     // Cancel any existing timer
     _autoCloseTimer?.cancel();
-
     _isDialogOpen = true;
 
     showDialog(
@@ -267,79 +274,46 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       barrierDismissible: false,
       builder:
           (dialogContext) => AlertDialog(
-            title: const Text('معالجة الدفع'),
-            content: const Column(
+            title: Text(isSuccess ? 'تم الدفع بنجاح' : 'فشل الدفع'),
+            content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: AppColors.primary),
-                SizedBox(height: 16),
-                Text('جاري التحقق من حالة الدفع...'),
+                Icon(
+                  isSuccess ? Icons.check_circle : Icons.error,
+                  color: isSuccess ? Colors.green : Colors.red,
+                  size: 64,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isSuccess
+                      ? 'تم شحن محفظتك بنجاح. جاري تحديث الرصيد...'
+                      : 'حدث خطأ أثناء عملية الدفع. يرجى المحاولة مرة أخرى.',
+                ),
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () {
-                  if (kDebugMode) {
-                    debugPrint('👆 User clicked "العودة للمحفظة"');
-                  }
-
-                  // Cancel timer when user closes dialog
                   _autoCloseTimer?.cancel();
                   _isDialogOpen = false;
-
-                  // Close dialog only
-                  try {
-                    Navigator.of(dialogContext).pop();
-                    if (kDebugMode) {
-                      debugPrint('   ✅ Dialog closed by user');
-                    }
-                  } catch (e) {
-                    if (kDebugMode) {
-                      debugPrint('   ❌ Error closing dialog: $e');
-                    }
-                  }
-
-                  // The BlocListener will handle closing the webview
+                  Navigator.of(dialogContext).pop();
+                  _closePaymentFlow(context);
                 },
-                child: const Text('العودة للمحفظة'),
+                child: const Text('موافق'),
               ),
             ],
           ),
     );
 
-    // Auto-close dialog after a delay
-    _autoCloseTimer = Timer(const Duration(seconds: 3), () {
-      if (kDebugMode) {
-        debugPrint('⏰ Timer fired (3 seconds)');
-        debugPrint('   mounted: $mounted');
-        debugPrint('   _isDialogOpen: $_isDialogOpen');
-      }
-
-      if (mounted && _isDialogOpen) {
-        _isDialogOpen = false;
-
-        // Close dialog only
-        try {
+    // Auto-close dialog after a delay on success
+    if (isSuccess) {
+      _autoCloseTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted && _isDialogOpen) {
+          _isDialogOpen = false;
           Navigator.of(context, rootNavigator: false).pop();
-          if (kDebugMode) {
-            debugPrint('   ✅ Dialog auto-closed by timer');
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            debugPrint('   ❌ Error auto-closing dialog: $e');
-          }
+          _closePaymentFlow(context);
         }
-
-        // The BlocListener will handle closing the webview
-      } else {
-        if (kDebugMode) {
-          debugPrint('   ⏭️ Skipping auto-close (dialog already closed)');
-        }
-      }
-    });
-
-    if (kDebugMode) {
-      debugPrint('   Timer started (3 seconds)');
+      });
     }
   }
 
