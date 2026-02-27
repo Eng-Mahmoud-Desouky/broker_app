@@ -14,6 +14,7 @@ import '../widgets/wallet_balance_card.dart';
 import '../widgets/wallet_transaction_list.dart';
 import '../widgets/wallet_top_up_dialog.dart';
 import '../../data/services/zaincash_payment_service.dart';
+import '../../data/services/payment_gateway_service.dart';
 import 'payment_webview_screen.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -27,15 +28,30 @@ class _WalletScreenState extends State<WalletScreen> {
   late WalletBloc _walletBloc;
   String? _currentUserId;
   bool _walletInitialized = false;
+  bool? _isZaincashActive;
+  late final PaymentGatewayService _paymentGatewayService;
 
   @override
   void initState() {
     super.initState();
     _walletBloc = di.sl<WalletBloc>();
+    _paymentGatewayService = PaymentGatewayService(supabaseClient: di.sl());
+    _checkPaymentGatewayStatus();
     // Initialize wallet after frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeWalletFromAuthState();
     });
+  }
+
+  Future<void> _checkPaymentGatewayStatus() async {
+    final isActive = await _paymentGatewayService.checkGatewayAvailability(
+      'zaincash',
+    );
+    if (mounted) {
+      setState(() {
+        _isZaincashActive = isActive;
+      });
+    }
   }
 
   void _initializeWalletFromAuthState() {
@@ -326,14 +342,33 @@ class _WalletScreenState extends State<WalletScreen> {
   Widget _buildTopUpButton() {
     return BlocBuilder<WalletBloc, WalletState>(
       builder: (context, state) {
-        final isLoading = state is WalletTopUpLoading;
+        final isTopUpLoading = state is WalletTopUpLoading;
+        final isCheckingGateway = _isZaincashActive == null;
+        final isGatewayActive = _isZaincashActive ?? false;
 
         return FloatingActionButton.extended(
-          onPressed: isLoading ? null : _showTopUpDialog,
-          backgroundColor: isLoading ? AppColors.grey400 : AppColors.primary,
+          onPressed:
+              (isTopUpLoading || isCheckingGateway)
+                  ? null
+                  : () {
+                    if (!isGatewayActive) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('خدمة الدفع غير متاحة مؤقتاً'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                      return;
+                    }
+                    _showTopUpDialog();
+                  },
+          backgroundColor:
+              (isTopUpLoading || isCheckingGateway || !isGatewayActive)
+                  ? AppColors.grey400
+                  : AppColors.primary,
           foregroundColor: AppColors.onPrimary,
           icon:
-              isLoading
+              (isTopUpLoading || isCheckingGateway)
                   ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -344,7 +379,11 @@ class _WalletScreenState extends State<WalletScreen> {
                   )
                   : const Icon(Icons.add),
           label: Text(
-            isLoading ? 'جاري الشحن...' : 'شحن المحفظة',
+            isTopUpLoading
+                ? 'جاري الشحن...'
+                : isCheckingGateway
+                ? 'جاري التحقق...'
+                : 'شحن المحفظة',
             style: AppTextStyles.labelLarge.copyWith(
               color: AppColors.onPrimary,
             ),
