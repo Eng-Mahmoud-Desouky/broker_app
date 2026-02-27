@@ -253,6 +253,15 @@ class PlatformSelectors {
         'h1[title]',
       ],
       'price': [
+        // Priority 1: Mobile Ladder Pricing (first item)
+        'div[data-testid="ladder-price"] .price-item span:first-child',
+        'div[data-testid="ladder-price"] .price-item span',
+        // Priority 2: Mobile/Desktop Regular Pricing
+        'div[data-testid="product-price"] div[class*="text-2xl"] span:first-child',
+        'div[data-testid="product-price"] div[class*="text-2xl"] span',
+        'div[data-testid="product-price"] span:first-child',
+        'div[data-testid="product-price"] span',
+        // Legacy/Fallback selectors
         'div[data-testid="fixed-price"] strong',
         'strong[class*="id-font-bold"]',
         '.price',
