@@ -218,7 +218,7 @@ class _WalletTopUpDialogState extends State<WalletTopUpDialog> {
     // TODO: Replace with actual support number from settings/constants
     const phoneNumber = '+9647700000000';
     final message = Uri.encodeComponent(
-      'مرحبا، أريد شحن محفظتي في تطبيق زيد إكسبريس.',
+      'مرحبا، أريد شحن محفظتي في تطبيق زد إكسبريس.',
     );
     final url = Uri.parse('https://wa.me/$phoneNumber?text=$message');
 

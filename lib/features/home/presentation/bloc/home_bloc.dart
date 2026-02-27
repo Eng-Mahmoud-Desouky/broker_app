@@ -62,10 +62,22 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final productsResult = results[2];
 
       // Check if any request failed
-      if (offersResult.isLeft() ||
-          platformsResult.isLeft() ||
-          productsResult.isLeft()) {
-        emit(const HomeError(message: 'فشل في تحميل البيانات'));
+      if (offersResult.isLeft()) {
+        emit(
+          HomeError(message: offersResult.fold((l) => l.message, (r) => '')),
+        );
+        return;
+      }
+      if (platformsResult.isLeft()) {
+        emit(
+          HomeError(message: platformsResult.fold((l) => l.message, (r) => '')),
+        );
+        return;
+      }
+      if (productsResult.isLeft()) {
+        emit(
+          HomeError(message: productsResult.fold((l) => l.message, (r) => '')),
+        );
         return;
       }
 

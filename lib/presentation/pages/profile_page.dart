@@ -143,7 +143,6 @@ class ProfilePage extends StatelessWidget {
                 //     );
                 //   },
                 // ),
-
                 _buildProfileOption(
                   context,
                   icon: Icons.location_on_outlined,
@@ -416,7 +415,7 @@ class ProfilePage extends StatelessWidget {
   void _showAboutDialog(BuildContext context) {
     showAboutDialog(
       context: context,
-      applicationName: 'زيد إكسبريس',
+      applicationName: 'زد إكسبريس',
       applicationVersion: '1.0.0',
       applicationIcon: Container(
         width: 60,
@@ -439,7 +438,7 @@ class ProfilePage extends StatelessWidget {
       ),
       children: [
         const Text(
-          'تطبيق زيد إكسبريس هو منصتك المتكاملة للتسوق من مختلف المنصات العالمية والمحلية.',
+          'تطبيق زد إكسبريس هو منصتك المتكاملة للتسوق من مختلف المنصات العالمية والمحلية.',
           textAlign: TextAlign.center,
         ),
       ],

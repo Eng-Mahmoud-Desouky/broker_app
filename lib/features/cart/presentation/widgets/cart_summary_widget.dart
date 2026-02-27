@@ -164,6 +164,7 @@ class CartSummaryWidget extends StatelessWidget {
                   textStyle: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    fontFamily: 'Cairo',
                   ),
                 ),
                 child: const Text('متابعة الطلب'),
