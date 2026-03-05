@@ -32,6 +32,7 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   bool _isLoading = true;
   Timer? _autoCloseTimer;
   bool _isDialogOpen = false;
+  bool _webViewClosed = false;
 
   @override
   void dispose() {
@@ -100,7 +101,7 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         body: Column(
           children: [
             // Progress indicator
-            if (_isLoading)
+            if (_isLoading && !_webViewClosed)
               LinearProgressIndicator(
                 value: _progress,
                 backgroundColor: AppColors.grey200,
@@ -109,7 +110,12 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
                 ),
               ),
             // WebView content
-            Expanded(child: _buildWebView()),
+            Expanded(
+              child:
+                  _webViewClosed
+                      ? const Center(child: CircularProgressIndicator())
+                      : _buildWebView(),
+            ),
           ],
         ),
       ),
@@ -145,26 +151,73 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       },
       onLoadStart: (controller, url) {
         if (url != null) {
+          final urlStr = url.toString();
+
+          if (kDebugMode) {
+            debugPrint('🔄 Payment WebView started loading: $urlStr');
+          }
+
+          // Force interception of the deep link if it starts loading
+          if (urlStr.startsWith('brokerapp://payment')) {
+            controller
+                .stopLoading(); // Prevent the HTML page from rendering further
+            if (kDebugMode) {
+              debugPrint(
+                '� Payment callback intercepted in onLoadStart: $urlStr',
+              );
+            }
+            final uri = Uri.parse(urlStr);
+            final status = uri.queryParameters['status'];
+
+            // Cancel timer
+            _autoCloseTimer?.cancel();
+
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+                _webViewClosed = true;
+              });
+            }
+
+            // Safely Trigger Completion Logic
+            if (status == 'success') {
+              context.read<WalletBloc>().add(
+                WalletTransactionStatusChecked(
+                  transactionId:
+                      uri.queryParameters['externalReferenceId'] ??
+                      widget.transactionId,
+                ),
+              );
+              _showPaymentCompletionDialog(isSuccess: true);
+            } else {
+              _showPaymentCompletionDialog(isSuccess: false);
+            }
+            return;
+          }
+
           setState(() {
             _isLoading = true;
           });
-
-          if (kDebugMode) {
-            debugPrint('🔄 Payment WebView started loading: ${url.toString()}');
-          }
         }
       },
       onLoadStop: (controller, url) {
         if (url != null) {
+          final urlStr = url.toString();
+
+          // Double check interception in case onLoadStart misses it
+          if (urlStr.startsWith('brokerapp://payment')) {
+            return; // Handled in onLoadStart
+          }
+
           setState(() {
             _isLoading = false;
           });
 
           if (kDebugMode) {
-            debugPrint('✅ Payment WebView finished loading: ${url.toString()}');
+            debugPrint('✅ Payment WebView finished loading: $urlStr');
           }
 
-          _checkForPaymentCompletion(url.toString());
+          _checkForPaymentCompletion(urlStr);
         }
       },
       onProgressChanged: (controller, progress) {
@@ -180,8 +233,40 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         }
 
         // Check for payment completion or callback URLs
-        if (_isPaymentCallbackUrl(url)) {
-          _handlePaymentCallback(url);
+        if (url.startsWith('brokerapp://payment')) {
+          if (kDebugMode) {
+            debugPrint('💳 Payment callback intercepted: $url');
+          }
+
+          await controller.stopLoading();
+
+          final uri = Uri.parse(url);
+          final status = uri.queryParameters['status'];
+
+          // Cancel timer
+          _autoCloseTimer?.cancel();
+
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+              _webViewClosed = true;
+            });
+          }
+
+          // Safely Trigger Completion Logic
+          if (status == 'success') {
+            context.read<WalletBloc>().add(
+              WalletTransactionStatusChecked(
+                transactionId:
+                    uri.queryParameters['externalReferenceId'] ??
+                    widget.transactionId,
+              ),
+            );
+            _showPaymentCompletionDialog(isSuccess: true);
+          } else {
+            _showPaymentCompletionDialog(isSuccess: false);
+          }
+
           return NavigationActionPolicy.CANCEL;
         }
 
@@ -213,18 +298,13 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   }
 
   bool _isPaymentCallbackUrl(String url) {
-    // ZainCash v2 redirects to our Supabase Edge Function
-    // Example: https://[PROJ].supabase.co/functions/v1/zaincash-topup?status=success&...
-    final isSupabaseFunction = url.contains(
-      'supabase.co/functions/v1/zaincash-topup',
-    );
+    // 🚀 NEW: We only intercept the custom deep link returned by our Edge Function's HTML page!
+    // The WebView MUST load the Supabase Edge Function so it can verify the payment and update the DB.
+    if (url.startsWith('brokerapp://')) {
+      return true;
+    }
 
-    if (isSupabaseFunction) return true;
-
-    // Fallback for other ZainCash common indicators
-    return url.contains('success') ||
-        url.contains('failure') ||
-        url.contains('cancel');
+    return false;
   }
 
   void _checkForPaymentCompletion(String url) {

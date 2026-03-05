@@ -126,6 +126,13 @@ CREATE TABLE public.orders (
   CONSTRAINT orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
   CONSTRAINT orders_promo_code_fkey FOREIGN KEY (promo_code_id) REFERENCES public.promo_codes(id)
 );
+CREATE TABLE public.payment_gateways (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  code text NOT NULL UNIQUE,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT payment_gateways_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.payment_sessions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
